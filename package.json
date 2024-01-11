@@ -9,10 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tldraw/tldraw": "^2.0.0-canary.ba4091c59418",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.1",
+    "@mui/material": "^5.14.19",
+    "@tldraw/tldraw": "^2.0.0-canary.a55989f42003",
     "next": "14.0.3",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-quill": "^2.0.0",
+    "react-simple-keyboard": "^3.7.42"
   },
   "devDependencies": {
     "@types/node": "^20",

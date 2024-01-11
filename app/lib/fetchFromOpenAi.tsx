@@ -2,8 +2,8 @@
 
 export async function fetchFromOpenAi(
 	providedApiKey: string,
-	body: GPT4VCompletionRequest
-): Promise<GPT4VCompletionResponse> {
+	body: GPT4CompletionRequest
+): Promise<GPT4CompletionResponse> {
 	const apiKey = providedApiKey ?? process.env.OPENAI_API_KEY
 
 	if (!apiKey) {
@@ -48,15 +48,16 @@ export type MessageContent =
 			  }
 	  )[]
 
-export type GPT4VMessage = {
+export type GPT4Message = {
 	role: 'system' | 'user' | 'assistant' | 'function'
 	content: MessageContent
 	name?: string | undefined
 }
 
-export type GPT4VCompletionRequest = {
-	model: 'gpt-4-vision-preview'
-	messages: GPT4VMessage[]
+export type GPT4CompletionRequest = {
+	model: 'gpt-4-vision-preview' | 'gpt-4-1106-preview' | 'gpt-4'
+	messages: GPT4Message[]
+	response_format?: object | undefined
 	functions?: unknown[] | undefined
 	function_call?: unknown | undefined
 	stream?: boolean | undefined
@@ -75,7 +76,7 @@ export type GPT4VCompletionRequest = {
 	stop?: (string[] | string) | undefined
 }
 
-export type GPT4VCompletionResponse =
+export type GPT4CompletionResponse =
 	| {
 			error: undefined
 			model: string
