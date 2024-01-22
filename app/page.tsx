@@ -65,7 +65,6 @@ export default function App () {
 	// }, [])
 
 	const handleEvent = useCallback((data: TLEventInfo, editor: any) => {
-		// console.log('Event: ', data.name)
 		if (data.name == 'pointer_down') {
 			setIsPointerPressed(true)
 		}
@@ -73,6 +72,15 @@ export default function App () {
 			setIsPointerPressed(false)
 		}
 	}, [])
+
+	const onDragOver = (event) => {
+		console.log("onDropOver called")
+        event.preventDefault();
+    };
+
+    const onDrop = (event) => {
+		console.log("onDrop called")
+    };
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -122,6 +130,8 @@ export default function App () {
 						handleEvent(event, editor)
 					})
 				}}
+				onDragOver={onDragOver}
+				onDrop={onDrop}
 			>
 				{/* <TldrawLogo /> */}
 			</Tldraw>

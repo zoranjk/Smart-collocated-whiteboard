@@ -8,8 +8,9 @@ import Typography from '@mui/material/Typography';
 import { stopEventPropagation } from '@tldraw/tldraw'
 import { IconButton } from '@mui/material';
 import MobileScreenShareIcon from '@mui/icons-material/MobileScreenShare';
+import { HighlightText } from './HighlightText'
 
-export function TipsCard({ srcId, tarId, text, editor  }) {
+export function TipsCard({ srcId, tarId, text, keywords, editor  }) {
 
   const handleClick = () => {
     console.log('You clicked the Chip.');
@@ -39,9 +40,7 @@ export function TipsCard({ srcId, tarId, text, editor  }) {
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           Note: {tarId}
         </Typography>
-        <Typography variant="body2">
-          {text}
-        </Typography>
+        <HighlightText editor={editor} text={text} keywords={keywords} />
         <IconButton aria-label="share" onClick={handleShapeAlignEvent}>
           <MobileScreenShareIcon />
         </IconButton>

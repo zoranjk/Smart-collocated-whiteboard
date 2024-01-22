@@ -29,8 +29,20 @@ import { TipsCard } from '../components/TipsCard'
 import { deepOrange, blue } from '@mui/material/colors'
 import { generateTipsForObject } from '../lib/generateTipsFromOpenAI'
 import { generateSubtasks } from '../lib/generateSubtasksFromOpenAI'
-import { StyledBadge, SmallAvatar } from '../components/StyledBadge'
-import SafetyDividerIcon from '@mui/icons-material/SafetyDivider';
+import { StyledBadge } from '../components/StyledBadge'
+import SafetyDividerIcon from '@mui/icons-material/SafetyDivider'
+import DnsIcon from '@mui/icons-material/Dns'
+import { SearchBar } from '../components/SearchBar'
+import { RefinmentCard } from '../components/RefinementCard'
+import Grid from '@mui/material/Grid'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
+import { generateComparisonSummary } from '../lib/contentComparison'
+import { SummaryCard } from '../components/SummaryCard'
+import { SearchHistory } from '../components/SearchHistory'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
+import { ComparisonCard } from '../components/ComparisonCard'
+import '../style.css'
 
 const NOTE_SIZE = 220
 const PADDING = 10
@@ -60,8 +72,10 @@ export type NodeShape = TLBaseShape<
 		verticalAlign: 'end' | 'middle' | 'start'
 		growY: number
 		url: string
-		isPressed: boolean,
-		isHighlight: boolean,
+		isPressed: boolean
+		isHighlight: boolean
+		initSlide: boolean
+		index: number
 	}
 >
 
@@ -125,13 +139,15 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			color: '#ffb703',
 			size: 'l',
 			text: '',
-			font: 'draw',
+			font: 'serif',
 			align: 'middle',
 			verticalAlign: 'middle',
 			growY: 0,
 			url: 'https://zhengzhang.me/',
 			isPressed: false,
 			isHighlight: false,
+			initSlide: false,
+			index: 0
 		}
 	}
 
@@ -148,7 +164,9 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const {
 			id,
 			type,
-			props: { color, font, size, align, text, verticalAlign, isPressed, isHighlight },
+			x,
+			y,
+			props: { color, font, size, align, text, verticalAlign, isPressed, isHighlight, initSlide, index },
 		} = shape
 
 		const editor = useEditor()
@@ -160,8 +178,17 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			B: 0,
 			C: 0,
 		})
+		const [editHistory, setEditHistory] = useState([{ text: '', author: 'init' }])
+		const [loadingStatus, setLoadingStatus] = useState('idle')
+		const [tips, setTips] = useState([])
+		const [selectedHistory, setSelectedHistory] = useState(null)
+		const [curOpenHistory, setCurOpenHistory] = useState(null)
+		const [summary, setSummary] = useState({})
+		const [searchHistories, setSearchHistories] = useState([])
+		const [isSlide, setIsSlide] = useState(null)
 
-		useEffect(() => {1
+		useEffect(() => {
+			1
 			if (!editor.getSelectedShapeIds().includes(id)) {
 				editor.updateShapes([
 					{
@@ -206,14 +233,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}, [userClickCount])
 
 		useEffect(() => {
-			console.log("isHighlight: ", isHighlight)
+			console.log('isHighlight: ', isHighlight)
 		}, [isHighlight])
-
-		const [loadingStatus, setLoadingStatus] = useState('idle')
-		const [tips, setTips] = useState([])
 
 		return (
 			<HTMLContainer
+				className={ isSlide ? 'slide-rotate-ver-right' : isSlide != null ? 'slide-rotate-ver-right-revert' : initSlide ? 'slide-rotate-ver-right-translate' : ''}
 				id={shape.id}
 				style={{
 					pointerEvents: 'all',
@@ -221,6 +246,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					alignItems: 'center',
 					justifyContent: 'center',
 					direction: 'ltr',
+					boxShadow: '3px 23px 4px rgba(0, 0, 0, 0.5)',
+					animationDelay: `${0.1 * index}s`
 				}}
 			>
 				<div
@@ -228,7 +255,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 						position: 'absolute',
 						width: NOTE_SIZE,
 						height: this.getHeight(shape),
-
 					}}
 				>
 					<div
@@ -248,7 +274,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							backgroundColor: color,
 							borderRadius: 0,
 							borderWidth: 2,
-							borderColor: isHighlight == true ? "green" : "transparent",
+							borderColor: isHighlight == true ? 'green' : 'transparent',
 						}}
 					>
 						<div className='tl-note__scrim' />
@@ -301,6 +327,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 														...userClickCount,
 														[user.name]: userClickCount[user.name] + 1,
 													})
+													setEditHistory([...editHistory, { text: text, author: user.name }])
 												}}
 											>
 												{user.name}
@@ -333,55 +360,187 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									setLoadingStatus('loading')
 									generateTipsForObject(editor, shape.id).then(tips => {
 										setTips(tips)
-										setLoadingStatus('loaded')
+										setLoadingStatus('tip-loaded')
 										console.log('Tips: ', tips)
 									})
 								}}
 							>
-								<TipsAndUpdatesIcon />
+								<DnsIcon />
 							</IconButton>
-							<IconButton size='small' onPointerDown={stopEventPropagation} onClick={e => {
-								setLoadingStatus('loading')
-								const selectionBounds = editor.getSelectionPageBounds()
-								if (!selectionBounds) throw new Error('No selection bounds')
-								generateSubtasks(editor, shape.id, text).then(subtasks => {
-									for (const [index, subtask] of subtasks.entries()) {
-										const newShapeId = createShapeId()
-										editor.createShape({
-											id: newShapeId,
-											type: 'subtask',
-											x: selectionBounds.maxX + 60 + (index % 4) * 220,
-											y: selectionBounds.y + Math.floor(index / 4) * 220,
-											props: {
-												text: subtask.task,
-											},
-										})
-									}
-									setLoadingStatus('loaded')
-							})
-								// editor.createShape({
-								// 	id: newShapeId,
-								// 	type: 'task_split',
-								// 	x: selectionBounds.maxX + 60,
-								// 	y: selectionBounds.y,
-								// })
-							}}>
+							<IconButton
+								size='small'
+								onPointerDown={stopEventPropagation}
+								onClick={e => {
+									setLoadingStatus('loading')
+									const selectionBounds = editor.getSelectionPageBounds()
+									if (!selectionBounds) throw new Error('No selection bounds')
+									generateSubtasks(editor, shape.id, text).then(subtasks => {
+										for (const [index, subtask] of subtasks.entries()) {
+											const newShapeId = createShapeId()
+											editor.createShape({
+												id: newShapeId,
+												type: 'subtask',
+												x: selectionBounds.maxX + 60 + (index % 4) * 220,
+												y: selectionBounds.y + Math.floor(index / 4) * 220,
+												props: {
+													text: subtask.task,
+												},
+											})
+										}
+										setLoadingStatus('loaded')
+									})
+								}}
+							>
 								<SafetyDividerIcon />
 							</IconButton>
+							<IconButton
+								onPointerDown={stopEventPropagation}
+								onClick={() => {
+									setLoadingStatus('search-bar')
+								}}
+							>
+								<TipsAndUpdatesIcon />
+							</IconButton>
+							<IconButton
+								onPointerDown={stopEventPropagation}
+								onClick={() => {
+									setLoadingStatus('summary-loaded')
+									const summary = {
+										text: 'Recent interest in design through the artificial intelligence (AI) lens is rapidly increasing. Designers, as a\
+										special user group interacting with AI, have received more attention in the Human-Computer Interaction\
+										community',
+										keywords: [
+											'user group',
+											'artificial intelligence',
+											'Human-Computer Interaction',
+										],
+									}
+									setSummary(summary)
+									// generateComparisonSummary(editHistory).then((text) => {
+									// 	setLoadingStatus('summary-loaded')
+									// 	setSummary(text)
+									// })
+								}}
+							>
+								<CompareArrowsIcon />
+							</IconButton>
+							<IconButton
+								onPointerDown={stopEventPropagation}
+								onClick={() => {
+									editor.deleteShape(id)
+								}}
+							>
+								<DeleteForeverIcon />
+							</IconButton>
+							<IconButton
+								onPointerDown={stopEventPropagation}
+								onClick={() => {
+									if (isSlide == null || isSlide == false) {
+										setIsSlide(true)
+										const maxRepeats = 2;
+										var repeatCount = 0;
+										const interval = setInterval(() => {
+											if (repeatCount < maxRepeats) {
+												editor.createShape({
+													id: createShapeId(),
+													type: 'node',
+													x: 200*(repeatCount + 1),
+													y: 0,
+													parentId: id,
+													props: {
+														text: text,
+														initSlide: true,
+														index: repeatCount + 1,
+													},
+												})
+												repeatCount++;
+											} else {
+												// Clear interval once maxRepeats is reached
+												clearInterval(interval);
+											}
+										}, 500)
+									} else if (isSlide == true) {
+									setIsSlide(false)
+									}
+								}}
+							>
+								<ScreenRotationIcon />
+							</IconButton>
+						</div>
+					)}
+					{loadingStatus == 'search-bar' && (
+						<div style={{ display: 'flex', flexDirection: 'row' }}>
+							<div style={{ marginRight: '10px' }}>
+								<SearchBar
+									setSearchHistories={setSearchHistories}
+									searchHistories={searchHistories}
+								/>
+								<div
+									style={{
+										display: 'flex',
+										marginLeft: '5px',
+										alignItems: 'center',
+										flexDirection: 'column',
+										width: '100%',
+									}}
+								>
+									{searchHistories.map((data, index) => (
+										<div key={index}>
+											<SearchHistory
+												searchHistories={searchHistories}
+												setSearchHistories={setSearchHistories}
+												curOpenHistory={curOpenHistory}
+												setCurOpenHistory={setCurOpenHistory}
+												data={data}
+												setSelectedHistory={setSelectedHistory}
+											/>
+										</div>
+									))}
+								</div>
+							</div>
+							{selectedHistory != null && (
+								<div>
+									<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
+										{selectedHistory.result.map((suggestion, index) => (
+											<Grid item xs={4} key={index}>
+												<RefinmentCard
+													index={index}
+													srcId={id}
+													setLoadingStatus={setLoadingStatus}
+													suggestion={suggestion.text}
+													editor={editor}
+												/>
+											</Grid>
+										))}
+									</Grid>
+								</div>
+							)}
 						</div>
 					)}
 					{loadingStatus == 'loading' && (
-						<div>
-							<CircularProgress size={20} />
+						<div style={{ display: 'flex', width: '25px', height: '25px' }}>
+							<img src='/loading.png' className='loading-icon' />
 						</div>
 					)}
-					{loadingStatus == 'loaded' &&
+					{loadingStatus == 'tip-loaded' &&
 						tips.length > 0 &&
 						tips.map((tip, index) => (
 							<div key={index}>
-								<TipsCard srcId={id} tarId={tip.dstId} text={tip.explanation} editor={editor} />
+								<TipsCard
+									srcId={id}
+									tarId={tip.dstId}
+									text={tip.explanation}
+									keywords={tip.keywords}
+									editor={editor}
+								/>
 							</div>
 						))}
+					{loadingStatus == 'summary-loaded' && (
+						<div>
+							{/* <SummaryCard editor={editor} summary={summary} /> */}
+							<ComparisonCard />
+						</div>
+					)}
 				</div>
 			</HTMLContainer>
 		)
@@ -389,11 +548,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 	indicator (shape: NodeShape) {
 		return (
-			<rect
-				rx='7'
-				width={toDomPrecision(NOTE_SIZE)}
-				height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
-			/>
+			// <rect
+			// 	rx='7'
+			// 	width={toDomPrecision(NOTE_SIZE)}
+			// 	height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
+			// />
+			<div></div>
 		)
 	}
 

@@ -60,6 +60,7 @@ export const OverlayKeyboard = track(({ size, id, type, isKeyboardOpen, setIsKey
 		>
 			{isKeyboardOpen && (
 				<Keyboard
+					autoUseTouchEvents={true}
 					onPointerDown={e => e.stopPropagation()}
 					onKeyPress={onKeyPress}
 					disableButtonHold={true}
