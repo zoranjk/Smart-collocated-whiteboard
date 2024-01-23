@@ -537,8 +537,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 						))}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
-							{/* <SummaryCard editor={editor} summary={summary} /> */}
-							<ComparisonCard />
+							<SummaryCard editor={editor} summary={summary} />
 						</div>
 					)}
 				</div>

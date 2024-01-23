@@ -13,10 +13,20 @@ export const uiOverrides: TLUiOverrides = {
 				editor.setCurrentTool('node')
 			},
 		}
+		tools.new_frame = {
+			id: 'new_frame',
+			icon: 'new_frame',
+			label: 'New Frame' as any,
+			readonlyOk: false,
+			onSelect: () => {
+				editor.setCurrentTool('new_frame')
+			},
+		}
 		return tools
 	},
 	toolbar(_app, toolbar, { tools }) {
 		toolbar.splice(4, 0, toolbarItem(tools.node))
+		toolbar.splice(5, 0, toolbarItem(tools.new_frame))
 		return toolbar
 	},
 	actions(editor, actions) {

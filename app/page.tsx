@@ -28,6 +28,8 @@ import {
 	SubTaskShapeUtil,
 } from './TaskSplitResponseShape/TaskSplitResponseShape'
 import { IconButton } from '@mui/material'
+import { FrameShapeUtil } from './FrameShape/FrameShapeUtil'
+import { FrameShapeTool } from './FrameShape/FrameShapeTool'
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -38,13 +40,15 @@ const customShapeUtils = [
 	NodeShapeUtil,
 	TaskSplitResponseShapeUtil,
 	SubTaskShapeUtil,
-	QuilEditorShapeUtil
+	QuilEditorShapeUtil,
+	FrameShapeUtil
 ]
-const customTools = [NodeShapeTool]
+const customTools = [NodeShapeTool, FrameShapeTool]
 
 const customAssetUrls: TLUiAssetUrlOverrides = {
 	icons: {
 		node: '/note-sticky-solid.svg',
+		new_frame: '/frame.png',
 	},
 }
 
@@ -117,7 +121,7 @@ export default function App () {
 			<Tldraw
 				// persistenceKey="make-real"
 				shareZone={<MakeRealButton />}
-				topZone={<TopZoneNameBar />}
+				// topZone={<TopZoneNameBar />}
 				shapeUtils={customShapeUtils}
 				tools={customTools}
 				overrides={uiOverrides}

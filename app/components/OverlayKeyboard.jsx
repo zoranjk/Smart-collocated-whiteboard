@@ -17,9 +17,14 @@ export const OverlayKeyboard = track(({ size, id, type, isKeyboardOpen, setIsKey
 	// }, [editing_shape_id])
 
 	const onKeyPress = button => {
-		var text = editor.getShape(id).props.text
-		console.log('button pressed', button)
-		console.log('text: ', text)
+		var text = null
+		if (type == 'new_frame') {
+			text = editor.getShape(id).props.name
+		} else {
+			text = editor.getShape(id).props.text
+		}
+		// console.log('button pressed', button)
+		// console.log('text: ', text)
 
 		if (button === '{bksp}') {
 			text = text.slice(0, -1)
@@ -31,16 +36,27 @@ export const OverlayKeyboard = track(({ size, id, type, isKeyboardOpen, setIsKey
 		} else {
 			text = text + button
 		}
-
-		editor.updateShapes([
-			{
-				id,
-				type,
-				props: {
-					text: text,
+		if (type == 'new_frame') {
+			editor.updateShapes([
+				{
+					id,
+					type,
+					props: {
+						name: text,
+					},
 				},
-			},
-		])
+			])
+		} else {
+			editor.updateShapes([
+				{
+					id,
+					type,
+					props: {
+						text: text,
+					},
+				},
+			])
+		}
 	}
 
 	// const keyboard = new Keyboard({
