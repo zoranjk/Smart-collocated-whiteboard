@@ -3,12 +3,16 @@ import Avatar from '@mui/material/Avatar'
 import AvatarGroup from '@mui/material/AvatarGroup'
 import Stack from '@mui/material/Stack';
 import { deepOrange, deepPurple } from '@mui/material/colors';
+import { stopEventPropagation } from '@tldraw/tldraw';
 
-export function TopZoneNameBar () {
+export function TopZoneNameBar ({editor}) {
 	return (
-		<Stack direction="row" spacing={2} sx={{ margin: 2 }}>
-			<Avatar sx={{ bgcolor: "#faa307" }}>NE</Avatar>
-			<Avatar sx={{ bgcolor: "#94d2bd" }}>OP</Avatar>
-		</Stack>
+		<div>
+			<button onPointerDown={stopEventPropagation} onClick={() => {
+				const userId = editor.user.getId();
+				console.log("start following user: ", userId)
+				editor.startFollowingUser(userId);
+			}}>Follow User</button>
+		</div>
 	)
 }

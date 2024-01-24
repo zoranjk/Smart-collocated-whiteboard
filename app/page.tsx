@@ -30,6 +30,7 @@ import {
 import { IconButton } from '@mui/material'
 import { FrameShapeUtil } from './FrameShape/FrameShapeUtil'
 import { FrameShapeTool } from './FrameShape/FrameShapeTool'
+import { useYjsStore } from './useYjsStore'
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -52,16 +53,58 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
 	},
 }
 
+const HOST_URL =
+	process.env.NODE_ENV === 'development'
+		? 'ws://localhost:1234'
+		: 'wss://demos.yjs.dev'
+
 const components: Partial<TLEditorComponents> = {
 	OnTheCanvas: null,
 	InFrontOfTheCanvas: null,
 	SnapLine: null,
 }
 
-export default function App () {
+const NameEditor = track(() => {
+	const editor = useEditor()
+
+	const { color, name } = editor.user
+
+	return (
+		<div style={{ pointerEvents: 'all', display: 'flex' }}>
+			<input
+				type="color"
+				value={color}
+				onChange={(e) => {
+					editor.user.updateUserPreferences({
+						color: e.currentTarget.value,
+					})
+				}}
+			/>
+			<input
+				value={name}
+				onChange={(e) => {
+					editor.user.updateUserPreferences({
+						name: e.currentTarget.value,
+					})
+				}}
+			/>
+			<div>
+				<button onPointerDown={stopEventPropagation} onClick={() => {
+					// const userId = editor.user.getId();
+					// console.log("start following user: ", userId)
+					// editor.startFollowingUser(userId);
+					
+				}}>Create User</button>
+			</div>
+		</div>
+	)
+})
+
+export default function App() {
 	const [uiEvents, setUiEvents] = useState<string[]>([])
 	const [isPointerPressed, setIsPointerPressed] = useState(false)
 	const [editor, setEditor] = useState(null)
+	const [user, setUser] = useState()
 
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
@@ -79,12 +122,12 @@ export default function App () {
 
 	const onDragOver = (event) => {
 		console.log("onDropOver called")
-        event.preventDefault();
-    };
+		event.preventDefault();
+	};
 
-    const onDrop = (event) => {
+	const onDrop = (event) => {
 		console.log("onDrop called")
-    };
+	};
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -116,12 +159,19 @@ export default function App () {
 		return () => clearTimeout(timer)
 	}, [isPointerPressed])
 
+	const store = useYjsStore({
+		roomId: 'example17',
+		hostUrl: HOST_URL,
+		shapeUtils: customShapeUtils
+	})
+
 	return (
 		<div className='editor'>
 			<Tldraw
 				// persistenceKey="make-real"
-				shareZone={<MakeRealButton />}
-				// topZone={<TopZoneNameBar />}
+				// shareZone={<MakeRealButton />}
+				shareZone={<NameEditor />}
+				// topZone={<TopZoneNameBar editor={editor} />}
 				shapeUtils={customShapeUtils}
 				tools={customTools}
 				overrides={uiOverrides}
@@ -134,6 +184,7 @@ export default function App () {
 						handleEvent(event, editor)
 					})
 				}}
+				store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
