@@ -188,7 +188,7 @@ export default function App() {
 						handleEvent(event, editor)
 					})
 				}}
-				// store={store}
+				store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
