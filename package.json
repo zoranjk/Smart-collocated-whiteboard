@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"HOST=0.0.0.0 PORT=5800 npx y-websocket\" --kill-others",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -15,6 +15,8 @@
     "@mui/lab": "^5.0.0-alpha.161",
     "@mui/material": "^5.14.19",
     "@tldraw/tldraw": "^2.0.0-canary.a55989f42003",
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.1",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",

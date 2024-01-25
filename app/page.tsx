@@ -1,5 +1,6 @@
 'use client'
 
+require('dotenv').config({ path: '.env.local' });
 import dynamic from 'next/dynamic'
 import '@tldraw/tldraw/tldraw.css'
 import { MakeRealButton } from './components/MakeRealButton'
@@ -53,9 +54,12 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
 	},
 }
 
+const WS_ADDRESS = "0.0.0.0"
+const WS_PORT = "5800"
+
 const HOST_URL =
 	process.env.NODE_ENV === 'development'
-		? 'ws://localhost:1234'
+		? `ws://${WS_ADDRESS}:${WS_PORT}`
 		: 'wss://demos.yjs.dev'
 
 const components: Partial<TLEditorComponents> = {
@@ -170,7 +174,7 @@ export default function App() {
 			<Tldraw
 				// persistenceKey="make-real"
 				// shareZone={<MakeRealButton />}
-				shareZone={<NameEditor />}
+				// shareZone={<NameEditor />}
 				// topZone={<TopZoneNameBar editor={editor} />}
 				shapeUtils={customShapeUtils}
 				tools={customTools}
@@ -184,7 +188,7 @@ export default function App() {
 						handleEvent(event, editor)
 					})
 				}}
-				store={store}
+				// store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
