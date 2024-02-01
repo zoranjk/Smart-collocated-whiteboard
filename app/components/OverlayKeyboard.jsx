@@ -31,8 +31,7 @@ export const OverlayKeyboard = track(({ size, id, type, isKeyboardOpen, setIsKey
 		} else if (button === '{space}') {
 			text = text + ' '
 		} else if (button === '{enter}') {
-			setIsKeyboardOpen(false)
-			return
+			text = text + '\n'
 		} else {
 			text = text + button
 		}
@@ -76,8 +75,11 @@ export const OverlayKeyboard = track(({ size, id, type, isKeyboardOpen, setIsKey
 		>
 			{isKeyboardOpen && (
 				<Keyboard
+					stopMouseDownPropagation={true}
 					autoUseTouchEvents={true}
-					onPointerDown={e => e.stopPropagation()}
+					// onPointerDown={e => {
+					// 	e.stopPropagation()
+					// }}
 					onKeyPress={onKeyPress}
 					disableButtonHold={true}
 				/>

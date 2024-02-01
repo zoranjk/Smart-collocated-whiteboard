@@ -13,7 +13,7 @@ import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates'
 import { generateRefinementSuggestion } from '../lib/refineContentFromOpenAI'
 import Keyboard from 'react-simple-keyboard'
 
-const Search = styled('div')(({ theme }) => ({
+export const Search = styled('div')(({ theme }) => ({
 	position: 'relative',
 	display: 'flex',
 	direction: 'row',
@@ -32,7 +32,7 @@ const Search = styled('div')(({ theme }) => ({
 	},
 }))
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
+export const StyledInputBase = styled(InputBase)(({ theme }) => ({
 	color: 'inherit',
 	width: '90%',
 	'& .MuiInputBase-input': {
@@ -43,7 +43,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 	},
 }))
 
-export function SearchBar ({ searchHistories, setSearchHistories }) {
+export function SearchBar ({ searchHistories, setSearchHistories, width = 300 }) {
 	const [input, setInput] = useState('')
 	const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
 
@@ -64,9 +64,23 @@ export function SearchBar ({ searchHistories, setSearchHistories }) {
 		setInput(text)
 	}
 
+	const handleSearch = () => {
+		const text = input
+		setIsKeyboardOpen(false)
+		console.log('Generation button clicked')
+		setSearchHistories([{ query: input, status: 'loading', result: null }, ...searchHistories])
+		// setLoadingStatus('loading')
+		generateRefinementSuggestion(input).then(suggestions => {
+			setSearchHistories([
+				{ query: input, status: 'done', result: suggestions },
+				...searchHistories,
+			])
+		})
+	}
+
 	return (
 		<div>
-			<Box sx={{ flexGrow: 1, width: 300, mb: 3 }}>
+			<Box sx={{ flexGrow: 1, width: width, height: 50, mb: 3 }}>
 				<Search>
 					<StyledInputBase
 						onFocus={() => setIsKeyboardOpen(true)}
@@ -75,17 +89,8 @@ export function SearchBar ({ searchHistories, setSearchHistories }) {
 						value={input}
 						onChange={e => setInput(e.target.value)}
 					/>
-					<IconButton onPointerDown={e => e.stopPropagation()} onClick={() => {
-						const text = input
-						setIsKeyboardOpen(false)
-						console.log("Generation button clicked")
-						setSearchHistories([{query: input, status: "loading", result: null}, ...searchHistories])
-						// setLoadingStatus('loading')
-						generateRefinementSuggestion(input).then((suggestions) => {
-							setSearchHistories([{query: input, status: "done", result: suggestions}, ...searchHistories])
-						})
-					}}>
-							<TipsAndUpdatesIcon />
+					<IconButton onPointerDown={e => e.stopPropagation()} onTouchStart={handleSearch} onClick={handleSearch}>
+						<TipsAndUpdatesIcon />
 					</IconButton>
 				</Search>
 			</Box>

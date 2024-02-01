@@ -2,10 +2,10 @@ import {
 	StateNode,
 	TLEventHandlers,
 	TLInterruptEvent,
-	TLNoteShape,
 	TLPointerEventInfo,
 	createShapeId,
 } from '@tldraw/editor'
+import { SearchShape } from '../SearchShape'
 
 export class Pointing extends StateNode {
 	static override id = 'pointing'
@@ -18,12 +18,12 @@ export class Pointing extends StateNode {
 
 	markId = ''
 
-	shape = {} as TLNoteShape
+	shape = {} as SearchShape
 
 
 	override onEnter = () => {
 
-		console.log('Node Pointing: onEnter')
+		console.log('Search Pointing: onEnter')
 
 		this.wasFocusedOnEnter = !this.editor.getIsMenuOpen()
 		if (this.wasFocusedOnEnter) {
@@ -32,12 +32,13 @@ export class Pointing extends StateNode {
 	}
 
 	override onPointerDown: TLEventHandlers['onPointerDown'] = (info) => {
-		console.log('Node Pointing: onPointerDown')
+		console.log('Search Pointing: onPointerDown')
+
 	}
 
 	override onPointerMove: TLEventHandlers['onPointerMove'] = (info) => {
 
-		console.log('Node Pointing: onPointerMove')
+		console.log('Search Pointing: onPointerMove')
 
 		if (this.editor.inputs.isDragging) {
 			if (!this.wasFocusedOnEnter) {
@@ -56,12 +57,12 @@ export class Pointing extends StateNode {
 	}
 
 	override onPointerUp: TLEventHandlers['onPointerUp'] = () => {
-		console.log('Node Pointing: onPointerUp')
+		console.log('Search Pointing: onPointerUp')
 		this.complete()
 	}
 
 	override onRightClick: TLEventHandlers['onRightClick'] = () => {
-		console.log('Node Pointing: onRightClick')
+		console.log('Search Pointing: onRightClick')
 	}
 
 	override onInterrupt: TLInterruptEvent = () => {
@@ -111,14 +112,14 @@ export class Pointing extends StateNode {
 			.createShapes([
 				{
 					id,
-					type: 'node',
+					type: 'search',
 					x: originPagePoint.x,
 					y: originPagePoint.y,
 				},
 			])
 			.select(id)
 
-		const shape = this.editor.getShape<TLNoteShape>(id)!
+		const shape = this.editor.getShape<SearchShape>(id)!
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 
 		// Center the text around the created point
@@ -131,6 +132,6 @@ export class Pointing extends StateNode {
 			},
 		])
 
-		return this.editor.getShape<TLNoteShape>(id)!
+		return this.editor.getShape<SearchShape>(id)!
 	}
 }

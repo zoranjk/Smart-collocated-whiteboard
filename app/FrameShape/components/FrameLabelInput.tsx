@@ -68,7 +68,7 @@ export const FrameLabelInput = forwardRef<
 	)
 
 	return (
-		<div className={`tl-frame-label ${isEditing ? 'tl-frame-label__editing' : ''}`}>
+		<div className={`tl-frame-label ${isEditing ? 'tl-frame-label__editing' : ''}`} style={{ fontFamily: "cursive" , fontSize: "1.2vw" }}>
 			<input
 				className="tl-frame-name-input"
 				ref={ref}

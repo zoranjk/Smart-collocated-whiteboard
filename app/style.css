@@ -7,6 +7,47 @@
 	cursor: pointer;
 }
 
+.frame-heading {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+
+.search-input {
+	/* width: 90%;
+	padding-left: 1em;
+	border: "none"; */
+	background-color: "red";
+	/* overflow: ellipsis; */
+	/* font-size: 2em; */
+}
+
+.loader {
+	display: inline-block;
+}
+  
+.loader div {
+display: inline-block;
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background-color: black; /* Change the color as needed */
+animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loader div:nth-child(1) { animation-delay: -0.32s; }
+.loader div:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+0%, 80%, 100% {
+	transform: scale(0);
+}
+40% {
+	transform: scale(1.0);
+}
+}
+
 .progress-search-history-loading {
 	display: flex;
 	flex-direction: row;
@@ -22,6 +63,29 @@
 	background-image: linear-gradient(to left, #f0f0f0 50%, #d0d0d0 50%);
 	animation: moveBackground 2s linear infinite, slideInY 0.5s forwards;
 	text-align: center;
+}
+
+.bulletin {
+    background-color: #f0f0f0; /* Light grey background */
+    border-radius: 15px; /* Rounded corners */
+    padding: 20px; /* Padding inside the bulletin */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
+}
+
+.result-card {
+	background-color: #f0f0f0; /* Light grey background */
+	border-radius: 15px; /* Rounded corners */
+	padding: 20px; /* Padding inside the bulletin */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	pointer-events: all;
+}
+
+.bulletin-indicator {
+	border-radius: 15px;
+	border-color: cyan;
 }
 
 .search-text {

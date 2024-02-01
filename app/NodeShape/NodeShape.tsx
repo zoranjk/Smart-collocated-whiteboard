@@ -10,6 +10,8 @@ import {
 	noteShapeProps,
 	toDomPrecision,
 	TLBaseShape,
+	getUserPreferences,
+	resizeBox
 } from '@tldraw/editor'
 import { stopEventPropagation, HTMLContainer, useEditor, createShapeId } from '@tldraw/tldraw'
 import { TextLabel } from '../lib/utils/TextLabel'
@@ -42,6 +44,8 @@ import { SearchHistory } from '../components/SearchHistory'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
 import { ComparisonCard } from '../components/ComparisonCard'
+import { useKeyboardStatus } from '../lib/utils/keyboardCompatibility'
+import { getProportionalColor } from '../lib/utils/colorBlender'
 import '../style.css'
 
 const NOTE_SIZE = 220
@@ -76,6 +80,7 @@ export type NodeShape = TLBaseShape<
 		isHighlight: boolean
 		initSlide: boolean
 		index: number
+		history: any[]
 	}
 >
 
@@ -91,40 +96,6 @@ const users = [
 	},
 ]
 
-function mixColors (color1, color2, weight1, weight2) {
-	// Convert hex color to RGB
-	function hexToRgb (hex) {
-		var bigint = parseInt(hex.replace('#', ''), 16)
-		var r = (bigint >> 16) & 255
-		var g = (bigint >> 8) & 255
-		var b = bigint & 255
-
-		return [r, g, b]
-	}
-
-	// Mix two RGB colors
-	function blend (rgb1, rgb2, weight1, weight2) {
-		var totalWeight = weight1 + weight2
-		var r = (rgb1[0] * weight1 + rgb2[0] * weight2) / totalWeight
-		var g = (rgb1[1] * weight1 + rgb2[1] * weight2) / totalWeight
-		var b = (rgb1[2] * weight1 + rgb2[2] * weight2) / totalWeight
-
-		return [Math.round(r), Math.round(g), Math.round(b)]
-	}
-
-	// Convert RGB to hex
-	function rgbToHex (rgb) {
-		return '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('')
-	}
-
-	var rgb1 = hexToRgb(color1)
-	var rgb2 = hexToRgb(color2)
-
-	var blendedRgb = blend(rgb1, rgb2, weight1, weight2)
-
-	return rgbToHex(blendedRgb)
-}
-
 /** @public */
 export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	static override type = 'node' as const
@@ -134,7 +105,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	override hideResizeHandles = () => true
 	override hideSelectionBoundsFg = () => true
 
-	override getDefaultProps (): NodeShape {
+	override getDefaultProps(): NodeShape {
 		return {
 			color: '#ffb703',
 			size: 'l',
@@ -147,26 +118,27 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			isPressed: false,
 			isHighlight: false,
 			initSlide: false,
-			index: 0
+			index: 0,
+			history: []
 		}
 	}
 
-	getHeight (shape: NodeShape) {
+	getHeight(shape: NodeShape) {
 		return NOTE_SIZE + shape.props.growY
 	}
 
-	getGeometry (shape: NodeShape) {
+	getGeometry(shape: NodeShape) {
 		const height = this.getHeight(shape)
 		return new Rectangle2d({ width: NOTE_SIZE, height, isFilled: true })
 	}
 
-	component (shape: NodeShape) {
+	component(shape: NodeShape) {
 		const {
 			id,
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isPressed, isHighlight, initSlide, index },
+			props: { color, font, size, align, text, verticalAlign, isPressed, isHighlight, initSlide, index, history },
 		} = shape
 
 		const editor = useEditor()
@@ -174,11 +146,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		// States
 		const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
 		const [lastUser, setLastUser] = useState(null)
-		const [userClickCount, setUserClickCount] = useState({
-			B: 0,
-			C: 0,
-		})
-		const [editHistory, setEditHistory] = useState([{ text: '', author: 'init' }])
+		const [userClickCount, setUserClickCount] = useState({})
+		const [editHistory, setEditHistory] = useState([])
 		const [loadingStatus, setLoadingStatus] = useState('idle')
 		const [tips, setTips] = useState([])
 		const [selectedHistory, setSelectedHistory] = useState(null)
@@ -186,9 +155,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [summary, setSummary] = useState({})
 		const [searchHistories, setSearchHistories] = useState([])
 		const [isSlide, setIsSlide] = useState(null)
+		const userPreference = getUserPreferences()
+		const userColor = editor.user.color
 
 		useEffect(() => {
-			1
 			if (!editor.getSelectedShapeIds().includes(id)) {
 				editor.updateShapes([
 					{
@@ -199,38 +169,104 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 						},
 					},
 				])
-
 				setLoadingStatus('idle')
 			}
 		}, [editor.getSelectedShapeIds()])
 
-		useEffect(() => {
-			const editing_shape_id = editor.getEditingShapeId()
-			if (id === editing_shape_id) {
-				setIsKeyboardOpen(true)
-			}
-		}, [editor.getEditingShapeId()])
+		const updateNoteSharedInfo = () => {
+			var historyCopy = [...history]
+			if (history.length > 0) {
+				console.log("Edit history is not empty")
+				const lastEdit = history[history.length - 1]
+				if (text === lastEdit.text) {
+					return
+				}
+				else {
+					// update edit history and increase user click count
+					editor.updateShapes([
+						{
+							id,
+							type,
+							props: {
+								history: [...history, { text: shape.props.text, color: userColor }],
+							},
+						},
+					])
+					historyCopy = [...history, { text: shape.props.text, color: userColor }]
 
-		useEffect(() => {
-			if (userClickCount.B > 0 || userClickCount.C > 0) {
-				const newColor = mixColors(
-					users[0].bgcolor,
-					users[1].bgcolor,
-					(userClickCount.B * 1.0) / (userClickCount.B + userClickCount.C),
-					(userClickCount.C * 1.0) / (userClickCount.B + userClickCount.C)
-				)
-				console.log('New color: ', newColor)
+				}
+			} else {
+				console.log("Edit history is empty")
 				editor.updateShapes([
 					{
 						id,
 						type,
+						// ISSUE: text is not up-to-date, it uses the last text
 						props: {
-							color: newColor,
+							history: [{ text: shape.props.text, color: userColor }],
 						},
 					},
 				])
+				historyCopy = [{ text: shape.props.text, color: userColor }]
 			}
-		}, [userClickCount])
+
+			const newColor = getProportionalColor(historyCopy)
+			console.log("newColor: ", newColor)
+			editor.updateShapes([
+				{
+					id,
+					type,
+					props: {
+						color: newColor,
+					},
+				},
+			])
+		}
+
+		const handleTips = () => {
+			setLoadingStatus('loading')
+			generateTipsForObject(editor, shape.id).then(tips => {
+				setTips(tips)
+				setLoadingStatus('tip-loaded')
+				console.log('Tips: ', tips)
+			})
+		}
+
+		const handleSubtasks = () => {
+			setLoadingStatus('loading')
+			const selectionBounds = editor.getSelectionPageBounds()
+			if (!selectionBounds) throw new Error('No selection bounds')
+			generateSubtasks(editor, shape.id, text).then(subtasks => {
+				for (const [index, subtask] of subtasks.entries()) {
+					const newShapeId = createShapeId()
+					editor.createShape({
+						id: newShapeId,
+						type: 'subtask',
+						x: selectionBounds.maxX + 60 + (index % 4) * 220,
+						y: selectionBounds.y + Math.floor(index / 4) * 220,
+						props: {
+							text: subtask.task,
+						},
+					})
+				}
+				setLoadingStatus('loaded')
+			})
+		}
+
+		const handleCompare = () => {
+			setLoadingStatus('summary-loaded')
+			const summary = {
+				text: 'Recent interest in design through the artificial intelligence (AI) lens is rapidly increasing. Designers, as a\
+				special user group interacting with AI, have received more attention in the Human-Computer Interaction\
+				community',
+				keywords: [
+					'user group',
+					'artificial intelligence',
+					'Human-Computer Interaction',
+				],
+			}
+			setSummary(summary)
+		}
 
 		useEffect(() => {
 			console.log('isHighlight: ', isHighlight)
@@ -238,7 +274,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 		return (
 			<HTMLContainer
-				className={ isSlide ? 'slide-rotate-ver-right' : isSlide != null ? 'slide-rotate-ver-right-revert' : initSlide ? 'slide-rotate-ver-right-translate' : ''}
+				className={isSlide ? 'slide-rotate-ver-right' : isSlide != null ? 'slide-rotate-ver-right-revert' : initSlide ? 'slide-rotate-ver-right-translate' : ''}
 				id={shape.id}
 				style={{
 					pointerEvents: 'all',
@@ -287,57 +323,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							verticalAlign={verticalAlign}
 							text={text}
 							labelColor='black'
+							setIsKeyboardOpen={setIsKeyboardOpen}
+							updateNoteSharedInfo={updateNoteSharedInfo}
 							wrap
 						/>
 					</div>
-					{!isKeyboardOpen && (
-						<div>
-							<div>
-								<Stack direction='row' spacing={1} sx={{ mt: 1 }}>
-									{users.map(user =>
-										lastUser == user.name ? (
-											<StyledBadge
-												overlap='circular'
-												anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-												variant='dot'
-												onPointerDown={stopEventPropagation}
-												onClick={() => {
-													setLastUser(user.name)
-													setUserClickCount({
-														...userClickCount,
-														[user.name]: userClickCount[user.name] + 1,
-													})
-												}}
-											>
-												<Avatar
-													sx={{ bgcolor: user.bgcolor, width: 30, height: 30 }}
-													alt='User Name'
-												>
-													{user.name}
-												</Avatar>
-											</StyledBadge>
-										) : (
-											<Avatar
-												sx={{ bgcolor: user.bgcolor, width: 30, height: 30 }}
-												onPointerDown={stopEventPropagation}
-												alt='User Name'
-												onClick={() => {
-													setLastUser(user.name)
-													setUserClickCount({
-														...userClickCount,
-														[user.name]: userClickCount[user.name] + 1,
-													})
-													setEditHistory([...editHistory, { text: text, author: user.name }])
-												}}
-											>
-												{user.name}
-											</Avatar>
-										)
-									)}
-								</Stack>
-							</div>
-						</div>
-					)}
+					{/* Make sure the device do not have built-in keyboard */}
 					<OverlayKeyboard
 						size={NOTE_SIZE}
 						type={type}
@@ -356,45 +347,24 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							<IconButton
 								size='small'
 								onPointerDown={stopEventPropagation}
-								onClick={e => {
-									setLoadingStatus('loading')
-									generateTipsForObject(editor, shape.id).then(tips => {
-										setTips(tips)
-										setLoadingStatus('tip-loaded')
-										console.log('Tips: ', tips)
-									})
-								}}
+								onTouchStart={handleTips}
+								onClick={handleTips}
 							>
 								<DnsIcon />
 							</IconButton>
 							<IconButton
 								size='small'
 								onPointerDown={stopEventPropagation}
-								onClick={e => {
-									setLoadingStatus('loading')
-									const selectionBounds = editor.getSelectionPageBounds()
-									if (!selectionBounds) throw new Error('No selection bounds')
-									generateSubtasks(editor, shape.id, text).then(subtasks => {
-										for (const [index, subtask] of subtasks.entries()) {
-											const newShapeId = createShapeId()
-											editor.createShape({
-												id: newShapeId,
-												type: 'subtask',
-												x: selectionBounds.maxX + 60 + (index % 4) * 220,
-												y: selectionBounds.y + Math.floor(index / 4) * 220,
-												props: {
-													text: subtask.task,
-												},
-											})
-										}
-										setLoadingStatus('loaded')
-									})
-								}}
+								onTouchStart={handleSubtasks}
+								onClick={handleSubtasks}
 							>
 								<SafetyDividerIcon />
 							</IconButton>
 							<IconButton
 								onPointerDown={stopEventPropagation}
+								onTouchStart={() => {
+									setLoadingStatus('search-bar')
+								}}
 								onClick={() => {
 									setLoadingStatus('search-bar')
 								}}
@@ -403,36 +373,23 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							</IconButton>
 							<IconButton
 								onPointerDown={stopEventPropagation}
-								onClick={() => {
-									setLoadingStatus('summary-loaded')
-									const summary = {
-										text: 'Recent interest in design through the artificial intelligence (AI) lens is rapidly increasing. Designers, as a\
-										special user group interacting with AI, have received more attention in the Human-Computer Interaction\
-										community',
-										keywords: [
-											'user group',
-											'artificial intelligence',
-											'Human-Computer Interaction',
-										],
-									}
-									setSummary(summary)
-									// generateComparisonSummary(editHistory).then((text) => {
-									// 	setLoadingStatus('summary-loaded')
-									// 	setSummary(text)
-									// })
-								}}
+								onTouchStart={handleCompare}
+								onClick={handleCompare}
 							>
 								<CompareArrowsIcon />
 							</IconButton>
 							<IconButton
 								onPointerDown={stopEventPropagation}
+								onTouchStart={() => {
+									editor.deleteShape(id)
+								}}
 								onClick={() => {
 									editor.deleteShape(id)
 								}}
 							>
 								<DeleteForeverIcon />
 							</IconButton>
-							<IconButton
+							{/* <IconButton
 								onPointerDown={stopEventPropagation}
 								onClick={() => {
 									if (isSlide == null || isSlide == false) {
@@ -465,7 +422,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								}}
 							>
 								<ScreenRotationIcon />
-							</IconButton>
+							</IconButton> */}
 						</div>
 					)}
 					{loadingStatus == 'search-bar' && (
@@ -545,18 +502,18 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		)
 	}
 
-	indicator (shape: NodeShape) {
+	indicator(shape: NodeShape) {
 		return (
-			// <rect
-			// 	rx='7'
-			// 	width={toDomPrecision(NOTE_SIZE)}
-			// 	height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
-			// />
-			<div></div>
+			<rect
+				rx='7'
+				width={toDomPrecision(NOTE_SIZE)}
+				height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
+			/>
+			// <div></div>
 		)
 	}
 
-	override toSvg (shape: NodeShape, ctx: SvgExportContext) {
+	override toSvg(shape: NodeShape, ctx: SvgExportContext) {
 		ctx.addExportDef(getFontDefForExport(shape.props.font))
 		const theme = getDefaultColorTheme({ isDarkMode: this.editor.user.getIsDarkMode() })
 		const bounds = this.editor.getShapeGeometry(shape).bounds
@@ -631,9 +588,13 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			])
 		}
 	}
+
+	override onResize: TLOnResizeHandler<any> = (shape, info) => {
+		return resizeBox(shape, info)
+	}
 }
 
-function getGrowY (editor: Editor, shape: NodeShape, prevGrowY = 0) {
+function getGrowY(editor: Editor, shape: NodeShape, prevGrowY = 0) {
 	const PADDING = 17
 
 	const nextTextSize = editor.textMeasure.measureText(shape.props.text, {

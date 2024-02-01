@@ -28,10 +28,13 @@ import {
 	TaskSplitResponseShapeUtil,
 	SubTaskShapeUtil,
 } from './TaskSplitResponseShape/TaskSplitResponseShape'
+import { ResultShapeUtil } from './ResultShape/ResultShapeUtil'
 import { IconButton } from '@mui/material'
 import { FrameShapeUtil } from './FrameShape/FrameShapeUtil'
 import { FrameShapeTool } from './FrameShape/FrameShapeTool'
 import { useYjsStore } from './useYjsStore'
+import { SearchShapeUtil } from './SearchShape/SearchShape';
+import { SearchTool } from './SearchShape/SearchShapeTool';
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -43,18 +46,21 @@ const customShapeUtils = [
 	TaskSplitResponseShapeUtil,
 	SubTaskShapeUtil,
 	QuilEditorShapeUtil,
-	FrameShapeUtil
+	SearchShapeUtil,
+	FrameShapeUtil,
+	ResultShapeUtil
 ]
-const customTools = [NodeShapeTool, FrameShapeTool]
+const customTools = [NodeShapeTool, FrameShapeTool, SearchTool]
 
 const customAssetUrls: TLUiAssetUrlOverrides = {
 	icons: {
 		node: '/note-sticky-solid.svg',
 		new_frame: '/frame.png',
+		search: '/search.png',
 	},
 }
 
-const WS_ADDRESS = "0.0.0.0"
+const WS_ADDRESS = "104.154.83.173"
 const WS_PORT = "5800"
 
 const HOST_URL =
@@ -94,9 +100,8 @@ const NameEditor = track(() => {
 			/>
 			<div>
 				<button onPointerDown={stopEventPropagation} onClick={() => {
-					// const userId = editor.user.getId();
-					// console.log("start following user: ", userId)
-					// editor.startFollowingUser(userId);
+					const records = editor.store.allRecords()
+					console.log("records: ", records)
 					
 				}}>Create User</button>
 			</div>

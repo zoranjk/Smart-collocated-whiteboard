@@ -9,7 +9,7 @@ import {
 	TLShape,
 	stopEventPropagation,
 } from '@tldraw/editor'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDefaultColorTheme } from './ShapeFill'
 import { TextHelpers } from './TextHelpers'
 import { LABEL_FONT_SIZES, TEXT_PROPS } from './default-shape-constants'
@@ -22,13 +22,15 @@ export const TextLabel = React.memo(function TextLabel<
 	id,
 	type,
 	text,
-	size,
+	size='s',
 	labelColor,
-	font,
-	align,
-	verticalAlign,
+	font='sans',
+	align='start',
+	verticalAlign='middle',
 	wrap,
 	bounds,
+	setIsKeyboardOpen,
+	updateNoteSharedInfo=()=>{}
 }: {
 	id: T['id']
 	type: T['type']
@@ -38,9 +40,12 @@ export const TextLabel = React.memo(function TextLabel<
 	align: TLDefaultHorizontalAlignStyle
 	verticalAlign: TLDefaultVerticalAlignStyle
 	wrap?: boolean
+	width?: number
 	text: string
 	labelColor: TLDefaultColorStyle
 	bounds?: Box2d
+	setIsKeyboardOpen: (isOpen: boolean) => void
+	updateNoteSharedInfo: () => void
 }) {
 	const {
 		rInput,
@@ -64,6 +69,27 @@ export const TextLabel = React.memo(function TextLabel<
 		return null
 	}
 
+	useEffect(() => {
+		if (!isEditing) {
+			console.log("isEditing: ", isEditing)
+			updateNoteSharedInfo()
+			setIsKeyboardOpen(false)
+		}
+	}, [isEditing])
+
+
+	const focusHandler = () => {
+		setIsKeyboardOpen(true)
+		handleFocus()
+		console.log("onFocus called")
+	}
+
+	const blurHandler = () => {
+		// setIsKeyboardOpen(false)
+		handleBlur()
+		console.log("onBlur called")
+	}
+
 	return (
 		<div
 			className="tl-text-label"
@@ -75,14 +101,16 @@ export const TextLabel = React.memo(function TextLabel<
 			style={{
 				justifyContent: align === 'middle' || legacyAlign ? 'center' : align,
 				alignItems: verticalAlign === 'middle' ? 'center' : verticalAlign,
+				backgroundColor: "rgba(173, 181, 189, 0.25)",
+				borderRadius: "6px",
 				...(bounds
 					? {
-							top: bounds.minY,
-							left: bounds.minX,
-							width: bounds.width,
-							height: bounds.height,
-							position: 'absolute',
-					  }
+						top: bounds.minY,
+						left: bounds.minX,
+						width: bounds.width,
+						height: bounds.height,
+						position: 'absolute',
+					}
 					: {}),
 			}}
 		>
@@ -116,10 +144,10 @@ export const TextLabel = React.memo(function TextLabel<
 						dir="auto"
 						datatype="wysiwyg"
 						defaultValue={text}
-						onFocus={handleFocus}
+						onFocus={focusHandler}
 						onChange={handleChange}
 						onKeyDown={handleKeyDown}
-						onBlur={handleBlur}
+						onBlur={blurHandler}
 						onContextMenu={stopEventPropagation}
 						onPointerDown={handleInputPointerDown}
 						onDoubleClick={handleDoubleClick}

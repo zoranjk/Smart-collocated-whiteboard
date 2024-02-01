@@ -16,6 +16,8 @@ import {
 	frameShapeProps,
 	getDefaultColorTheme,
 	last,
+	useEditor,
+	HTMLContainer,
 	resizeBox,
 	toDomPrecision,
 	useIsEditing,
@@ -27,8 +29,10 @@ import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElement
 import { FrameHeading } from './components/FrameHeading'
 import IconButton from '@mui/material/IconButton'
 import DnsIcon from '@mui/icons-material/Dns'
+import '../style.css'
+import { useEffect, useState } from 'react'
 
-export function defaultEmptyAs (str: string, dflt: string) {
+export function defaultEmptyAs(str: string, dflt: string) {
 	if (str.match(/^\s*$/)) {
 		return dflt
 	}
@@ -45,11 +49,11 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 
 	override canEdit = () => true
 
-	override getDefaultProps (): TLFrameShape['props'] {
-		return { w: 160 * 2, h: 90 * 2, name: '' }
+	override getDefaultProps(): TLFrameShape['props'] {
+		return { w: 80 * 2, h: 50 * 2, name: '' }
 	}
 
-	override getGeometry (shape: TLFrameShape): Geometry2d {
+	override getGeometry(shape: TLFrameShape): Geometry2d {
 		return new Rectangle2d({
 			width: shape.props.w,
 			height: shape.props.h,
@@ -57,10 +61,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		})
 	}
 
-	override component (shape: TLFrameShape) {
+	override component(shape: TLFrameShape) {
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const theme = useDefaultColorTheme()
+		const editor = useEditor()
+		const [isSelected, setIsSelected] = useState(false)
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const isCreating = useValue(
@@ -77,35 +83,38 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 			[shape.id]
 		)
 
+		useEffect(() => {
+			if (!editor.getSelectedShapeIds().includes(shape.id)) {
+				setIsSelected(false)
+			} else {
+				setIsSelected(true)
+			}
+		}, [editor.getSelectedShapeIds()])
+
 		return (
-			<>
-				<SVGContainer>
-					<rect
-						className={classNames('tl-frame__body', { 'tl-frame__creating': isCreating })}
-						width={bounds.width}
-						height={bounds.height}
-						fill={theme.solid}
-						stroke={theme.text}
-					/>
+			<HTMLContainer style={{ pointerEvents: 'all' }}>
+				<SVGContainer className='bulletin'>
 				</SVGContainer>
 				{isCreating ? null : (
-					<FrameHeading
-						id={shape.id}
-						name={shape.props.name}
-						width={bounds.width}
-						height={bounds.height}
-					/>
+					<div className='frame-heading'>
+						<FrameHeading
+							id={shape.id}
+							name={shape.props.name}
+							width={bounds.width}
+							height={bounds.height}
+						/>
+					</div>
 				)}
 				<div style={{ marginLeft: shape.props.w }}>
 					<IconButton size='small' onPointerDown={stopEventPropagation}>
 						<DnsIcon />
 					</IconButton>
 				</div>
-			</>
+			</HTMLContainer>
 		)
 	}
 
-	override toSvg (shape: TLFrameShape): SVGElement | Promise<SVGElement> {
+	override toSvg(shape: TLFrameShape): SVGElement | Promise<SVGElement> {
 		const theme = getDefaultColorTheme({ isDarkMode: this.editor.user.getIsDarkMode() })
 		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
 
@@ -194,7 +203,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		return g
 	}
 
-	indicator (shape: TLFrameShape) {
+	indicator(shape: TLFrameShape) {
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 
 		const isEditing = useIsEditing(shape.id)
@@ -207,7 +216,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 			<rect
 				width={toDomPrecision(bounds.width)}
 				height={toDomPrecision(bounds.height)}
-				className={`tl-frame-indicator`}
+				className={`bulletin-indicator`}
 				style={{ zIndex: 'auto' }}
 			/>
 		)
@@ -217,7 +226,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		return !shape.isLocked
 	}
 
-	override providesBackgroundForChildren (): boolean {
+	override providesBackgroundForChildren(): boolean {
 		return true
 	}
 
@@ -268,7 +277,4 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		}
 	}
 
-	override onResize: TLOnResizeHandler<any> = (shape, info) => {
-		return resizeBox(shape, info)
-	}
 }

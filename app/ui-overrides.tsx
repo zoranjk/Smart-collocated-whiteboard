@@ -22,11 +22,21 @@ export const uiOverrides: TLUiOverrides = {
 				editor.setCurrentTool('new_frame')
 			},
 		}
+		tools.search = {
+			id: 'search',
+			icon: 'search',
+			label: 'Search' as any,
+			readonlyOk: false,
+			onSelect: () => {
+				editor.setCurrentTool('search')
+			},
+		}
 		return tools
 	},
 	toolbar(_app, toolbar, { tools }) {
 		toolbar.splice(4, 0, toolbarItem(tools.node))
 		toolbar.splice(5, 0, toolbarItem(tools.new_frame))
+		toolbar.splice(6, 0, toolbarItem(tools.search))
 		return toolbar
 	},
 	actions(editor, actions) {
