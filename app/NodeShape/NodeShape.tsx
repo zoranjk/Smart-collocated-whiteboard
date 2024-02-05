@@ -23,10 +23,6 @@ import 'react-simple-keyboard/build/css/index.css'
 import { useEffect, useState } from 'react'
 import IconButton from '@mui/material/IconButton'
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates'
-import CircularProgress from '@mui/material/CircularProgress'
-import Box from '@mui/material/Box'
-import Avatar from '@mui/material/Avatar'
-import Stack from '@mui/material/Stack'
 import { TipsCard } from '../components/TipsCard'
 import { deepOrange, blue } from '@mui/material/colors'
 import { generateTipsForObject } from '../lib/generateTipsFromOpenAI'
@@ -75,6 +71,8 @@ export type NodeShape = TLBaseShape<
 		align: 'end-legacy' | 'end' | 'middle-legacy' | 'middle' | 'start-legacy' | 'start'
 		verticalAlign: 'end' | 'middle' | 'start'
 		growY: number
+		w: number
+		h: number
 		url: string
 		isPressed: boolean
 		isHighlight: boolean
@@ -110,6 +108,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			color: '#ffb703',
 			size: 'l',
 			text: '',
+			w: NOTE_SIZE,
+			h: NOTE_SIZE,
 			font: 'serif',
 			align: 'middle',
 			verticalAlign: 'middle',
@@ -124,12 +124,16 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	}
 
 	getHeight(shape: NodeShape) {
-		return NOTE_SIZE + shape.props.growY
+		return shape.props.h + shape.props.growY
+	}
+
+	getWidth(shape: NodeShape) {
+		return shape.props.w
 	}
 
 	getGeometry(shape: NodeShape) {
 		const height = this.getHeight(shape)
-		return new Rectangle2d({ width: NOTE_SIZE, height, isFilled: true })
+		return new Rectangle2d({ width: shape.props.w, height: shape.props.h, isFilled: true })
 	}
 
 	component(shape: NodeShape) {
@@ -282,14 +286,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					alignItems: 'center',
 					justifyContent: 'center',
 					direction: 'ltr',
-					boxShadow: '3px 23px 4px rgba(0, 0, 0, 0.5)',
-					animationDelay: `${0.1 * index}s`
 				}}
 			>
 				<div
 					style={{
 						position: 'absolute',
-						width: NOTE_SIZE,
+						width: shape.props.w,
 						height: this.getHeight(shape),
 					}}
 				>
@@ -328,18 +330,18 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							wrap
 						/>
 					</div>
-					{/* Make sure the device do not have built-in keyboard */}
+					{/* Make sure the device do not have built-in keyboard
 					<OverlayKeyboard
 						size={NOTE_SIZE}
 						type={type}
 						id={id}
 						isKeyboardOpen={isKeyboardOpen}
 						setIsKeyboardOpen={setIsKeyboardOpen}
-					/>
+					/> */}
 				</div>
 				<div
 					style={{
-						marginLeft: NOTE_SIZE + PADDING,
+						marginLeft: shape.props.w + PADDING,
 					}}
 				>
 					{loadingStatus == 'idle' && (
@@ -506,7 +508,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		return (
 			<rect
 				rx='7'
-				width={toDomPrecision(NOTE_SIZE)}
+				width={toDomPrecision(this.getWidth(shape))}
 				height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
 			/>
 			// <div></div>

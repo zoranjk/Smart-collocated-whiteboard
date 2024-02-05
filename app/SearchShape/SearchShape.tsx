@@ -107,8 +107,8 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 					editor.createShape({
 						id: newShapeId,
 						type: 'result',
-						x: bounds.maxX + 60 + (index % 4) * 220,
-						y: bounds.y + Math.floor(index / 4) * 220,
+						x: bounds.x + Math.floor(index %3) * 250 + w/2 - 350,
+						y: bounds.maxY + 30 + Math.floor(index / 3) * 150, 
 						parentId: id,
 						props: {
 							text: suggestion.text,

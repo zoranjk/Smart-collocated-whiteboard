@@ -24,13 +24,19 @@
 }
 
 .loader {
-	display: inline-block;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	padding: 15px;
 }
   
 .loader div {
 display: inline-block;
 width: 8px;
 height: 8px;
+margin-left: 4px;
 border-radius: 50%;
 background-color: black; /* Change the color as needed */
 animation: bounce 1.4s infinite ease-in-out both;
@@ -68,6 +74,14 @@ animation: bounce 1.4s infinite ease-in-out both;
 .bulletin {
     background-color: #f0f0f0; /* Light grey background */
     border-radius: 15px; /* Rounded corners */
+    padding: 20px; /* Padding inside the bulletin */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
+}
+
+.frame-panel {
+	pointer-events: all;
+    background-color: rgba(240, 240, 240, 0.5); /* Light grey background */
+    border-radius: 2px; /* Rounded corners */
     padding: 20px; /* Padding inside the bulletin */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
 }

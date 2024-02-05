@@ -24,13 +24,43 @@ import {
 	useValue,
 } from '@tldraw/editor'
 import classNames from 'classnames'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import Chip from '@mui/material/Chip'
+import Stack from '@mui/material/Stack'
+import { Typography, Box } from '@mui/material'
 import { useDefaultColorTheme } from '../lib/utils/ShapeFill'
 import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElementFromSpans'
 import { FrameHeading } from './components/FrameHeading'
 import IconButton from '@mui/material/IconButton'
+import SubjectIcon from '@mui/icons-material/Subject';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import DnsIcon from '@mui/icons-material/Dns'
+import { FrameChip } from './components/FrameChip'
+import { RequirementPanel } from './components/RequirementPanel'
 import '../style.css'
 import { useEffect, useState } from 'react'
+
+function TabPanel(props) {
+	const { children, value, index, ...other } = props;
+
+	return (
+		<div
+			role="tabpanel"
+			hidden={value !== index}
+			id={`full-width-tabpanel-${index}`}
+			aria-labelledby={`full-width-tab-${index}`}
+			{...other}
+		>
+			{value === index && (
+				<Box sx={{ p: 3 }}>
+					{children}
+					{/* <button onPointerDown={stopEventPropagation} onClick={() => console.log("Requirement")}>Requirement</button> */}
+				</Box>
+			)}
+		</div>
+	);
+}
 
 export function defaultEmptyAs(str: string, dflt: string) {
 	if (str.match(/^\s*$/)) {
@@ -38,6 +68,8 @@ export function defaultEmptyAs(str: string, dflt: string) {
 	}
 	return str
 }
+
+const PADDING = 20
 
 /** @public */
 export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
@@ -67,6 +99,13 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		const theme = useDefaultColorTheme()
 		const editor = useEditor()
 		const [isSelected, setIsSelected] = useState(false)
+		const [curChip, setCurChip] = useState('')
+		const children = editor.getSortedChildIdsForParent(shape.id)
+
+		const [tabValue, setTabValue] = useState(0);
+		const handleChange = (event, newValue) => {
+			setTabValue(newValue);
+		};
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const isCreating = useValue(
@@ -83,6 +122,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 			[shape.id]
 		)
 
+
 		useEffect(() => {
 			if (!editor.getSelectedShapeIds().includes(shape.id)) {
 				setIsSelected(false)
@@ -91,26 +131,55 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 			}
 		}, [editor.getSelectedShapeIds()])
 
+		const handleReqClick = () => {
+			setCurChip("requirement")
+			console.log("requirement button clicked")
+		}
+
+		const handleIdeaClick = () => {
+			setCurChip("idea")
+		}
+
 		return (
-			<HTMLContainer style={{ pointerEvents: 'all' }}>
-				<SVGContainer className='bulletin'>
-				</SVGContainer>
-				{isCreating ? null : (
-					<div className='frame-heading'>
-						<FrameHeading
-							id={shape.id}
-							name={shape.props.name}
-							width={bounds.width}
-							height={bounds.height}
-						/>
-					</div>
-				)}
-				<div style={{ marginLeft: shape.props.w }}>
-					<IconButton size='small' onPointerDown={stopEventPropagation}>
-						<DnsIcon />
-					</IconButton>
+			<div>
+				<HTMLContainer style={{ pointerEvents: 'all' }}>
+					<SVGContainer className='bulletin'>
+					</SVGContainer>
+					{isCreating ? null : (
+						<div className='frame-heading'>
+							<FrameHeading
+								id={shape.id}
+								name={shape.props.name}
+								width={bounds.width}
+								height={bounds.height}
+							/>
+						</div>
+					)}
+					{/* <div style={{ marginTop: shape.props.h + PADDING }}>
+						<Stack direction="row" spacing={1}>
+							<FrameChip icon={<SubjectIcon />} eventHandler={handleReqClick} label="Requirement" id="requirement" curChip={curChip} />
+							<FrameChip icon={<LightbulbIcon />} onPointerDown={stopEventPropagation} eventHandler={handleIdeaClick} label="Create new ideas" id="idea" curChip={curChip} />
+						</Stack>
+					</div> */}
+				</HTMLContainer>
+				<div className="frame-panel" style={{ marginLeft: shape.props.w, height: shape.props.h, width: 700 }}>
+					<Tabs
+						onPointerDown={stopEventPropagation}
+						onChange={handleChange}
+						value={tabValue}
+						aria-label="Tabs where selection follows focus"
+						selectionFollowsFocus
+					>
+						<Tab label="Factor analysis" />
+						<Tab label="Item Two" />
+						<Tab label="Item Three" />
+					</Tabs>
+					<TabPanel value={tabValue} index={0}>
+						<RequirementPanel />
+					</TabPanel>
 				</div>
-			</HTMLContainer>
+			</div>
+
 		)
 	}
 
@@ -275,6 +344,10 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		if (shapesToReparent.length > 0) {
 			this.editor.reparentShapes(shapesToReparent, this.editor.getCurrentPageId())
 		}
+	}
+
+	override onResize: TLOnResizeHandler<any> = (shape, info) => {
+		return resizeBox(shape, info)
 	}
 
 }
