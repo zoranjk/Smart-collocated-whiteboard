@@ -73,7 +73,8 @@ animation: bounce 1.4s infinite ease-in-out both;
 
 .bulletin {
     background-color: #f0f0f0; /* Light grey background */
-    border-radius: 15px; /* Rounded corners */
+	border-top-left-radius: 15px;
+	border-bottom-left-radius: 15px;
     padding: 20px; /* Padding inside the bulletin */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
 }
@@ -82,8 +83,32 @@ animation: bounce 1.4s infinite ease-in-out both;
 	pointer-events: all;
     background-color: rgba(240, 240, 240, 0.5); /* Light grey background */
     border-radius: 2px; /* Rounded corners */
-    padding: 20px; /* Padding inside the bulletin */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
+	overflow: hidden;
+	transition: max-width 2s ease-out;
+	max-width: 0;
+}
+
+.preference-grid {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+
+.frame-panel-open {
+	max-width: 1000px;
+}
+
+.frame-handler {
+	/* display: flex;
+	justify-content: center;
+	align-items: center; */
+	background-color: #f0f0f0;
+	cursor: pointer;
+	border-top-right-radius: 15px;
+	border-bottom-right-radius: 15px;
+	width: 35px;
 }
 
 .result-card {

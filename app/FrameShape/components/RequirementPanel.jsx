@@ -5,6 +5,7 @@ import ControlPointIcon from '@mui/icons-material/ControlPoint'
 import { IconButton } from '@mui/material'
 import { useState } from 'react'
 import TextField from '@mui/material/TextField'
+import { Grid } from '@mui/material'
 import { stopEventPropagation } from '@tldraw/tldraw'
 
 export const RequirementPanel = ({}) => {
@@ -20,7 +21,9 @@ export const RequirementPanel = ({}) => {
 
 	const [isEditing, setIsEditing] = useState(false)
 	const [label, setLabel] = useState('')
-	const [ requirements, setRequirements ] = useState(['Cost', 'Comfort'])
+	const [requirements, setRequirements] = useState(['Cost', 'Comfort'])
+
+	const UserNum = 2
 
 	const handleDelete = () => {
 		console.info('You clicked the delete icon.')
@@ -55,7 +58,7 @@ export const RequirementPanel = ({}) => {
 	return (
 		<div>
 			<h2>What factor(s) do you consider?</h2>
-			<div style={{ display: 'flex', flexDirection: 'row', flexWrap: "wrap" }}>
+			<div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 				{requirements.map((req, index) => (
 					<Chip
 						onClick={() => {
@@ -67,7 +70,7 @@ export const RequirementPanel = ({}) => {
 						onDelete={handleDelete}
 					/>
 				))}
-				<div style={{ height: "35px" }}>
+				<div style={{ height: '35px' }}>
 					{isEditing ? (
 						<TextField
 							size='small'
@@ -106,9 +109,37 @@ export const RequirementPanel = ({}) => {
 					)}
 				</div>
 			</div>
-
-			<div style={{ marginTop: 10 }}>
+			<div style={{ marginTop: 5, marginBottom: 20 }}>
 				<ClickableText>See what AI suggests...</ClickableText>
+			</div>
+			<h2>How much do group members consider each factor?</h2>
+			<div>
+				<Grid container spacing={2}>
+					<Grid item xs={2}>
+						<></>
+					</Grid>
+					<Grid className='preference-grid' item xs={Math.floor(10/UserNum)}>
+						<h3>User 1</h3>
+					</Grid>
+					<Grid className='preference-grid' item xs={Math.floor(10/UserNum)}>
+						<h3>User 2</h3>
+					</Grid>
+				</Grid>
+				{
+					requirements.map((req, index) => (
+						<Grid container spacing={2} key={index}>
+							<Grid className='preference-grid' item xs={2}>
+								<h3>{req}</h3>
+							</Grid>
+							<Grid className='preference-grid' item xs={Math.floor(10/UserNum)}>
+								<TextField id='outlined-basic' label='User 1' variant='outlined' fullWidth />
+							</Grid>
+							<Grid className='preference-grid' item xs={Math.floor(10/UserNum)}>
+								<TextField id='outlined-basic' label='User 2' variant='outlined' fullWidth />
+							</Grid>
+						</Grid>
+					))
+				}
 			</div>
 		</div>
 	)

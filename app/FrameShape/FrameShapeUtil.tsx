@@ -38,6 +38,7 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import DnsIcon from '@mui/icons-material/Dns'
 import { FrameChip } from './components/FrameChip'
 import { RequirementPanel } from './components/RequirementPanel'
+import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
 
@@ -70,6 +71,7 @@ export function defaultEmptyAs(str: string, dflt: string) {
 }
 
 const PADDING = 20
+const PANEL_WIDTH = 1000
 
 /** @public */
 export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
@@ -101,11 +103,16 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		const [isSelected, setIsSelected] = useState(false)
 		const [curChip, setCurChip] = useState('')
 		const children = editor.getSortedChildIdsForParent(shape.id)
-
+		const [isPanelOpen, setIsPanelOpen] = useState(false)
 		const [tabValue, setTabValue] = useState(0);
 		const handleChange = (event, newValue) => {
 			setTabValue(newValue);
 		};
+
+		const togglePanel = () => {
+			console.log("Toggle Panel")
+			setIsPanelOpen(!isPanelOpen)
+		}
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const isCreating = useValue(
@@ -162,22 +169,35 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 						</Stack>
 					</div> */}
 				</HTMLContainer>
-				<div className="frame-panel" style={{ marginLeft: shape.props.w, height: shape.props.h, width: 700 }}>
-					<Tabs
-						onPointerDown={stopEventPropagation}
-						onChange={handleChange}
-						value={tabValue}
-						aria-label="Tabs where selection follows focus"
-						selectionFollowsFocus
-					>
-						<Tab label="Factor analysis" />
-						<Tab label="Item Two" />
-						<Tab label="Item Three" />
-					</Tabs>
-					<TabPanel value={tabValue} index={0}>
-						<RequirementPanel />
-					</TabPanel>
-				</div>
+				{
+					!isPanelOpen ? (
+						<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ pointerEvents: "all", display: "flex", justifyContent: "center", cursor:'pointer', alignItems: "center", marginLeft: shape.props.w, height: shape.props.h + 3, }}>
+							<MdOutlineKeyboardDoubleArrowRight />
+						</div>
+					) : (
+						<div className={`frame-panel ${isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
+							<div style={{ width: "100%", padding: 20 }}>
+								<Tabs
+									onPointerDown={stopEventPropagation}
+									onChange={handleChange}
+									value={tabValue}
+									aria-label="Tabs where selection follows focus"
+									selectionFollowsFocus
+								>
+									<Tab label="Factor analysis" />
+									<Tab label="Item Two" />
+									<Tab label="Item Three" />
+								</Tabs>
+								<TabPanel value={tabValue} index={0}>
+									<RequirementPanel />
+								</TabPanel>
+							</div>
+							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+								<MdOutlineKeyboardDoubleArrowLeft />
+							</div>
+						</div>
+					)
+				}
 			</div>
 
 		)
