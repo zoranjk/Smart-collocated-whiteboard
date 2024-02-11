@@ -5,7 +5,7 @@ import {
 	SVGContainer,
 	SelectionEdge,
 	stopEventPropagation,
-	TLFrameShape,
+	FrameShape,
 	TLGroupShape,
 	TLOnResizeEndHandler,
 	TLOnResizeHandler,
@@ -18,6 +18,7 @@ import {
 	last,
 	useEditor,
 	HTMLContainer,
+	TLBaseShape,
 	resizeBox,
 	toDomPrecision,
 	useIsEditing,
@@ -41,6 +42,16 @@ import { RequirementPanel } from './components/RequirementPanel'
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
+
+export type FrameShape = TLBaseShape<
+	'new_frame',
+	{
+		w: number
+		h: number
+		name: string
+		backgroundColor: string
+	}
+>
 
 function TabPanel(props) {
 	const { children, value, index, ...other } = props;
@@ -71,23 +82,22 @@ export function defaultEmptyAs(str: string, dflt: string) {
 }
 
 const PADDING = 20
-const PANEL_WIDTH = 1000
+const PANEL_WIDTH = 800
 
 /** @public */
-export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
+export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 	static override type = 'new_frame' as const
-	static override props = frameShapeProps
 	static override migrations = frameShapeMigrations
 
 	override canBind = () => true
 
 	override canEdit = () => true
 
-	override getDefaultProps(): TLFrameShape['props'] {
-		return { w: 80 * 2, h: 50 * 2, name: '' }
+	override getDefaultProps(): FrameShape {
+		return { w: 80 * 2, h: 50 * 2, name: '', backgroundColor: "#f0f0f0"}
 	}
 
-	override getGeometry(shape: TLFrameShape): Geometry2d {
+	override getGeometry(shape: FrameShape): Geometry2d {
 		return new Rectangle2d({
 			width: shape.props.w,
 			height: shape.props.h,
@@ -95,23 +105,27 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		})
 	}
 
-	override component(shape: TLFrameShape) {
+	override component(shape: FrameShape) {
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const theme = useDefaultColorTheme()
 		const editor = useEditor()
 		const [isSelected, setIsSelected] = useState(false)
-		const [curChip, setCurChip] = useState('')
 		const children = editor.getSortedChildIdsForParent(shape.id)
-		const [isPanelOpen, setIsPanelOpen] = useState(false)
+		// const [isPanelOpen, setIsPanelOpen] = useState(false)
 		const [tabValue, setTabValue] = useState(0);
 		const handleChange = (event, newValue) => {
 			setTabValue(newValue);
 		};
+		const { id, type, meta } = shape
 
 		const togglePanel = () => {
 			console.log("Toggle Panel")
-			setIsPanelOpen(!isPanelOpen)
+			// set isPanelOpen in meta property to sync the open/close state of the panel among all the users
+			editor.updateShapes([{
+				id: id,
+				meta: { ...meta, isPanelOpen: !meta.isPanelOpen }
+			}])
 		}
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -138,19 +152,10 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 			}
 		}, [editor.getSelectedShapeIds()])
 
-		const handleReqClick = () => {
-			setCurChip("requirement")
-			console.log("requirement button clicked")
-		}
-
-		const handleIdeaClick = () => {
-			setCurChip("idea")
-		}
-
 		return (
 			<div>
 				<HTMLContainer style={{ pointerEvents: 'all' }}>
-					<SVGContainer className='bulletin'>
+					<SVGContainer className='bulletin' style={{ backgroundColor: shape.props.backgroundColor }} >
 					</SVGContainer>
 					{isCreating ? null : (
 						<div className='frame-heading'>
@@ -170,12 +175,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 					</div> */}
 				</HTMLContainer>
 				{
-					!isPanelOpen ? (
-						<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ pointerEvents: "all", display: "flex", justifyContent: "center", cursor:'pointer', alignItems: "center", marginLeft: shape.props.w, height: shape.props.h + 3, }}>
+					!meta.isPanelOpen ? (
+						<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ pointerEvents: "all", display: "flex", justifyContent: "center", cursor: 'pointer', alignItems: "center", marginLeft: shape.props.w, height: shape.props.h + 3, }}>
 							<MdOutlineKeyboardDoubleArrowRight />
 						</div>
 					) : (
-						<div className={`frame-panel ${isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
+						<div className={`frame-panel ${meta.isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
 							<div style={{ width: "100%", padding: 20 }}>
 								<Tabs
 									onPointerDown={stopEventPropagation}
@@ -184,12 +189,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 									aria-label="Tabs where selection follows focus"
 									selectionFollowsFocus
 								>
-									<Tab label="Factor analysis" />
+									<Tab label="Grouping analysis" />
 									<Tab label="Item Two" />
 									<Tab label="Item Three" />
 								</Tabs>
 								<TabPanel value={tabValue} index={0}>
-									<RequirementPanel />
+									<RequirementPanel editor={editor} shape={shape} />
 								</TabPanel>
 							</div>
 							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -203,7 +208,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		)
 	}
 
-	override toSvg(shape: TLFrameShape): SVGElement | Promise<SVGElement> {
+	override toSvg(shape: FrameShape): SVGElement | Promise<SVGElement> {
 		const theme = getDefaultColorTheme({ isDarkMode: this.editor.user.getIsDarkMode() })
 		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
 
@@ -292,7 +297,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		return g
 	}
 
-	indicator(shape: TLFrameShape) {
+	indicator(shape: FrameShape) {
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 
 		const isEditing = useIsEditing(shape.id)
@@ -319,11 +324,11 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		return true
 	}
 
-	override canDropShapes = (shape: TLFrameShape, _shapes: TLShape[]): boolean => {
+	override canDropShapes = (shape: FrameShape, _shapes: TLShape[]): boolean => {
 		return !shape.isLocked
 	}
 
-	override onDragShapesOver = (frame: TLFrameShape, shapes: TLShape[]): { shouldHint: boolean } => {
+	override onDragShapesOver = (frame: FrameShape, shapes: TLShape[]): { shouldHint: boolean } => {
 		if (!shapes.every(child => child.parentId === frame.id)) {
 			this.editor.reparentShapes(
 				shapes.map(shape => shape.id),
@@ -334,7 +339,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		return { shouldHint: false }
 	}
 
-	override onDragShapesOut = (_shape: TLFrameShape, shapes: TLShape[]): void => {
+	override onDragShapesOut = (_shape: FrameShape, shapes: TLShape[]): void => {
 		const parent = this.editor.getShape(_shape.parentId)
 		const isInGroup = parent && this.editor.isShapeOfType<TLGroupShape>(parent, 'group')
 
@@ -348,7 +353,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<TLFrameShape> {
 		}
 	}
 
-	override onResizeEnd: TLOnResizeEndHandler<TLFrameShape> = shape => {
+	override onResizeEnd: TLOnResizeEndHandler<FrameShape> = shape => {
 		const bounds = this.editor.getShapePageBounds(shape)!
 		const children = this.editor.getSortedChildIdsForParent(shape.id)
 

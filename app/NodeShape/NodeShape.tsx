@@ -301,6 +301,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							backgroundColor: color,
 							height: TAG_SIZE,
 							paddingLeft: 10,
+							borderTopLeftRadius: 10,
+							borderTopRightRadius: 10,
 						}}
 					>
 						Note Type

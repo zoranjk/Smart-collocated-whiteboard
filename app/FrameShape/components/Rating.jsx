@@ -5,6 +5,7 @@ import Rating from '@mui/material/Rating'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import Typography from '@mui/material/Typography'
+import { stopEventPropagation } from '@tldraw/tldraw'
 
 const StyledRating = styled(Rating)({
 	'& .MuiRating-iconFilled': {
@@ -15,24 +16,23 @@ const StyledRating = styled(Rating)({
 	},
 })
 
-export default function CustomizedRating () {
+export function CustomizedRating () {
 	return (
 		<Box
 			sx={{
 				'& > legend': { mt: 2 },
 			}}
 		>
-			<Typography component='legend'>Custom icon and color</Typography>
 			<StyledRating
+				onPointerDown={stopEventPropagation}
 				name='customized-color'
 				defaultValue={2}
 				getLabelText={value => `${value} Heart${value !== 1 ? 's' : ''}`}
 				precision={0.5}
-				icon={<FavoriteIcon fontSize='inherit' />}
-				emptyIcon={<FavoriteBorderIcon fontSize='inherit' />}
+				// icon={<FavoriteIcon fontSize='inherit' />}
+				// emptyIcon={<FavoriteBorderIcon fontSize='inherit' />}
 			/>
-			<Typography component='legend'>10 stars</Typography>
-			<Rating name='customized-10' defaultValue={2} max={10} />
+			{/* <Typography component='legend'>10 stars</Typography> */}
 		</Box>
 	)
 }

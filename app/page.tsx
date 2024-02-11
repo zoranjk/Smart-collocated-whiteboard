@@ -35,6 +35,7 @@ import { FrameShapeTool } from './FrameShape/FrameShapeTool'
 import { useYjsStore } from './useYjsStore'
 import { SearchShapeUtil } from './SearchShape/SearchShape';
 import { SearchTool } from './SearchShape/SearchShapeTool';
+import { GroupMenu } from './components/GroupMenu'
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -74,14 +75,15 @@ const components: Partial<TLEditorComponents> = {
 	SnapLine: null,
 }
 
-const NameEditor = track(() => {
+const FeatureMenu = track(() => {
 	const editor = useEditor()
 
 	const { color, name } = editor.user
 
 	return (
 		<div style={{ pointerEvents: 'all', display: 'flex' }}>
-			<input
+			<GroupMenu editor={editor} />
+			{/* <input
 				type="color"
 				value={color}
 				onChange={(e) => {
@@ -104,7 +106,7 @@ const NameEditor = track(() => {
 					console.log("records: ", records)
 					
 				}}>Create User</button>
-			</div>
+			</div> */}
 		</div>
 	)
 })
@@ -179,12 +181,12 @@ export default function App() {
 			<Tldraw
 				// persistenceKey="make-real"
 				// shareZone={<MakeRealButton />}
-				shareZone={<NameEditor />}
+				shareZone={<FeatureMenu />}
 				// topZone={<TopZoneNameBar editor={editor} />}
 				shapeUtils={customShapeUtils}
 				tools={customTools}
 				overrides={uiOverrides}
-				assetUrls={customAssetUrls}
+				assetUrls={customAssetUrls}O 
 				// onUiEvent={handleUiEvent}
 				components={components}
 				onMount={editor => {
@@ -192,6 +194,13 @@ export default function App() {
 						setEditor(editor)
 						handleEvent(event, editor)
 					})
+
+					editor.getInitialMetaForShape = (shape) => {
+						if (shape.type === 'new_frame') {
+							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle" }
+						}
+						
+					}
 				}}
 				store={store}
 				onDragOver={onDragOver}
