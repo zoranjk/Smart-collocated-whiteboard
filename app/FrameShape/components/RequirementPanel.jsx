@@ -273,7 +273,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 					)
 				})}
 			</div>
-			<h2>How much do group members consider each factor?</h2>
+			{/* <h2>How much do group members consider each factor?</h2>
 			<div>
 				<Grid container spacing={2}>
 					<Grid item xs={2}>
@@ -299,7 +299,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 						</Grid>
 					</Grid>
 				))}
-			</div>
+			</div> */}
 		</div>
 	)
 }

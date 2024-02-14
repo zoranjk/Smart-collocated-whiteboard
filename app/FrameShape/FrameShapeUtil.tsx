@@ -33,15 +33,13 @@ import { Typography, Box } from '@mui/material'
 import { useDefaultColorTheme } from '../lib/utils/ShapeFill'
 import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElementFromSpans'
 import { FrameHeading } from './components/FrameHeading'
-import IconButton from '@mui/material/IconButton'
-import SubjectIcon from '@mui/icons-material/Subject';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import DnsIcon from '@mui/icons-material/Dns'
 import { FrameChip } from './components/FrameChip'
 import { RequirementPanel } from './components/RequirementPanel'
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
+import { RelationPanel } from './components/RelationPanel'
+import { generateFrameRelation } from '../lib/frameRelationFromOpenAI'
 
 export type FrameShape = TLBaseShape<
 	'new_frame',
@@ -52,6 +50,50 @@ export type FrameShape = TLBaseShape<
 		backgroundColor: string
 	}
 >
+
+const callFrameRelationAPI = async (editor, cur_frame_id) => {
+	const frame = editor.getShape(cur_frame_id)
+	const children = editor.getSortedChildIdsForParent(cur_frame_id)
+	const frameName = frame.props.name
+	const ideas = []
+	for (let i = 0; i < children.length; i++) {
+		const child = editor.getShape(children[i])
+		ideas.push({ "id": child.id, "text": child.props.text })
+	}
+
+	// get all other frames and their idea children, note we need to ignore those frames whose parent is the primary one considered
+	const allShapes = editor.getCurrentPageShapes()
+
+	const otherFrames = allShapes.filter(shape => shape.type === "new_frame" && shape.id !== cur_frame_id && shape.parentId !== cur_frame_id)
+
+	const otherFramesIdeas = otherFrames.map(frame => {
+		const children = editor.getSortedChildIdsForParent(frame.id)
+		const ideas = []
+		for (let i = 0; i < children.length; i++) {
+			const child = editor.getShape(children[i])
+			if (child.type !== "node") {
+				continue
+			}
+			ideas.push({ "id": child.id, "text": child.props.text })
+		}
+		return { "name": frame.props.name, "ideas": ideas }
+	})
+
+
+	let input = {
+		"primary group": {
+			"name": frameName,
+			"ideas": ideas
+		}
+	}
+
+	otherFramesIdeas.forEach( (frameIdeas, index) => {
+		input["group " + (index + 1)] = frameIdeas
+	})
+
+	const response = await generateFrameRelation(editor, input)
+	return response
+}
 
 function TabPanel(props) {
 	const { children, value, index, ...other } = props;
@@ -116,6 +158,23 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		const [tabValue, setTabValue] = useState(0);
 		const handleChange = (event, newValue) => {
 			setTabValue(newValue);
+			
+			// tabValue == 1 means the relation analysis tab is selected
+			if (newValue === 1) {
+				editor.updateShape({
+					id: shape.id,
+					meta: { ...shape.meta, relationLoadingStatus: "loading" }
+				})
+				callFrameRelationAPI(editor, shape.id).then((response) => {
+
+					console.log("generateFrameRelation Response: ", response)
+
+					editor.updateShape({
+						id: shape.id,
+						meta: { ...shape.meta, betweenFrameRelations: response, relationLoadingStatus: "loaded" }
+					})
+				})
+			}
 		};
 		const { id, type, meta } = shape
 
@@ -190,11 +249,14 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 									selectionFollowsFocus
 								>
 									<Tab label="Grouping analysis" />
-									<Tab label="Item Two" />
+									<Tab label="Relation analysis" />
 									<Tab label="Item Three" />
 								</Tabs>
 								<TabPanel value={tabValue} index={0}>
 									<RequirementPanel editor={editor} shape={shape} />
+								</TabPanel>
+								<TabPanel value={tabValue} index={1}>
+									<RelationPanel editor={editor} shape={shape} />
 								</TabPanel>
 							</div>
 							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>

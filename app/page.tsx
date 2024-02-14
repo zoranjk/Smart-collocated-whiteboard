@@ -197,7 +197,7 @@ export default function App() {
 
 					editor.getInitialMetaForShape = (shape) => {
 						if (shape.type === 'new_frame') {
-							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle" }
+							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle", relationLoadingStatus: "idle", betweenFrameRelations: null }
 						}
 						
 					}

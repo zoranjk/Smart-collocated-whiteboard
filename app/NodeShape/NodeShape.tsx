@@ -10,6 +10,8 @@ import {
 	noteShapeProps,
 	toDomPrecision,
 	TLBaseShape,
+	TLOnResizeHandler,
+	Vec,
 	getUserPreferences,
 	resizeBox
 } from '@tldraw/editor'
@@ -82,6 +84,9 @@ export type NodeShape = TLBaseShape<
 	}
 >
 
+const LABEL_PADDING = 16
+const MIN_SIZE_WITH_LABEL = 17 * 3
+
 // TEMP: user
 const users = [
 	{
@@ -94,14 +99,57 @@ const users = [
 	},
 ]
 
+function getLabelSize(editor: Editor, shape: NodeShape) {
+	const text = shape.props.text
+
+	if (!text) {
+		return { w: 0, h: 0 }
+	}
+
+	const minSize = editor.textMeasure.measureText('w', {
+		...TEXT_PROPS,
+		fontFamily: FONT_FAMILIES[shape.props.font],
+		fontSize: LABEL_FONT_SIZES[shape.props.size],
+		maxWidth: 100,
+	})
+
+	// TODO: Can I get these from somewhere?
+	const sizes = {
+		s: 2,
+		m: 3.5,
+		l: 5,
+		xl: 10,
+	}
+
+	const size = editor.textMeasure.measureText(text, {
+		...TEXT_PROPS,
+		fontFamily: FONT_FAMILIES[shape.props.font],
+		fontSize: LABEL_FONT_SIZES[shape.props.size],
+		minWidth: minSize.w + 'px',
+		maxWidth: Math.max(
+			// Guard because a DOM nodes can't be less 0
+			0,
+			// A 'w' width that we're setting as the min-width
+			Math.ceil(minSize.w + sizes[shape.props.size]),
+			// The actual text size
+			Math.ceil(shape.props.w - LABEL_PADDING * 2)
+		),
+	})
+
+	return {
+		w: size.w + LABEL_PADDING * 2,
+		h: size.h + LABEL_PADDING * 2,
+	}
+}
+
 /** @public */
 export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	static override type = 'node' as const
 
 	override canEdit = () => true
 	override canResize = () => true
-	override hideResizeHandles = () => true
-	override hideSelectionBoundsFg = () => true
+	// override hideResizeHandles = () => true
+	// override hideSelectionBoundsFg = () => true
 
 	override getDefaultProps(): NodeShape {
 		return {
@@ -133,7 +181,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 	getGeometry(shape: NodeShape) {
 		const height = this.getHeight(shape)
-		return new Rectangle2d({ width: shape.props.w, height: shape.props.h, isFilled: true })
+		return new Rectangle2d({ width: shape.props.w, height: height, isFilled: true })
 	}
 
 	component(shape: NodeShape) {
@@ -305,12 +353,13 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							borderTopRightRadius: 10,
 						}}
 					>
-						Note Type
+						{/* Note Type */}
 					</div>
 					<div
 						className='tl-note__container'
 						style={{
 							color: color,
+							height: this.getHeight(shape) - TAG_SIZE,
 							backgroundColor: color,
 							borderRadius: 0,
 							borderWidth: 2,
@@ -507,15 +556,93 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	}
 
 	indicator(shape: NodeShape) {
+		const bounds = this.editor.getShapeGeometry(shape).bounds
+
 		return (
 			<rect
 				rx='7'
-				width={toDomPrecision(this.getWidth(shape))}
-				height={toDomPrecision(this.getHeight(shape) + TAG_SIZE)}
+				width={toDomPrecision(bounds.width)}
+				height={toDomPrecision(bounds.height)}
 			/>
 			// <div></div>
 		)
 	}
+
+	// override onResize: TLOnResizeHandler<NodeShape> = (
+	// 	shape,
+	// 	{ handle, newPoint, scaleX, scaleY, initialShape }
+	// ) => {
+	// 	// use the w/h from props here instead of the initialBounds here,
+	// 	// since cloud shapes calculated bounds can differ from the props w/h.
+	// 	let w = initialShape.props.w * scaleX
+	// 	let h = (initialShape.props.h + initialShape.props.growY) * scaleY
+	// 	let overShrinkX = 0
+	// 	let overShrinkY = 0
+
+	// 	if (shape.props.text.trim()) {
+	// 		let newW = Math.max(Math.abs(w), MIN_SIZE_WITH_LABEL)
+	// 		let newH = Math.max(Math.abs(h), MIN_SIZE_WITH_LABEL)
+
+	// 		if (newW < MIN_SIZE_WITH_LABEL && newH === MIN_SIZE_WITH_LABEL) {
+	// 			newW = MIN_SIZE_WITH_LABEL
+	// 		}
+
+	// 		if (newW === MIN_SIZE_WITH_LABEL && newH < MIN_SIZE_WITH_LABEL) {
+	// 			newH = MIN_SIZE_WITH_LABEL
+	// 		}
+
+	// 		const labelSize = getLabelSize(this.editor, {
+	// 			...shape,
+	// 			props: {
+	// 				...shape.props,
+	// 				w: newW,
+	// 				h: newH,
+	// 			},
+	// 		})
+
+	// 		const nextW = Math.max(Math.abs(w), labelSize.w) * Math.sign(w)
+	// 		const nextH = Math.max(Math.abs(h), labelSize.h) * Math.sign(h)
+	// 		overShrinkX = Math.abs(nextW) - Math.abs(w)
+	// 		overShrinkY = Math.abs(nextH) - Math.abs(h)
+
+	// 		w = nextW
+	// 		h = nextH
+	// 	}
+
+	// 	const offset = new Vec(0, 0)
+
+	// 	// x offsets
+
+	// 	if (scaleX < 0) {
+	// 		offset.x += w
+	// 	}
+
+	// 	if (handle === 'left' || handle === 'top_left' || handle === 'bottom_left') {
+	// 		offset.x += scaleX < 0 ? overShrinkX : -overShrinkX
+	// 	}
+
+	// 	// y offsets
+
+	// 	if (scaleY < 0) {
+	// 		offset.y += h
+	// 	}
+
+	// 	if (handle === 'top' || handle === 'top_left' || handle === 'top_right') {
+	// 		offset.y += scaleY < 0 ? overShrinkY : -overShrinkY
+	// 	}
+
+	// 	const { x, y } = offset.rot(shape.rotation).add(newPoint)
+
+	// 	return {
+	// 		x,
+	// 		y,
+	// 		props: {
+	// 			w: Math.max(Math.abs(w), 1),
+	// 			h: Math.max(Math.abs(h), 1),
+	// 			growY: 0,
+	// 		},
+	// 	}
+	// }
 
 	override toSvg(shape: NodeShape, ctx: SvgExportContext) {
 		ctx.addExportDef(getFontDefForExport(shape.props.font))
