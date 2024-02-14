@@ -116,18 +116,6 @@ export const FrameHeading = function FrameHeading ({
 			<div className='tl-frame-heading-hit-area'>
 				<FrameLabelInput ref={rInput} id={id} name={name} isEditing={isEditing} />
 			</div>
-			<div style={{ marginTop: "30px"}}>
-				{isEditing && (
-					<OverlayKeyboard
-						size={300}
-						type='new_frame'
-						id={id}
-						isKeyboardOpen={isKeyboardOpen}
-						setIsKeyboardOpen={setIsKeyboardOpen}
-						style={{ zIndex: 1000  }}
-					/>
-				)}
-			</div>
 		</div>
 	)
 }

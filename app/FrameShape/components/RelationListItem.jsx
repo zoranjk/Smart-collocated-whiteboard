@@ -54,7 +54,7 @@ export default function RelationListItem ({ frame_name, relation, editor }) {
 			</ListItem>
 			<Collapse in={open} timeout='auto' unmountOnExit>
 				<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-					<Stack direction='row' spacing={2} sx={{ marginBottom: 2 }}>
+					{/* <Stack direction='row' spacing={2} sx={{ marginBottom: 2 }}>
 						<Button
 							variant='outlined'
 							color='primary'
@@ -70,7 +70,7 @@ export default function RelationListItem ({ frame_name, relation, editor }) {
 						>
 							Align frames
 						</Button>
-					</Stack>
+					</Stack> */}
 				</div>
 			</Collapse>
 		</div>

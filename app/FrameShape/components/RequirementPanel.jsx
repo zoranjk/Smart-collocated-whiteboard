@@ -79,6 +79,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 
 	const handleGroupByTopic = topic => {
 		// get content of all notes belong to the group
+
 		const ideas = editor.getSortedChildIdsForParent(shape.id).map(child => {
 			const shape = editor.getShape(child)
 			return {
@@ -98,7 +99,6 @@ export const RequirementPanel = ({ editor, shape }) => {
 		])
 
 		groupByTopic(editor, ideas, topic).then(group_names => {
-
 			if (Object.keys(group_names).length == 0) {
 				return
 			}
@@ -106,7 +106,6 @@ export const RequirementPanel = ({ editor, shape }) => {
 			console.log('Groups: ', group_names)
 
 			for (const [group_name, note_ids] of Object.entries(group_names)) {
-
 				if (note_ids.length == 0) {
 					continue
 				}
@@ -129,6 +128,16 @@ export const RequirementPanel = ({ editor, shape }) => {
 			}
 
 			setLayoutForFrame(editor, shape.id)
+
+			editor.updateShapes([
+				{
+					id: shape.id,
+					meta: {
+						...shape.meta,
+						loadingStatus: 'idle',
+					},
+				},
+			])
 		})
 	}
 

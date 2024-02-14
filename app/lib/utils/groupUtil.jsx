@@ -6,21 +6,28 @@ export function groupNotes (editor, notes, groupName, x, y) {
 	console.log('parentWidth: ', parentWidth)
 	console.log('parentHeight: ', parentHeight)
 	// we assume three notes per row, the space between notes is
+
+	let curRowWidth = 0
+
 	const animatedShapes = notes.map((note, i) => {
 		const row = Math.floor(i / 3)
 		const col = i % 3
-		const dx = col * (parentWidth / 3) + (col - 1) * 20 // 20 is the space between notes
+		if (col == 0) {
+			curRowWidth = 40
+		}
+		const dx = curRowWidth + (col - 1) * 40 // 40 is the space between notes
+		curRowWidth += note.props.w
 		let dy = 0
 		if (row == 0) {
 			dy = 20
 		} else {
-			dy = maxHeight.slice(0, row).reduce((acc, curr) => acc + curr, 0) + 80 * row
+			dy = maxHeight.slice(0, row).reduce((acc, curr) => acc + curr, 0) + 40 * row
 		}
 		return {
 			id: note.id,
 			type: note.type,
-			x: dx + 50,
-			y: dy + 30,
+			x: dx + 50, // 50 is the padding to the left frame border
+			y: dy + 30, // 30 is the padding to the upper frame border
 		}
 	})
 
@@ -68,7 +75,7 @@ function calculateParentBoxSize (noteShapes) {
 		// Calculate total width and max height for each row
 		for (let j = i; j < i + 3 && j < noteShapes.length; j++) {
 			console.log(`noteShapes[${j}].props.w: `, noteShapes[j].props.w)
-			rowWidth += noteShapes[j].props.w
+			rowWidth += noteShapes[j].props.w + 20 // spacing between shapes
 			let height =
 				noteShapes[j].type == 'node'
 					? noteShapes[j].props.h + noteShapes[j].props.growY
@@ -77,9 +84,9 @@ function calculateParentBoxSize (noteShapes) {
 		}
 
 		// Update overall max width and total height
-		parentWidth = Math.max(parentWidth, rowWidth) + 150 // Add 150 for padding
+		parentWidth = Math.max(parentWidth, rowWidth) + 100 // Add 100 for padding
 		maxHeight.push(rowMaxHeight)
-		parentHeight += rowMaxHeight + 150 // Add 150 for padding
+		parentHeight += rowMaxHeight + 100 // Add 100 for padding
 	}
 
 	return { parentWidth, parentHeight, maxHeight }
@@ -102,13 +109,14 @@ export function setLayoutForFrame (editor, frame_id) {
 		}
 	})
 
-	//get the notes whose parent is the frame (which means those notes are not in any group yet)
+	//get the notes whose parent is the root frame (which means those notes are not in any group yet)
+
 	noteChildren = noteChildren.filter(note => {
-		return frameChildren.some(frame => frame.id == note.parentId)
+		return frame_id == note.parentId
 	})
 
 	let parentWidth = 0
-	let parentHeight = 0
+	let parentHeight = 60 // 60 is the initial padding to the upper frame border
 	let maxHeight = []
 
 	let targetPos = {}
@@ -159,6 +167,9 @@ export function setLayoutForFrame (editor, frame_id) {
 	}
 
 	let animiatedParams = []
+
+	console.log("targetPos: ", targetPos)
+
 	for (const [id, pos] of Object.entries(targetPos)) {
 		animiatedParams.push({
 			id: id,
