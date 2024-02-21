@@ -34,7 +34,7 @@ import { useDefaultColorTheme } from '../lib/utils/ShapeFill'
 import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElementFromSpans'
 import { FrameHeading } from './components/FrameHeading'
 import { FrameChip } from './components/FrameChip'
-import { RequirementPanel } from './components/RequirementPanel'
+import { GroupPanel } from './components/GroupPanel'
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
@@ -253,7 +253,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 									<Tab label="Item Three" />
 								</Tabs>
 								<TabPanel value={tabValue} index={0}>
-									<RequirementPanel editor={editor} shape={shape} />
+									<GroupPanel editor={editor} shape={shape} />
 								</TabPanel>
 								<TabPanel value={tabValue} index={1}>
 									<RelationPanel editor={editor} shape={shape} />
@@ -318,7 +318,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		// Truncate with ellipsis
 		const opts = {
 			fontSize: 12,
-			fontFamily: 'Inter, sans-serif',
+			fontFamily: 'serif',
 			textAlign: 'start' as const,
 			width: shape.props.w,
 			height: 32,

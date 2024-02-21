@@ -15,6 +15,7 @@ import {
 } from '@tldraw/tldraw'
 import { styled, alpha } from '@mui/material/styles'
 import { resizeBox } from '@tldraw/editor'
+import { Avatar, Stack } from '@mui/material'
 import { SearchBar } from '../components/SearchBar'
 import React, { useState } from 'react'
 import { StyledInputBase } from '../components/SearchBar'
@@ -23,7 +24,11 @@ import { IconButton } from '@mui/material'
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates'
 import { TextLabel } from '../lib/utils/TextLabel'
 import { generateRefinementSuggestion } from '../lib/refineContentFromOpenAI'
+import { TextField } from '@mui/material'
 import { useEditableText } from '../lib/utils/useEditableText'
+import { Chip } from '@mui/material'
+import { UserPreference } from './components/UserPreference'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import '../style.css'
 
 export type SearchShape = TLBaseShape<
@@ -92,23 +97,44 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 		const { id, type, props: { text, w, h } } = shape
 
 		const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
+		const [PreferenceOpen, setPreferenceOpen] = useState(false)
+		const [createPreference, setCreatePreference] = useState(false)
+		const [preferenceValue, setPreferenceValue] = useState('')
 
 		const editor = useEditor()
 
 		const MemoStyledInputBase = React.memo(StyledInputBase)
 
+		const handleCreatePreference = () => {
+			setCreatePreference(!createPreference)
+		}
+
 		const handleSearch = () => {
-			setIsLoading(true)
+			editor.updateShape({
+				id: shape.id,
+				meta: {
+					...shape.meta,
+					isLoading: true,
+				},
+
+			})
 			generateRefinementSuggestion(text).then((suggestions) => {
-				setIsLoading(false)
+				editor.updateShape({
+					id: shape.id,
+					meta: {
+						...shape.meta,
+						isLoading: false,
+					},
+
+				})
 				suggestions.forEach((suggestion: any, index: any) => {
 					const newShapeId = createShapeId()
 					const bounds = this.editor.getShapeGeometry(shape).bounds
 					editor.createShape({
 						id: newShapeId,
 						type: 'result',
-						x: bounds.x + Math.floor(index %3) * 250 + w/2 - 350,
-						y: bounds.maxY + 30 + Math.floor(index / 3) * 150, 
+						x: bounds.x + Math.floor(index % 3) * 250 + w / 2 - 350,
+						y: bounds.maxY + 30 + Math.floor(index / 3) * 150,
 						parentId: id,
 						props: {
 							text: suggestion.text,
@@ -118,7 +144,7 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 			})
 		}
 
-		const [ isLoading, setIsLoading ] = useState(false)
+		// const [isLoading, setIsLoading] = useState(false)
 
 		const {
 			rInput,
@@ -131,6 +157,14 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 			handleInputPointerDown,
 			handleDoubleClick,
 		} = useEditableText(id, type, text)
+
+		const handleCreatePreferenceClick = () => {
+			setCreatePreference(true)
+		}
+
+		const handlePreferenceClick = () => {
+			setPreferenceOpen(!PreferenceOpen)
+		}
 
 		return (
 			<div>
@@ -150,19 +184,89 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 					/>
 					<div style={{ marginLeft: this.getWidth(shape) + 5, width: 200 }}>
 						{
-							!isLoading ? (
+							!shape.meta.isLoading ? (
 								<IconButton onPointerDown={stopEventPropagation} onTouchStart={handleSearch} onClick={handleSearch}>
 									<TipsAndUpdatesIcon />
 								</IconButton>
 							) : (
 								<div className="loader">
 									<div></div><div></div><div></div>
-						  		</div>
+								</div>
 							)
 						}
 					</div>
 				</div>
+				<div style={{ marginTop: 20, marginBottom: 20, pointerEvents: 'all' }}>
+					<Chip
+						onPointerDown={stopEventPropagation}
+						onClick={handlePreferenceClick}
+						onTouchStart={handlePreferenceClick}
+						variant={!PreferenceOpen ? "outlined" : "default"}
+						// style={{ cursor: "pointer" }}
+						label="Members' preference"
+					// avatar={<Avatar src="heart.png" />}
+					/>
+				</div>
+				{
+					PreferenceOpen && (
 
+						<div style={{ pointerEvents: 'all' }}>
+							<Stack direction="column">
+								{
+									shape.meta.preferences.map((preference, index) => {
+										const { user, color, text } = preference
+										return (
+											<UserPreference editor={editor} text={text} color={color} />
+										)
+									})
+								}
+								{
+									createPreference && (
+										<TextField label="Enter your preference" variant="outlined" sx={{
+											// Set the overall height of the TextField
+											MaxHeight: 10,
+											marginBottom: 1,
+											// Target the input element to set its height
+											// '& .MuiInputBase-input': {
+											// 	height: '2rem', // Adjust this value as needed
+											// },
+										}}
+											value={preferenceValue}
+											onChange={(e) => {
+												setPreferenceValue(e.target.value)
+											}}
+											onBlur={() => {
+												setCreatePreference(false)
+												editor.updateShape({
+													id: shape.id,
+													meta: {
+														...shape.meta,
+														preferences: [
+															...shape.meta.preferences,
+															{
+																"user": editor.user.name,
+																"color": editor.user.color,
+																"text": preferenceValue
+															}
+														]
+													}
+												})
+											}} />
+									)
+								}
+								{
+									!createPreference && (
+										<div style={{ display: "flex", justifyContent: "center" }}>
+											<IconButton onClick={handleCreatePreference} onPointerDown={stopEventPropagation}>
+												<AddCircleOutlineIcon />
+											</IconButton>
+										</div>
+									)
+								}
+							</Stack>
+						</div>
+					)
+				}
 			</div>
 		)
 	}

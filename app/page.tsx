@@ -35,7 +35,7 @@ import { FrameShapeTool } from './FrameShape/FrameShapeTool'
 import { useYjsStore } from './useYjsStore'
 import { SearchShapeUtil } from './SearchShape/SearchShape';
 import { SearchTool } from './SearchShape/SearchShapeTool';
-import { GroupMenu } from './components/GroupMenu'
+import { GlobalMenu } from './components/GroupMenu'
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -57,7 +57,7 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
 	icons: {
 		node: '/note-sticky-solid.svg',
 		new_frame: '/frame.png',
-		search: '/search.png',
+		search: '/subtask.png',
 	},
 }
 
@@ -82,7 +82,7 @@ const FeatureMenu = track(() => {
 
 	return (
 		<div style={{ pointerEvents: 'all', display: 'flex' }}>
-			<GroupMenu editor={editor} />
+			<GlobalMenu editor={editor} />
 			{/* <input
 				type="color"
 				value={color}
@@ -115,8 +115,6 @@ export default function App() {
 	const [uiEvents, setUiEvents] = useState<string[]>([])
 	const [isPointerPressed, setIsPointerPressed] = useState(false)
 	const [editor, setEditor] = useState(null)
-	const [user, setUser] = useState()
-
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
 	// 	setUiEvents(events => [`${name} ${JSON.stringify(data)}`, ...events])
@@ -140,35 +138,35 @@ export default function App() {
 		console.log("onDrop called")
 	};
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (isPointerPressed == true) {
-				const allowedTypes = ['node', 'subtask']
-				if (editor) {
-					console.log('Pressed for 1 second')
-					console.log('editor: ', editor)
-					const shapes = editor.getSelectedShapes()
-					// Current only support single shape selection
-					if (shapes.length > 0 && allowedTypes.includes(shapes[0].type)) {
-						const type = shapes[0].type
-						const id = shapes[0].id
-						editor.updateShapes([
-							{
-								id,
-								type,
-								props: {
-									isPressed: true,
-								},
-							},
-						])
-						console.log('Shape Id: ', shapes[0].id)
-					}
-				}
-			}
-		}, 1000)
+	// useEffect(() => {
+	// 	const timer = setTimeout(() => {
+	// 		if (isPointerPressed == true) {
+	// 			const allowedTypes = ['node', 'subtask']
+	// 			if (editor) {
+	// 				console.log('Pressed for 1 second')
+	// 				console.log('editor: ', editor)
+	// 				const shapes = editor.getSelectedShapes()
+	// 				// Current only support single shape selection
+	// 				if (shapes.length > 0 && allowedTypes.includes(shapes[0].type)) {
+	// 					const type = shapes[0].type
+	// 					const id = shapes[0].id
+	// 					editor.updateShapes([
+	// 						{
+	// 							id,
+	// 							type,
+	// 							props: {
+	// 								isPressed: true,
+	// 							},
+	// 						},
+	// 					])
+	// 					console.log('Shape Id: ', shapes[0].id)
+	// 				}
+	// 			}
+	// 		}
+	// 	}, 1000)
 
-		return () => clearTimeout(timer)
-	}, [isPointerPressed])
+	// 	return () => clearTimeout(timer)
+	// }, [isPointerPressed])
 
 	const store = useYjsStore({
 		roomId: 'example17',
@@ -199,7 +197,9 @@ export default function App() {
 						if (shape.type === 'new_frame') {
 							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle", relationLoadingStatus: "idle", betweenFrameRelations: null }
 						}
-						
+						if (shape.type === 'search') {
+							return { isLoading: false, preferences: [] }
+						}
 					}
 				}}
 				store={store}

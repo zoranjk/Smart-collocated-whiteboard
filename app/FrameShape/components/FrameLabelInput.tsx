@@ -72,7 +72,7 @@ export const FrameLabelInput = forwardRef<
 	const isParentAFrame = editor.getShape(parentId)?.type === 'new_frame'
 
 	return (
-		<div className={`tl-frame-label ${isEditing ? 'tl-frame-label__editing' : ''}`} style={{ backgroundColor: isParentAFrame ? "#f0f0f0" : "" , fontFamily: "cursive" , fontSize: isParentAFrame ? "0.8vw" : "1.2vw" }}>
+		<div className={`tl-frame-label ${isEditing ? 'tl-frame-label__editing' : ''}`} style={{ backgroundColor: isParentAFrame ? "#f0f0f0" : "" , fontFamily: "monospace" , fontSize: isParentAFrame ? "0.8vw" : "1.2vw", fontWeight: "bold" }}>
 			<input
 				className="tl-frame-name-input"
 				ref={ref}

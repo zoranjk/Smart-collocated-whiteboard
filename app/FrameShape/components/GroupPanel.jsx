@@ -2,7 +2,7 @@ import '../../style.css'
 import Chip from '@mui/material-next/Chip'
 import { styled } from '@mui/material/styles'
 import ControlPointIcon from '@mui/icons-material/ControlPoint'
-import { IconButton } from '@mui/material'
+import { IconButton, Button } from '@mui/material'
 import { useState } from 'react'
 import TextField from '@mui/material/TextField'
 import { Grid } from '@mui/material'
@@ -12,8 +12,12 @@ import { CustomizedRating } from './Rating'
 import DefaultChip from '@mui/material/Chip'
 import { groupByTopic } from '../../lib/groupByTopicFromOpenAI'
 import { groupNotes, setLayoutForFrame } from '@/app/lib/utils/groupUtil'
+import { AwesomeButton, AwesomeButtonProgress } from 'react-awesome-button'
+import AwesomeButtonStyles from 'react-awesome-button/src/styles/styles.scss'
+import LoadingButton from '@mui/lab/LoadingButton'
+import SaveIcon from '@mui/icons-material/Save'
 
-export const RequirementPanel = ({ editor, shape }) => {
+export const GroupPanel = ({ editor, shape }) => {
 	// Styling for the text to appear clickable
 	const ClickableText = styled('span')({
 		textDecoration: 'underline',
@@ -26,6 +30,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 
 	const [isEditing, setIsEditing] = useState(false)
 	const [label, setLabel] = useState('')
+	const [groupingStatus, setGroupingStatus] = useState('idle')
 	// const [requirements, setRequirements] = useState(['Cost', 'Comfort'])
 
 	const UserNum = 2
@@ -77,14 +82,34 @@ export const RequirementPanel = ({ editor, shape }) => {
 		}
 	}
 
-	const handleGroupByTopic = topic => {
+	const handleGroupByTopic = topics => {
 		// get content of all notes belong to the group
 
-		const ideas = editor.getSortedChildIdsForParent(shape.id).map(child => {
-			const shape = editor.getShape(child)
+		setGroupingStatus('loading')
+
+		let ideas = []
+
+		const shapes = editor.getSortedChildIdsForParent(shape.id).map(child => editor.getShape(child))
+
+		const getNodes = (shapes, nodes = []) => {
+			shapes.forEach(shape => {
+				if (shape.type === 'node') {
+					nodes.push(shape)
+				} else if (shape.type === 'new_frame') {
+					const children = editor
+						.getSortedChildIdsForParent(shape.id)
+						.map(id => editor.getShape(id))
+					getNodes(children, nodes)
+				}
+			})
+			return nodes
+		}
+
+
+		ideas = getNodes([shape], ideas).map(idea => {
 			return {
-				id: shape.id,
-				text: shape.props.text,
+				id: idea.id,
+				text: idea.props.text,
 			}
 		})
 
@@ -98,7 +123,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 			},
 		])
 
-		groupByTopic(editor, ideas, topic).then(group_names => {
+		groupByTopic(editor, ideas, topics).then(group_names => {
 			if (Object.keys(group_names).length == 0) {
 				return
 			}
@@ -138,6 +163,7 @@ export const RequirementPanel = ({ editor, shape }) => {
 					},
 				},
 			])
+			setGroupingStatus('idle')
 		})
 	}
 
@@ -249,7 +275,21 @@ export const RequirementPanel = ({ editor, shape }) => {
 					)}
 				</div>
 			</div>
-			<div style={{ marginTop: 25, marginBottom: 25, display: 'flex', flexDirection: 'row' }}>
+			{shape.meta.requirements.length != 0 && (
+				<div style={{ marginTop: 20 }}>
+					<LoadingButton
+						loading={groupingStatus == 'loading' ? true : false}
+						variant='contained'
+						onClick={handleGroupByTopic}
+						onTouchStart={handleGroupByTopic}
+						onPointerDown={stopEventPropagation}
+					>
+						Group
+					</LoadingButton>
+				</div>
+			)}
+
+			<div style={{ marginTop: 30, marginBottom: 30, display: 'flex', flexDirection: 'row' }}>
 				<ClickableText
 					onPointerDown={stopEventPropagation}
 					onClick={handleAISuggestion}

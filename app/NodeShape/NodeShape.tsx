@@ -228,7 +228,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const updateNoteSharedInfo = () => {
 			var historyCopy = [...history]
 			if (history.length > 0) {
-				console.log("Edit history is not empty")
+				// console.log("Edit history is not empty")
 				const lastEdit = history[history.length - 1]
 				if (text === lastEdit.text) {
 					return
@@ -248,7 +248,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 				}
 			} else {
-				console.log("Edit history is empty")
+				// console.log("Edit history is empty")
 				editor.updateShapes([
 					{
 						id,
@@ -263,7 +263,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			}
 
 			const newColor = getProportionalColor(historyCopy)
-			console.log("newColor: ", newColor)
+			// console.log("newColor: ", newColor)
 			editor.updateShapes([
 				{
 					id,
@@ -280,7 +280,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			generateTipsForObject(editor, shape.id).then(tips => {
 				setTips(tips)
 				setLoadingStatus('tip-loaded')
-				console.log('Tips: ', tips)
+				// console.log('Tips: ', tips)
 			})
 		}
 
@@ -321,7 +321,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}
 
 		useEffect(() => {
-			console.log('isHighlight: ', isHighlight)
+			// console.log('isHighlight: ', isHighlight)
 		}, [isHighlight])
 
 		return (

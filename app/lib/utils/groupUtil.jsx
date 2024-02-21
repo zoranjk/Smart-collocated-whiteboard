@@ -1,10 +1,15 @@
 import { createShapeId } from '@tldraw/tldraw'
 
-export function groupNotes (editor, notes, groupName, x, y) {
+export function groupNotes (editor, input_notes, groupName, x, y) {
+
+	let notes = input_notes
+
+	if (notes.length > 0 && typeof notes[0] === 'string') {
+		notes = notes.map(id => editor.getShape(id))
+	}
+
 	const { parentWidth, parentHeight, maxHeight } = calculateParentBoxSize(notes)
 
-	console.log('parentWidth: ', parentWidth)
-	console.log('parentHeight: ', parentHeight)
 	// we assume three notes per row, the space between notes is
 
 	let curRowWidth = 0
@@ -31,8 +36,6 @@ export function groupNotes (editor, notes, groupName, x, y) {
 		}
 	})
 
-	console.log('animatedShapes: ', animatedShapes)
-
 	//Create frame shape to group the notes
 	const frame_id = createShapeId()
 	editor.createShape({
@@ -47,6 +50,8 @@ export function groupNotes (editor, notes, groupName, x, y) {
 		},
 	})
 
+	// console.log(`[groupNote] notes: ${JSON.stringify(notes)}, group name: ${JSON.stringify(groupName)}`)
+
 	// Add notes to the frame
 	editor.updateShapes(
 		notes.map(note => {
@@ -57,7 +62,7 @@ export function groupNotes (editor, notes, groupName, x, y) {
 		})
 	)
 
-	editor.animateShapes(animatedShapes, { duration: 500 })
+	editor.animateShapes(animatedShapes, { duration: 200 })
 
 	return { frame_id: frame_id, parentWidth: parentWidth + 40, parentHeight: parentHeight + 40 }
 }
@@ -116,7 +121,7 @@ export function setLayoutForFrame (editor, frame_id) {
 	})
 
 	let parentWidth = 0
-	let parentHeight = 60 // 60 is the initial padding to the upper frame border
+	let parentHeight = 100 // 60 is the initial padding to the upper frame border
 	let maxHeight = []
 
 	let targetPos = {}
@@ -168,7 +173,7 @@ export function setLayoutForFrame (editor, frame_id) {
 
 	let animiatedParams = []
 
-	console.log("targetPos: ", targetPos)
+	// console.log("targetPos: ", targetPos)
 
 	for (const [id, pos] of Object.entries(targetPos)) {
 		animiatedParams.push({
@@ -178,9 +183,9 @@ export function setLayoutForFrame (editor, frame_id) {
 		})
 	}
 
-	console.log('parentWidth: ', parentWidth)
-	console.log('parentHeight: ', parentHeight)
-	console.log('animiatedParams: ', animiatedParams)
+	// console.log('parentWidth: ', parentWidth)
+	// console.log('parentHeight: ', parentHeight)
+	// console.log('animiatedParams: ', animiatedParams)
 
 	editor.updateShape({
 		id: frame_id,

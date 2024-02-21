@@ -39,10 +39,10 @@ Note you should use node id provided to you in the input JSON object.
 `
 
 // Given topic and a list of ideas, this function will return a list of ideas suit for the topic.
-export async function groupByTopic (editor, ideas, topic="") {
+export async function groupByTopic (editor, ideas, topics=[]) {
 
 	// first, we build the prompt that we'll send to openai.
-	const prompt = await buildPromptForOpenAi(editor, ideas, topic)
+	const prompt = await buildPromptForOpenAi(editor, ideas, topics)
 
 	// TODO: create effect to show loading edges
 
@@ -83,7 +83,7 @@ export async function groupByTopic (editor, ideas, topic="") {
 	}
 }
 
-async function buildPromptForOpenAi (editor, ideas, topic) {
+async function buildPromptForOpenAi (editor, ideas, topics) {
 
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
@@ -99,7 +99,7 @@ async function buildPromptForOpenAi (editor, ideas, topic) {
 		},
         {
             type: 'text',
-            text: topic ? 'The topic used for creating groups: ' + topic : 'No topic is provided.'
+            text: topics.length > 0 ? 'The topic used for creating groups: ' + topic.join(', ') : 'No topic is provided.'
         }
 	]
 
