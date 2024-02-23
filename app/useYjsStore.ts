@@ -224,6 +224,7 @@ export function useYjsStore({
 					// 'store' object refers to the local store
 					store.clear()
 					const records = yStore.yarray.toJSON().map(({ val }) => val)
+					console.log("records: ", records)
 					store.put(records)
 				})
 			} else {

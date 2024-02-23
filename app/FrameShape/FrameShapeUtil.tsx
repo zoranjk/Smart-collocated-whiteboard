@@ -29,7 +29,7 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
-import { Typography, Box } from '@mui/material'
+import { Typography, Box, Divider, IconButton } from '@mui/material'
 import { useDefaultColorTheme } from '../lib/utils/ShapeFill'
 import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElementFromSpans'
 import { FrameHeading } from './components/FrameHeading'
@@ -39,61 +39,16 @@ import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } f
 import '../style.css'
 import { useEffect, useState } from 'react'
 import { RelationPanel } from './components/RelationPanel'
-import { generateFrameRelation } from '../lib/frameRelationFromOpenAI'
 
 export type FrameShape = TLBaseShape<
 	'new_frame',
 	{
-		w: number
-		h: number
-		name: string
-		backgroundColor: string
+		w: number,
+		h: number,
+		name: string,
+		backgroundColor: string,
 	}
 >
-
-const callFrameRelationAPI = async (editor, cur_frame_id) => {
-	const frame = editor.getShape(cur_frame_id)
-	const children = editor.getSortedChildIdsForParent(cur_frame_id)
-	const frameName = frame.props.name
-	const ideas = []
-	for (let i = 0; i < children.length; i++) {
-		const child = editor.getShape(children[i])
-		ideas.push({ "id": child.id, "text": child.props.text })
-	}
-
-	// get all other frames and their idea children, note we need to ignore those frames whose parent is the primary one considered
-	const allShapes = editor.getCurrentPageShapes()
-
-	const otherFrames = allShapes.filter(shape => shape.type === "new_frame" && shape.id !== cur_frame_id && shape.parentId !== cur_frame_id)
-
-	const otherFramesIdeas = otherFrames.map(frame => {
-		const children = editor.getSortedChildIdsForParent(frame.id)
-		const ideas = []
-		for (let i = 0; i < children.length; i++) {
-			const child = editor.getShape(children[i])
-			if (child.type !== "node") {
-				continue
-			}
-			ideas.push({ "id": child.id, "text": child.props.text })
-		}
-		return { "name": frame.props.name, "ideas": ideas }
-	})
-
-
-	let input = {
-		"primary group": {
-			"name": frameName,
-			"ideas": ideas
-		}
-	}
-
-	otherFramesIdeas.forEach( (frameIdeas, index) => {
-		input["group " + (index + 1)] = frameIdeas
-	})
-
-	const response = await generateFrameRelation(editor, input)
-	return response
-}
 
 function TabPanel(props) {
 	const { children, value, index, ...other } = props;
@@ -136,7 +91,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 	override canEdit = () => true
 
 	override getDefaultProps(): FrameShape {
-		return { w: 80 * 2, h: 50 * 2, name: '', backgroundColor: "#f0f0f0"}
+		return { w: 80 * 2, h: 50 * 2, name: '', backgroundColor: "#f0f0f0" }
 	}
 
 	override getGeometry(shape: FrameShape): Geometry2d {
@@ -158,33 +113,23 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		const [tabValue, setTabValue] = useState(0);
 		const handleChange = (event, newValue) => {
 			setTabValue(newValue);
-			
+
 			// tabValue == 1 means the relation analysis tab is selected
 			if (newValue === 1) {
-				editor.updateShape({
-					id: shape.id,
-					meta: { ...shape.meta, relationLoadingStatus: "loading" }
-				})
-				callFrameRelationAPI(editor, shape.id).then((response) => {
 
-					console.log("generateFrameRelation Response: ", response)
-
-					editor.updateShape({
-						id: shape.id,
-						meta: { ...shape.meta, betweenFrameRelations: response, relationLoadingStatus: "loaded" }
-					})
-				})
 			}
 		};
 		const { id, type, meta } = shape
 
-		const togglePanel = () => {
+		const togglePanel = (tab_value=-1) => {
 			console.log("Toggle Panel")
 			// set isPanelOpen in meta property to sync the open/close state of the panel among all the users
 			editor.updateShapes([{
 				id: id,
-				meta: { ...meta, isPanelOpen: !meta.isPanelOpen }
+				meta: { ...meta, isPanelOpen: !meta.isPanelOpen, tabValue: tab_value}
 			}])
+
+
 		}
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -235,21 +180,33 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 				</HTMLContainer>
 				{
 					!meta.isPanelOpen ? (
-						<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ pointerEvents: "all", display: "flex", justifyContent: "center", cursor: 'pointer', alignItems: "center", marginLeft: shape.props.w, height: shape.props.h + 3, }}>
-							<MdOutlineKeyboardDoubleArrowRight />
+						<div className="frame-handler" style={{ paddingTop: 30, display: "flex", justifyContent: "center", cursor: 'pointer', alignItems: "begin", marginLeft: shape.props.w, height: shape.props.h + 3, width: 70 }}>
+							<div>
+								<Stack>
+									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(0)} style={{ pointerEvents: "all" }}>
+										<img src="two_group.png" alt="Icon" style={{ width: 30, height: 30 }} />
+									</IconButton>
+									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
+										<img src="review.png" alt="Icon" style={{ width: 30, height: 30 }} />
+									</IconButton>
+								</Stack>
+							</div>
+							{/* <MdOutlineKeyboardDoubleArrowRight /> */}
 						</div>
 					) : (
 						<div className={`frame-panel ${meta.isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
 							<div style={{ width: "100%", padding: 20 }}>
-								<Tabs
+								{/* <Tabs
 									onPointerDown={stopEventPropagation}
 									onChange={handleChange}
 									value={tabValue}
 									aria-label="Tabs where selection follows focus"
 									selectionFollowsFocus
 								>
-									<Tab label="Grouping analysis" />
-									<Tab label="Relation analysis" />
+									<Tab label="Grouping" />
+									<Divider orientation="vertical" flexItem />
+									<Tab label="Suggestion" />
+									<Divider orientation="vertical" flexItem />
 									<Tab label="Item Three" />
 								</Tabs>
 								<TabPanel value={tabValue} index={0}>
@@ -257,9 +214,19 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 								</TabPanel>
 								<TabPanel value={tabValue} index={1}>
 									<RelationPanel editor={editor} shape={shape} />
-								</TabPanel>
-							</div>
-							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={togglePanel} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+								</TabPanel> */}
+								{
+									meta.tabValue == 0 && (
+										<GroupPanel editor={editor} shape={shape} />
+									)
+								}
+								{
+									meta.tabValue == 1 && (
+										<RelationPanel editor={editor} shape={shape} />
+									)
+								}
+							</div>    
+							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={() => togglePanel()} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 								<MdOutlineKeyboardDoubleArrowLeft />
 							</div>
 						</div>

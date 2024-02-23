@@ -16,17 +16,10 @@ import { AwesomeButton, AwesomeButtonProgress } from 'react-awesome-button'
 import AwesomeButtonStyles from 'react-awesome-button/src/styles/styles.scss'
 import LoadingButton from '@mui/lab/LoadingButton'
 import SaveIcon from '@mui/icons-material/Save'
+import { ClickableText } from '../utils'
 
 export const GroupPanel = ({ editor, shape }) => {
 	// Styling for the text to appear clickable
-	const ClickableText = styled('span')({
-		textDecoration: 'underline',
-		cursor: 'pointer',
-		fontSize: '14px',
-		color: 'black', // Style as needed
-		marginLeft: '5px', // Adjust spacing as needed
-		fontWeight: 'bold',
-	})
 
 	const [isEditing, setIsEditing] = useState(false)
 	const [label, setLabel] = useState('')

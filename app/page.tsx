@@ -2,7 +2,8 @@
 
 require('dotenv').config({ path: '.env.local' });
 import dynamic from 'next/dynamic'
-import '@tldraw/tldraw/tldraw.css'
+// import '@tldraw/tldraw/tldraw.css'
+import "./index.css";
 import { MakeRealButton } from './components/MakeRealButton'
 import { TldrawLogo } from './components/TldrawLogo'
 import { ResponseShapeUtil } from './ResponseShape/ResponseShape'
@@ -19,6 +20,7 @@ import {
 	TLUiEventHandler,
 	TLEditorComponents,
 	useEditor,
+	TLComponents,
 	track,
 	stopEventPropagation,
 } from '@tldraw/tldraw'
@@ -69,12 +71,6 @@ const HOST_URL =
 		? `ws://${WS_ADDRESS}:${WS_PORT}`
 		: 'wss://demos.yjs.dev'
 
-const components: Partial<TLEditorComponents> = {
-	OnTheCanvas: null,
-	InFrontOfTheCanvas: null,
-	SnapLine: null,
-}
-
 const FeatureMenu = track(() => {
 	const editor = useEditor()
 
@@ -111,6 +107,11 @@ const FeatureMenu = track(() => {
 	)
 })
 
+const components: TLComponents = {
+	StylePanel: null,
+	SharePanel: FeatureMenu,
+}
+
 export default function App() {
 	const [uiEvents, setUiEvents] = useState<string[]>([])
 	const [isPointerPressed, setIsPointerPressed] = useState(false)
@@ -138,38 +139,8 @@ export default function App() {
 		console.log("onDrop called")
 	};
 
-	// useEffect(() => {
-	// 	const timer = setTimeout(() => {
-	// 		if (isPointerPressed == true) {
-	// 			const allowedTypes = ['node', 'subtask']
-	// 			if (editor) {
-	// 				console.log('Pressed for 1 second')
-	// 				console.log('editor: ', editor)
-	// 				const shapes = editor.getSelectedShapes()
-	// 				// Current only support single shape selection
-	// 				if (shapes.length > 0 && allowedTypes.includes(shapes[0].type)) {
-	// 					const type = shapes[0].type
-	// 					const id = shapes[0].id
-	// 					editor.updateShapes([
-	// 						{
-	// 							id,
-	// 							type,
-	// 							props: {
-	// 								isPressed: true,
-	// 							},
-	// 						},
-	// 					])
-	// 					console.log('Shape Id: ', shapes[0].id)
-	// 				}
-	// 			}
-	// 		}
-	// 	}, 1000)
-
-	// 	return () => clearTimeout(timer)
-	// }, [isPointerPressed])
-
 	const store = useYjsStore({
-		roomId: 'example17',
+		roomId: 'test_room',
 		hostUrl: HOST_URL,
 		shapeUtils: customShapeUtils
 	})
@@ -184,7 +155,7 @@ export default function App() {
 				shapeUtils={customShapeUtils}
 				tools={customTools}
 				overrides={uiOverrides}
-				assetUrls={customAssetUrls}O 
+				assetUrls={customAssetUrls}
 				// onUiEvent={handleUiEvent}
 				components={components}
 				onMount={editor => {
@@ -195,10 +166,13 @@ export default function App() {
 
 					editor.getInitialMetaForShape = (shape) => {
 						if (shape.type === 'new_frame') {
-							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle", relationLoadingStatus: "idle", betweenFrameRelations: null }
+							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle", relationLoadingStatus: "idle", betweenFrameRelations: null, depRelations: [], preRelations: [] }
 						}
 						if (shape.type === 'search') {
 							return { isLoading: false, preferences: [] }
+						}
+						if (shape.type === 'node') {
+							return { history: [] }
 						}
 					}
 				}}

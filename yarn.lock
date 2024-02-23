@@ -438,7 +438,7 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@radix-ui/react-alert-dialog@^1.0.0":
+"@radix-ui/react-alert-dialog@^1.0.5":
   version "1.0.5"
   resolved "https://registry.npmjs.org/@radix-ui/react-alert-dialog/-/react-alert-dialog-1.0.5.tgz"
   integrity sha512-OrVIOcZL0tl6xibeuGt5/+UxoT2N27KCFOPjFyfXMnchxSHZ/OW7cCX2nGlIYJrbHK/fczPcFzAwvNBB6XBNMA==
@@ -886,16 +886,16 @@
   dependencies:
     tslib "^2.4.0"
 
-"@tldraw/editor@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/editor/-/editor-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-xBL2zOckH/SIvCJW+jypWKNOs9AiSzNnsFArXUPdSyxI3iccWslbN1UOOEw+WMn6PTQl1CwXGTy9KMwUWVZNZg==
+"@tldraw/editor@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/editor/-/editor-2.0.0-beta.4.tgz"
+  integrity sha512-CcuO+mTR/f48FJOTqL9F4A5zhh7hlMCyi1MrML6qz4Wr7GEfKUqp9qoNubwvdpw9p/mIkqcDg5tWGWgkRE6CFQ==
   dependencies:
-    "@tldraw/state" "2.0.0-canary.a55989f42003"
-    "@tldraw/store" "2.0.0-canary.a55989f42003"
-    "@tldraw/tlschema" "2.0.0-canary.a55989f42003"
-    "@tldraw/utils" "2.0.0-canary.a55989f42003"
-    "@tldraw/validate" "2.0.0-canary.a55989f42003"
+    "@tldraw/state" "2.0.0-beta.4"
+    "@tldraw/store" "2.0.0-beta.4"
+    "@tldraw/tlschema" "2.0.0-beta.4"
+    "@tldraw/utils" "2.0.0-beta.4"
+    "@tldraw/validate" "2.0.0-beta.4"
     "@types/core-js" "^2.5.5"
     "@use-gesture/react" "^10.2.27"
     classnames "^2.3.2"
@@ -907,27 +907,27 @@
     lodash.uniq "^4.5.0"
     nanoid "4.0.2"
 
-"@tldraw/state@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/state/-/state-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-828pfX4rXSt2kyicmOKhLfb70Smz4wYv2vhvnHz3QB1MQjLDSB353LPSFn4PtGguCBBY4n5KbfDuwKa+Glh9xw==
+"@tldraw/state@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/state/-/state-2.0.0-beta.4.tgz"
+  integrity sha512-3KRUI7s7RWaiVXbuZMMuPn8DJbadA5k6ZTf5sjXW+c8hE3R0c8LTOAyIXjsx6gfT7GAsKg8O5e8Ty9VETYLGDA==
 
-"@tldraw/store@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/store/-/store-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-ihgcGaIw2g6glml0cWvRRPBCEtZDps4UDu2Poz5M7E7kh2QcnhDmcX07tr+Y9JfY87UJwcqFKDZcSsL+kKUAgw==
+"@tldraw/store@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/store/-/store-2.0.0-beta.4.tgz"
+  integrity sha512-OL9fmgA7zUXeLdLOLnpDc5KB72xu/4E7R4MzP+Gep1AR/r7zeaY14Wpj7iRBEkBZMMmHQYgPXGHkfw7/ciA3Rw==
   dependencies:
-    "@tldraw/state" "2.0.0-canary.a55989f42003"
-    "@tldraw/utils" "2.0.0-canary.a55989f42003"
+    "@tldraw/state" "2.0.0-beta.4"
+    "@tldraw/utils" "2.0.0-beta.4"
     lodash.isequal "^4.5.0"
     nanoid "4.0.2"
 
-"@tldraw/tldraw@^2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/tldraw/-/tldraw-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-SbPZLMlfOl6Gmyi1yimx0F5vtbX3LLCQQziMzwR4fMdbebnk1xu7nWrHH1vzjSYEJlAzuK/eeqUFX8wBE0+mkw==
+"@tldraw/tldraw@^2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/tldraw/-/tldraw-2.0.0-beta.4.tgz"
+  integrity sha512-WJ0dMy9I/NNhOE/ArtG+AW7aa2M8aR4gOKrkQwM71iMLxt22gP0H4j3rneOt3qcnGfe7t6tmHmYAwn77RqgfUg==
   dependencies:
-    "@radix-ui/react-alert-dialog" "^1.0.0"
+    "@radix-ui/react-alert-dialog" "^1.0.5"
     "@radix-ui/react-context-menu" "^2.1.5"
     "@radix-ui/react-dialog" "^1.0.5"
     "@radix-ui/react-dropdown-menu" "^2.0.6"
@@ -935,35 +935,34 @@
     "@radix-ui/react-select" "^1.2.0"
     "@radix-ui/react-slider" "^1.1.0"
     "@radix-ui/react-toast" "^1.1.1"
-    "@tldraw/editor" "2.0.0-canary.a55989f42003"
+    "@tldraw/editor" "2.0.0-beta.4"
     canvas-size "^1.2.6"
     classnames "^2.3.2"
-    downscale "^1.0.6"
     hotkeys-js "^3.11.2"
     lz-string "^1.4.4"
 
-"@tldraw/tlschema@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/tlschema/-/tlschema-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-WnjiuHggGJt46ETAKKo38FHDUPdvMPZoLUITOOcXYeQtadxpzkKvvqYiBtbclSZi9KMhn12dtVK56wdmCd2e5w==
+"@tldraw/tlschema@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/tlschema/-/tlschema-2.0.0-beta.4.tgz"
+  integrity sha512-BIjJ7SeI+o5qncNGVW6O8s2AAimCGiH6PdTLLWlUTk5LpB8bBMDOnYh62cUqe9nU4BqNbnx/bFuTzw4sij2ALw==
   dependencies:
-    "@tldraw/state" "2.0.0-canary.a55989f42003"
-    "@tldraw/store" "2.0.0-canary.a55989f42003"
-    "@tldraw/utils" "2.0.0-canary.a55989f42003"
-    "@tldraw/validate" "2.0.0-canary.a55989f42003"
+    "@tldraw/state" "2.0.0-beta.4"
+    "@tldraw/store" "2.0.0-beta.4"
+    "@tldraw/utils" "2.0.0-beta.4"
+    "@tldraw/validate" "2.0.0-beta.4"
     nanoid "4.0.2"
 
-"@tldraw/utils@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/utils/-/utils-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-JTX0WCYU4ixAnwFHWbLuspO2AjWOWORYrjvmGjkL0kwzQJQ2tD299xaobk6oPz1ZzZwkyEgkFNFmHp9Vqh6GbA==
+"@tldraw/utils@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/utils/-/utils-2.0.0-beta.4.tgz"
+  integrity sha512-DfN0FNCV1IE5RUrkfWvG8KKTNTJASAH1KUfAXJ2jLpapqNHAlQGjJezc7f4SnsbBMS0vGh6Qwzhf9KNZQ3pGog==
 
-"@tldraw/validate@2.0.0-canary.a55989f42003":
-  version "2.0.0-canary.a55989f42003"
-  resolved "https://registry.npmjs.org/@tldraw/validate/-/validate-2.0.0-canary.a55989f42003.tgz"
-  integrity sha512-12pxhz46MZ9KRian+tXjzPeQz6Z9Hg71Yc1ttTwor+jKHStvi9rEDQDEBk/EULZvcOszeUdfz5cFZEQBdLJStw==
+"@tldraw/validate@2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@tldraw/validate/-/validate-2.0.0-beta.4.tgz"
+  integrity sha512-Ud2MZ/B+Qn+YOr6qZ3dRwql1FSWKJcPcv7pRlkVpNHmJGhiZC7MKFVclQ8HDKGmHXZyHLBzCv2mAVGB+Mz3GKw==
   dependencies:
-    "@tldraw/utils" "2.0.0-canary.a55989f42003"
+    "@tldraw/utils" "2.0.0-beta.4"
 
 "@types/core-js@^2.5.5":
   version "2.5.8"
@@ -1390,9 +1389,9 @@ chalk@^4.0.0, chalk@^4.1.2:
     fsevents "~2.3.2"
 
 classnames@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.npmjs.org/classnames/-/classnames-2.3.2.tgz"
-  integrity sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==
+  version "2.5.1"
+  resolved "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz"
+  integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
 
 client-only@0.0.1:
   version "0.0.1"
@@ -1468,9 +1467,9 @@ convert-source-map@^1.5.0:
   integrity sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==
 
 core-js@^3.31.1:
-  version "3.33.3"
-  resolved "https://registry.npmjs.org/core-js/-/core-js-3.33.3.tgz"
-  integrity sha512-lo0kOocUlLKmm6kv/FswQL8zbkH7mVsLJ/FULClOhv8WRVmKLVcs6XPNQAzstfeJTCHMyButEwG+z1kHxHoDZw==
+  version "3.36.0"
+  resolved "https://registry.npmjs.org/core-js/-/core-js-3.36.0.tgz"
+  integrity sha512-mt7+TUBbTFg5+GngsAxeKBTl5/VS0guFeJacYge9OmHb+m058UwwIm41SE9T4Den7ClatV57B6TYTuJ0CX1MAw==
 
 cosmiconfig@^7.0.0:
   version "7.1.0"
@@ -1609,11 +1608,6 @@ dotenv@^16.4.1:
   version "16.4.1"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.4.1.tgz"
   integrity sha512-CjA3y+Dr3FyFDOAMnxZEGtnW9KBR2M0JvvUtXNW+dYJL5ROWxP9DUHCwgFqpMk0OXCc0ljhaNTr2w/kutYIcHQ==
-
-downscale@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.npmjs.org/downscale/-/downscale-1.0.6.tgz"
-  integrity sha512-Arh9ftj+wo3CkFoT48SgT/crMyqmgZtNaaV/etjzHaUqNAaS36GS38ECURnfl7X/XvXN5uZNigGF7Vhffrm/pg==
 
 emoji-regex@^8.0.0:
   version "8.0.0"

@@ -15,7 +15,7 @@ import {
 	getUserPreferences,
 	resizeBox
 } from '@tldraw/editor'
-import { stopEventPropagation, HTMLContainer, useEditor, createShapeId } from '@tldraw/tldraw'
+import { stopEventPropagation, HTMLContainer, useEditor, createShapeId, T, DefaultHorizontalAlignStyle, DefaultSizeStyle, DefaultFontStyle } from '@tldraw/tldraw'
 import { TextLabel } from '../lib/utils/TextLabel'
 import { FONT_FAMILIES, LABEL_FONT_SIZES, TEXT_PROPS } from '../lib/utils/default-shape-constants'
 import { getFontDefForExport } from '../lib/utils/defaultStyleDefs'
@@ -44,45 +44,13 @@ import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
 import { ComparisonCard } from '../components/ComparisonCard'
 import { useKeyboardStatus } from '../lib/utils/keyboardCompatibility'
 import { getProportionalColor } from '../lib/utils/colorBlender'
+import { NodeShape } from './NodeShapeType'
+import { NodeShapeProps } from './NodeShapeProps'
 import '../style.css'
 
 const NOTE_SIZE = 220
 const PADDING = 10
 const TAG_SIZE = 20
-
-export type NodeShape = TLBaseShape<
-	'node',
-	{
-		// color:
-		// 	| 'black'
-		// 	| 'blue'
-		// 	| 'green'
-		// 	| 'grey'
-		// 	| 'light-blue'
-		// 	| 'light-green'
-		// 	| 'light-red'
-		// 	| 'light-violet'
-		// 	| 'orange'
-		// 	| 'red'
-		// 	| 'violet'
-		// 	| 'yellow'
-		color: string
-		size: 'l' | 'm' | 's' | 'xl'
-		text: string
-		font: 'draw' | 'mono' | 'sans' | 'serif'
-		align: 'end-legacy' | 'end' | 'middle-legacy' | 'middle' | 'start-legacy' | 'start'
-		verticalAlign: 'end' | 'middle' | 'start'
-		growY: number
-		w: number
-		h: number
-		url: string
-		isPressed: boolean
-		isHighlight: boolean
-		initSlide: boolean
-		index: number
-		history: any[]
-	}
->
 
 const LABEL_PADDING = 16
 const MIN_SIZE_WITH_LABEL = 17 * 3
@@ -162,12 +130,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			align: 'middle',
 			verticalAlign: 'middle',
 			growY: 0,
-			url: 'https://zhengzhang.me/',
-			isPressed: false,
 			isHighlight: false,
 			initSlide: false,
-			index: 0,
-			history: []
 		}
 	}
 
@@ -190,10 +154,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isPressed, isHighlight, initSlide, index, history },
+			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide },
 		} = shape
 
 		const editor = useEditor()
+
+		const history = shape.meta.history
 
 		// States
 		const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
@@ -202,7 +168,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [editHistory, setEditHistory] = useState([])
 		const [loadingStatus, setLoadingStatus] = useState('idle')
 		const [tips, setTips] = useState([])
-		const [selectedHistory, setSelectedHistory] = useState(null)
+		// const [selectedHistory, setSelectedHistory] = useState(null)
 		const [curOpenHistory, setCurOpenHistory] = useState(null)
 		const [summary, setSummary] = useState({})
 		const [searchHistories, setSearchHistories] = useState([])
@@ -226,50 +192,50 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}, [editor.getSelectedShapeIds()])
 
 		const updateNoteSharedInfo = () => {
-			var historyCopy = [...history]
-			if (history.length > 0) {
-				// console.log("Edit history is not empty")
-				const lastEdit = history[history.length - 1]
-				if (text === lastEdit.text) {
-					return
-				}
-				else {
-					// update edit history and increase user click count
-					editor.updateShapes([
-						{
-							id,
-							type,
-							props: {
-								history: [...history, { text: shape.props.text, color: userColor }],
-							},
-						},
-					])
-					historyCopy = [...history, { text: shape.props.text, color: userColor }]
+			// var historyCopy = [...history]
+			// if (history.length > 0) {
+			// 	// console.log("Edit history is not empty")
+			// 	const lastEdit = history[history.length - 1]
+			// 	if (text === lastEdit.text) {
+			// 		return
+			// 	}
+			// 	else {
+			// 		// update edit history and increase user click count
+			// 		editor.updateShapes([
+			// 			{
+			// 				id,
+			// 				type,
+			// 				meta: {
+			// 					history: [...history, { text: shape.props.text, color: userColor }],
+			// 				},
+			// 			},
+			// 		])
+			// 		historyCopy = [...history, { text: shape.props.text, color: userColor }]
 
-				}
-			} else {
-				// console.log("Edit history is empty")
-				editor.updateShapes([
-					{
-						id,
-						type,
-						// ISSUE: text is not up-to-date, it uses the last text
-						props: {
-							history: [{ text: shape.props.text, color: userColor }],
-						},
-					},
-				])
-				historyCopy = [{ text: shape.props.text, color: userColor }]
-			}
+			// 	}
+			// } else {
+			// 	// console.log("Edit history is empty")
+			// 	editor.updateShapes([
+			// 		{
+			// 			id,
+			// 			type,
+			// 			// ISSUE: text is not up-to-date, it uses the last text
+			// 			meta: {
+			// 				history: [{ text: shape.props.text, color: userColor }],
+			// 			},
+			// 		},
+			// 	])
+			// 	historyCopy = [{ text: shape.props.text, color: userColor }]
+			// }
 
-			const newColor = getProportionalColor(historyCopy)
+			// const newColor = getProportionalColor(historyCopy)
 			// console.log("newColor: ", newColor)
 			editor.updateShapes([
 				{
 					id,
 					type,
 					props: {
-						color: newColor,
+						color: userColor,
 					},
 				},
 			])
@@ -377,7 +343,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							text={text}
 							labelColor='black'
 							setIsKeyboardOpen={setIsKeyboardOpen}
-							updateNoteSharedInfo={updateNoteSharedInfo}
+							// updateNoteSharedInfo={updateNoteSharedInfo}
 							wrap
 						/>
 					</div>
@@ -508,7 +474,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									))}
 								</div>
 							</div>
-							{selectedHistory != null && (
+							{/* {selectedHistory != null && (
 								<div>
 									<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
 										{selectedHistory.result.map((suggestion, index) => (
@@ -524,7 +490,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 										))}
 									</Grid>
 								</div>
-							)}
+							)} */}
 						</div>
 					)}
 					{loadingStatus == 'loading' && (
