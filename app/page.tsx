@@ -4,6 +4,8 @@ require('dotenv').config({ path: '.env.local' });
 import dynamic from 'next/dynamic'
 // import '@tldraw/tldraw/tldraw.css'
 import "./index.css";
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, collection, addDoc, getDoc, onSnapshot, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { MakeRealButton } from './components/MakeRealButton'
 import { TldrawLogo } from './components/TldrawLogo'
 import { ResponseShapeUtil } from './ResponseShape/ResponseShape'
@@ -112,6 +114,8 @@ const components: TLComponents = {
 	SharePanel: FeatureMenu,
 }
 
+
+
 export default function App() {
 	const [uiEvents, setUiEvents] = useState<string[]>([])
 	const [isPointerPressed, setIsPointerPressed] = useState(false)
@@ -175,6 +179,7 @@ export default function App() {
 							return { history: [] }
 						}
 					}
+					
 				}}
 				store={store}
 				onDragOver={onDragOver}

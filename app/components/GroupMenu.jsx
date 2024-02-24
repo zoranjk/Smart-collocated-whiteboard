@@ -20,9 +20,13 @@ import { Typography } from '@mui/material'
 import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
+import { addDoc } from '../firebase'
 import '../style.css'
 
 export const GlobalMenu = ({ editor }) => {
+	const [value, setValue] = useState(-1)
+
+	// Group all the nodes as default
 	const createAndArrangeAffinityDiagram = res_list => {
 		const startingX = -600
 		const startingY = -600
@@ -65,20 +69,13 @@ export const GlobalMenu = ({ editor }) => {
 		})
 	}
 
-	const handleGrouping = e => {
-		e.stopPropagation()
-
-		const shapes = editor.getCurrentPageShapes().filter(shape => shape.type === 'node')
-
-		console.log('Shapes: ', shapes)
-
-		groupNotes(editor, shapes, 'Group', 200, 200)
-	}
-	const [value, setValue] = useState(-1)
-
 	const handleGlobalGrouping = e => {
-		getAffinityDiagramming(editor).then(res_list => {
+		console.log("Doing global grouping...")
+		getAffinityDiagramming(editor).then(res => {
+			console.log('Grouping results: ', res)
+			const { res_list, principle } = res
 			createAndArrangeAffinityDiagram(res_list)
+			writeDoc({ collection_name: 'affinity', data: { principle: principle, themes: res_list } })
 		})
 	}
 
@@ -144,8 +141,8 @@ export const GlobalMenu = ({ editor }) => {
 				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
-						// onTouchStart={handleGroupingWithSelection}
-						// onClick={handleGroupingWithSelection}
+						onTouchStart={handleGlobalGrouping}
+						onClick={handleGlobalGrouping}
 						className={`menu-item ${value === 0 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${0 * 100}ms`,

@@ -9,7 +9,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you are a very smart and experienced team leader that is able to do affinity diagramming for a group of ideas. Your task is to identify the common underlying themes among ideas, and then group them based on your proposed themes. Note that an idea may be already assigned to a topic group ("pre_topic", otherwise it is undefined). In this case, you need to include the group name in the returned JSON as "pre_topic" of the idea. The explanation of input JSON format is below. Do not use the same group topic as the original ones. Be creative and logical. Return the grouping results in the required list format.`
+const systemPrompt = `Imagine you are a very smart and experienced team leader that is able to identify the common interesting themes behind a group of ideas from different people. Your task is to identify the common underlying themes among ideas, and then group them based on your proposed themes. Plus, please also return the brief rules of thumb you used to create the themes. Create the principles first, then create themes, then group ideas based on themes. Note that an idea may be already assigned to a topic group ("pre_topic", otherwise it is undefined). In this case, you need to include the group name in the returned JSON as "pre_topic" of the idea. The explanation of input JSON format is below. Do not use the same group topic as the original ones. Be creative and logical. Return the grouping results in the required list format.`
 const assistantPrompt = `For example, for ideas "Plan a trip to the Miami beach" (under group "trip schedule") and "Book flights from Chicago to Miami" (under group "travel"), the common themes could include "Cost", "Time", "Comfort".
 
 The input JSON format is a list of ideas that you are going to conduct affinity diagramming upon.
@@ -34,6 +34,7 @@ The input JSON objects of ideas follow this format:
 
 The output list should follow this format:
 { 
+	"rules_of_thumb": "brief rules of thumb you used to create the themes",
 	"themes": {
 		"theme": "name of theme 1",
 		"ideas": [{"text": "idea 1 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, {"text": "idea 2 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, ...]
@@ -85,7 +86,7 @@ export async function getAffinityDiagramming(editor, ideas = [], groups = []) {
 
 		console.log('openAiResponse: ', response)
 		const parsed_res = JSON.parse(response)
-		return parsed_res.themes
+		return parsed_res
 
 		// populate the response shape with the html we got back from openai.
 		// TODO: populate the edges between selected shapes
@@ -140,6 +141,7 @@ function getIdeas(editor: Editor, ideas: any[], groups: any[]) {
 			}
 		})
 	} else {
+		// when ideas are not provided, we get all the nodes
 		json = Array.from(allShapes)
 			.map(shape => {
 				if (
