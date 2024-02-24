@@ -55,7 +55,7 @@ export async function getAffinityDiagramming(editor, ideas = [], groups = []) {
 
 	// first, we build the prompt that we'll send to openai.
 	console.log("Calling getAffinityDiagramming")
-	console.log("Ideas: ", ideas)
+	// console.log("Ideas: ", ideas)
 	const prompt = await buildPromptForOpenAi(editor, ideas, groups)
 
 	// TODO: create effect to show loading edges

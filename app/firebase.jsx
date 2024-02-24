@@ -84,7 +84,7 @@ export function fetchDoc ({ collection, id }) {
 		})
 }
 
-export function fetchDocs ({ collection_name, where = '', orderBy = null, limit = null }) {
+export async function fetchDocs ({ collection_name, conditions = '', orderBy = null, limit = null }) {
 	const collectionRef = collection(db, collection_name)
 	const conditionsArray = conditions.split(';').filter(condition => condition.trim() !== '')
 
@@ -104,7 +104,8 @@ export function fetchDocs ({ collection_name, where = '', orderBy = null, limit 
 
 	const q = query(collectionRef, ...queryConstraints)
 
-	getDocs(q)
+	
+	const res = await getDocs(q)
 		.then(querySnapshot => {
 			let documents = []
 
@@ -115,9 +116,13 @@ export function fetchDocs ({ collection_name, where = '', orderBy = null, limit 
 				})
 			})
 
+			console.log('Documents:', documents)
+
 			return documents
 		})
 		.catch(error => {
 			console.error('Error getting documents:', error)
 		})
+	
+	return res
 }

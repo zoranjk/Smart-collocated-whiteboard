@@ -20,11 +20,14 @@ import { Typography } from '@mui/material'
 import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
-import { addDoc } from '../firebase'
+import { writeDoc, fetchDocs } from '../firebase'
 import '../style.css'
 
 export const GlobalMenu = ({ editor }) => {
 	const [value, setValue] = useState(-1)
+	const [existingAffinity, setExistingAffinity] = useState([])
+	const [loading, setLoading] = useState(false)
+	const [selectedItem, setSelectedItem] = useState('')
 
 	// Group all the nodes as default
 	const createAndArrangeAffinityDiagram = res_list => {
@@ -70,12 +73,23 @@ export const GlobalMenu = ({ editor }) => {
 	}
 
 	const handleGlobalGrouping = e => {
-		console.log("Doing global grouping...")
+		console.log('Doing global grouping...')
 		getAffinityDiagramming(editor).then(res => {
 			console.log('Grouping results: ', res)
-			const { res_list, principle } = res
-			createAndArrangeAffinityDiagram(res_list)
-			writeDoc({ collection_name: 'affinity', data: { principle: principle, themes: res_list } })
+			const { themes, rules_of_thumb } = res
+			createAndArrangeAffinityDiagram(themes)
+			writeDoc({ collection_name: 'affinity', data: { principle: rules_of_thumb, themes } })
+		})
+	}
+
+	const loadAffinityGroup = e => {
+		console.log('Loading affinity group...')
+		setLoading(true)
+		fetchDocs({ collection_name: 'affinity' }).then(res => {
+			console.log('Affinity group: ', res)
+			setExistingAffinity(res)
+			setSelectedItem('affinity-group')
+			setLoading(false)
 		})
 	}
 
@@ -111,8 +125,6 @@ export const GlobalMenu = ({ editor }) => {
 	const handleUseExistingGroup = e => {
 		setSelectedItem('use-group')
 	}
-
-	const [selectedItem, setSelectedItem] = useState('')
 
 	return (
 		<Box>
@@ -237,8 +249,8 @@ export const GlobalMenu = ({ editor }) => {
 				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
-						// onTouchStart={handleGroupingWithSelection}
-						// onClick={handleGroupingWithSelection}
+						onTouchStart={loadAffinityGroup}
+						onClick={loadAffinityGroup}
 						className={`menu-item ${value === 1 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${0 * 100}ms`,
@@ -260,7 +272,7 @@ export const GlobalMenu = ({ editor }) => {
 					>
 						<img style={{ width: 20, height: 20 }} src='grouping.png' alt='grouping' />
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
-							Save group
+							Existing groups
 						</Typography>
 					</Box>
 					<Box
@@ -292,7 +304,7 @@ export const GlobalMenu = ({ editor }) => {
 							alt='Selected grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
-							Use created groups
+							Idea snapshot
 						</Typography>
 					</Box>
 					<Box
@@ -329,49 +341,49 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 				</Box>
 			)}
-			{selectedItem == 'use-group' && (
-				<Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-					<Paper
-						elevation={2}
-						sx={{
-							width: '220px',
-							padding: 1,
-							borderRadius: '5px',
-							marginRight: '0px',
-							cursor: 'pointer',
-						}}
+			{selectedItem == 'affinity-group' && loading == false &&
+				existingAffinity.map((affinity, index) => (
+					<Box
+						sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }} key={index}
 					>
-						<Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}>
-							<Typography
-								sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
-								variant='body2'
+						<Paper
+							elevation={2}
+							sx={{
+								width: '220px',
+								padding: 1,
+								borderRadius: '5px',
+								marginRight: '0px',
+								cursor: 'pointer',
+							}}
+						>
+							<Box
+								sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
 							>
-								Groups:
-							</Typography>
-							<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
-								<Box sx={{ marginRight: 1, marginBottom: 1 }}>
-									<Chip size='small' label='Group 1' />
-								</Box>
-								<Box sx={{ marginRight: 1, marginBottom: 1 }}>
-									<Chip size='small' label='Group 1' />
-								</Box>
-								<Box sx={{ marginRight: 1, marginBottom: 1 }}>
-									<Chip size='small' label='Group 1' />
-								</Box>
-								<Box sx={{ marginRight: 1, marginBottom: 1 }}>
-									<Chip size='small' label='Group 1' />
+								<Typography
+									sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+									variant='body2'
+								>
+									Groups:
+								</Typography>
+								<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+									{
+										affinity.themes.map((theme, index) => (
+											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 }}>
+												<Chip size='small' label={theme.theme} />
+											</Box>
+										))
+									}
 								</Box>
 							</Box>
-						</Box>
-						<Box sx={{ marginTop: 2 }}>
-							<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
-								Rationale:
-							</Typography>
-							<Typography variant='body2'>Fix the rationale of the generation</Typography>
-						</Box>
-					</Paper>
-				</Box>
-			)}
+							<Box sx={{ marginTop: 2 }}>
+								<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
+									Rationale:
+								</Typography>
+								<Typography variant='body2'>{affinity.principle}</Typography>
+							</Box>
+						</Paper>
+					</Box>
+				))}
 		</Box>
 	)
 }
