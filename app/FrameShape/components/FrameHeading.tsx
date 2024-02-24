@@ -10,7 +10,7 @@ import {
 } from '@tldraw/editor'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FrameLabelInput } from './FrameLabelInput'
-import { OverlayKeyboard } from '@/app/components/OverlayKeyboard'
+import { OverlayKeyboard } from '@/pages/components/OverlayKeyboard'
 
 export const FrameHeading = function FrameHeading ({
 	id,

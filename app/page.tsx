@@ -40,6 +40,10 @@ import { useYjsStore } from './useYjsStore'
 import { SearchShapeUtil } from './SearchShape/SearchShape';
 import { SearchTool } from './SearchShape/SearchShapeTool';
 import { GlobalMenu } from './components/GroupMenu'
+import { Provider } from 'react-redux'
+import { createWrapper } from 'next-redux-wrapper'
+import ReduxStore from '../redux/store' // Import your store
+
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -76,49 +80,25 @@ const HOST_URL =
 const FeatureMenu = track(() => {
 	const editor = useEditor()
 
-	const { color, name } = editor.user
-
 	return (
 		<div style={{ pointerEvents: 'all', display: 'flex' }}>
 			<GlobalMenu editor={editor} />
-			{/* <input
-				type="color"
-				value={color}
-				onChange={(e) => {
-					editor.user.updateUserPreferences({
-						color: e.currentTarget.value,
-					})
-				}}
-			/>
-			<input
-				value={name}
-				onChange={(e) => {
-					editor.user.updateUserPreferences({
-						name: e.currentTarget.value,
-					})
-				}}
-			/>
-			<div>
-				<button onPointerDown={stopEventPropagation} onClick={() => {
-					const records = editor.store.allRecords()
-					console.log("records: ", records)
-					
-				}}>Create User</button>
-			</div> */}
 		</div>
 	)
 })
+
+
 
 const components: TLComponents = {
 	StylePanel: null,
 	SharePanel: FeatureMenu,
 }
 
-
-
 export default function App() {
 	const [uiEvents, setUiEvents] = useState<string[]>([])
 	const [isPointerPressed, setIsPointerPressed] = useState(false)
+	const [showTopZone, setShowTopZone] = useState(false)
+	const [topZoneContent, setTopZoneContent] = useState(null)
 	const [editor, setEditor] = useState(null)
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
@@ -179,7 +159,7 @@ export default function App() {
 							return { history: [] }
 						}
 					}
-					
+
 				}}
 				store={store}
 				onDragOver={onDragOver}
@@ -190,3 +170,8 @@ export default function App() {
 		</div>
 	)
 }
+
+// const makeStore = () => store
+// const wrapper = createWrapper(makeStore)
+
+// export default wrapper.withRedux(App)

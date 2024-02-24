@@ -74,11 +74,13 @@ export const GlobalMenu = ({ editor }) => {
 
 	const handleGlobalGrouping = e => {
 		console.log('Doing global grouping...')
+		setLoading(true)
 		getAffinityDiagramming(editor).then(res => {
 			console.log('Grouping results: ', res)
 			const { themes, rules_of_thumb } = res
 			createAndArrangeAffinityDiagram(themes)
 			writeDoc({ collection_name: 'affinity', data: { principle: rules_of_thumb, themes } })
+			setLoading(false)
 		})
 	}
 
@@ -149,7 +151,17 @@ export const GlobalMenu = ({ editor }) => {
 					<BottomNavigationAction label='Archive' icon={<ArchiveIcon />} />
 				</BottomNavigation>
 			</Box>
-			{value === 0 && selectedItem == '' && (
+			{
+				// show loading animation when loading is true
+				loading && (
+					<div className='loader' style={{ display: "flex", alignItems: "start", marginTop: 2 }}>
+						<div style={{ marginRight: 4 }}></div>
+						<div style={{ marginRight: 4 }}></div>
+						<div style={{ marginRight: 4 }}></div>
+					</div>
+				)
+			}
+			{value === 0 && selectedItem == '' && !loading && (
 				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
@@ -245,7 +257,7 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 				</Box>
 			)}
-			{value === 1 && selectedItem == '' && (
+			{value === 1 && selectedItem == '' && !loading && (
 				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
@@ -272,7 +284,7 @@ export const GlobalMenu = ({ editor }) => {
 					>
 						<img style={{ width: 20, height: 20 }} src='grouping.png' alt='grouping' />
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
-							Existing groups
+							Use existing groups
 						</Typography>
 					</Box>
 					<Box
@@ -341,49 +353,51 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 				</Box>
 			)}
-			{selectedItem == 'affinity-group' && loading == false &&
-				existingAffinity.map((affinity, index) => (
-					<Box
-						sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }} key={index}
-					>
-						<Paper
-							elevation={2}
-							sx={{
-								width: '220px',
-								padding: 1,
-								borderRadius: '5px',
-								marginRight: '0px',
-								cursor: 'pointer',
-							}}
+			<Box sx={{ overflow: 'auto', maxHeight: '95vh' }}>
+				{selectedItem == 'affinity-group' &&
+					loading == false &&
+					existingAffinity.map((affinity, index) => (
+						<Box
+							sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+							key={index}
 						>
-							<Box
-								sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
+							<Paper
+								elevation={2}
+								sx={{
+									width: '220px',
+									padding: 1,
+									borderRadius: '5px',
+									marginRight: '0px',
+									cursor: 'pointer',
+								}}
 							>
-								<Typography
-									sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
-									variant='body2'
+								<Box
+									sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
 								>
-									Groups:
-								</Typography>
-								<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
-									{
-										affinity.themes.map((theme, index) => (
+									<Typography
+										sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+										variant='body2'
+									>
+										Groups:
+									</Typography>
+									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+										{affinity.themes.map((theme, index) => (
 											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 }}>
 												<Chip size='small' label={theme.theme} />
 											</Box>
-										))
-									}
+										))}
+									</Box>
 								</Box>
-							</Box>
-							<Box sx={{ marginTop: 2 }}>
-								<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
-									Rationale:
-								</Typography>
-								<Typography variant='body2'>{affinity.principle}</Typography>
-							</Box>
-						</Paper>
-					</Box>
-				))}
+								<Box sx={{ marginTop: 2 }}>
+									<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
+										Rationale:
+									</Typography>
+									<Typography variant='body2'>{affinity.principle}</Typography>
+								</Box>
+							</Paper>
+						</Box>
+					))}
+			</Box>
 		</Box>
 	)
 }
