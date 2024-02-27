@@ -21,6 +21,10 @@ import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
 import { writeDoc, fetchDocs } from '../firebase'
+import { useSelector, useDispatch } from 'react-redux'
+import { setCurAffinity, setTopZonePurpose } from '../redux/reducers/globalReducer'
+import { saveShapesOnCurPage, fetchSavedShapes } from '../lib/utils/helper'
+import { groupByTopic } from '../lib/groupByTopicFromOpenAI'
 import '../style.css'
 
 export const GlobalMenu = ({ editor }) => {
@@ -28,6 +32,40 @@ export const GlobalMenu = ({ editor }) => {
 	const [existingAffinity, setExistingAffinity] = useState([])
 	const [loading, setLoading] = useState(false)
 	const [selectedItem, setSelectedItem] = useState('')
+	const dispatch = useDispatch()
+
+	const GroupWithExistingAffinity = (themes) => {
+		const curPage = editor.getCurrentPage()
+		const ideas = editor.getCurrentPageShapes().filter(shape => shape.type === 'node').map((shape) => { return { text: shape.props.text, id: shape.id } })
+		groupByTopic({editor, ideas, topics: themes}).then(group_names => {
+			if (Object.keys(group_names).length == 0) {
+				return
+			}
+
+			console.log('Groups: ', group_names)
+
+			for (const [group_name, note_ids] of Object.entries(group_names)) {
+				if (note_ids.length == 0) {
+					continue
+				}
+
+				const { frame_id } = groupNotes(
+					editor,
+					note_ids.map(id => editor.getShape(id)),
+					group_name,
+					0,
+					0
+				)
+
+				editor.updateShape({
+					id: frame_id,
+					parentId: curPage.id,
+				})
+			}
+
+			setLayoutForFrame(editor, curPage.id)
+		})
+	}
 
 	// Group all the nodes as default
 	const createAndArrangeAffinityDiagram = res_list => {
@@ -77,9 +115,9 @@ export const GlobalMenu = ({ editor }) => {
 		setLoading(true)
 		getAffinityDiagramming(editor).then(res => {
 			console.log('Grouping results: ', res)
-			const { themes, rules_of_thumb } = res
+			const { themes, rules_of_thumb, name } = res
 			createAndArrangeAffinityDiagram(themes)
-			writeDoc({ collection_name: 'affinity', data: { principle: rules_of_thumb, themes } })
+			writeDoc({ collection_name: 'affinity', data: { principle: rules_of_thumb, themes, name: name } })
 			setLoading(false)
 		})
 	}
@@ -126,6 +164,71 @@ export const GlobalMenu = ({ editor }) => {
 
 	const handleUseExistingGroup = e => {
 		setSelectedItem('use-group')
+	}
+
+	const handleAffinitySelected = (affinity) => {
+		console.log("affinity selected: ", affinity)
+		dispatch(setCurAffinity(affinity))
+		dispatch(setTopZonePurpose('apply-affinity'))
+		// check if the current page is main page. If it is, save the cur data on the main page to firebase
+		const cur_page = editor.getCurrentPage()
+		// if the current page is the main page, save the shapes as cur data to firebase
+		if (cur_page.id === 'page:page') {
+			saveShapesOnCurPage(editor)
+		}
+		// create pages for the affinity group if not existed
+		const pages = editor.getPages()
+		const affinityPage = pages.find(page => page.name === affinity.name)
+		if (!affinityPage) {
+			editor.createPage({ name: affinity.name })
+		}
+		// switch to the affinity page
+		editor.getPages().forEach(page => {
+			console.log(page.name, affinity.name)
+			if (page.name === affinity.name) {
+				editor.setCurrentPage(page.id)
+				fetchSavedShapes({ idea_only: true }).then(shapes => {
+					console.log("fetched shapes: ", shapes)
+					// only add those new added shapes to the current affinity page
+					const shapesOnCurPage = editor.getCurrentPageShapes()
+					const newShapes = shapes.filter(shape => !shapesOnCurPage.find(s => s.meta.corMainPageShapeId === shape.id))
+					const existingShapes = shapesOnCurPage.filter(shape => shapes.find(s => shape.meta.corMainPageShapeId === s.id))
+					console.log("existing shapes: ", existingShapes)
+					const ShapesToDelete = shapesOnCurPage.filter(shape => !shapes.find(s => shape.meta.corMainPageShapeId === s.id))
+					console.log("delated shapes: ", ShapesToDelete)
+
+					const newIdeas = newShapes.map(shape => {
+						const id = createShapeId()
+						return {
+							...shape,
+							id: id,
+							parentId: page.id,
+							meta: {
+								corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
+							}
+						}
+					})
+					editor.createShapes(newIdeas)
+
+					// update the text of the existing shapes to the latest text on the main page
+					existingShapes.forEach(shape => {
+						const mainPageShape = shapes.find(s => s.id === shape.meta.corMainPageShapeId)
+						editor.updateShape({
+							...shape,
+							props: {
+								...shape.props,
+								text: mainPageShape.props.text
+							}
+						})
+					})
+
+					// delete the shapes that are not on the main page
+					editor.deleteShapes(ShapesToDelete.map(shape => shape.id))
+					GroupWithExistingAffinity(editor, affinity.themes)
+				}
+				)
+			}
+		})
 	}
 
 	return (
@@ -353,13 +456,16 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 				</Box>
 			)}
-			<Box sx={{ overflow: 'auto', maxHeight: '95vh' }}>
+			<Box sx={{ overflow: 'auto', maxHeight: '95vh', height: "auto" }}>
 				{selectedItem == 'affinity-group' &&
 					loading == false &&
 					existingAffinity.map((affinity, index) => (
 						<Box
 							sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
 							key={index}
+							onPointerDown={stopEventPropagation}
+							onClick={() => handleAffinitySelected(affinity)}
+							onTouchStart={() => handleAffinitySelected(affinity)}
 						>
 							<Paper
 								elevation={2}

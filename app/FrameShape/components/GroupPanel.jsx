@@ -116,7 +116,7 @@ export const GroupPanel = ({ editor, shape }) => {
 			},
 		])
 
-		groupByTopic(editor, ideas, topics).then(group_names => {
+		groupByTopic({editor, ideas, topics}).then(group_names => {
 			if (Object.keys(group_names).length == 0) {
 				return
 			}
@@ -128,7 +128,7 @@ export const GroupPanel = ({ editor, shape }) => {
 					continue
 				}
 
-				const { frame_id, parentWidth, parentHeight } = groupNotes(
+				const { frame_id } = groupNotes(
 					editor,
 					note_ids.map(id => editor.getShape(id)),
 					group_name,

@@ -39,7 +39,7 @@ Note you should use node id provided to you in the input JSON object.
 `
 
 // Given topic and a list of ideas, this function will return a list of ideas suit for the topic.
-export async function groupByTopic (editor, ideas, topics=[]) {
+export async function groupByTopic ({editor, ideas, topics=[]}) {
 
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildPromptForOpenAi(editor, ideas, topics)
@@ -70,7 +70,6 @@ export async function groupByTopic (editor, ideas, topics=[]) {
 
 		const response = openAiResponse.choices[0].message.content
 
-		console.log('openAiResponse: ', response)
 		const parsed_res = JSON.parse(response)
         return parsed_res
 		// populate the response shape with the html we got back from openai.

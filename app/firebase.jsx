@@ -31,7 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 
-export function writeDoc ({ collection_name, data, id = '', isMerge = true }) {
+export function writeDoc({ collection_name, data, id = '', isMerge = true }) {
 	if (id === '') {
 		addDoc(collection(db, collection_name), data)
 			.then(docRef => {
@@ -54,7 +54,7 @@ export function writeDoc ({ collection_name, data, id = '', isMerge = true }) {
 		})
 }
 
-export function writeDocs ({ collection_name, data, isMerge = true }) {
+export function writeDocs({ collection_name, data, isMerge = true }) {
 	const collectionRef = collection(db, collection_name)
 
 	data.forEach(dataObject => {
@@ -68,23 +68,25 @@ export function writeDocs ({ collection_name, data, isMerge = true }) {
 	})
 }
 
-export function fetchDoc ({ collection, id }) {
-	const doc = doc(db, collection, id)
+export function fetchDoc({ collection, id }) {
+	const docRef = doc(db, collection, id);
 
-	doc
-		.then(docSnap => {
-			if (docSnap.exists()) {
-				return docSnap.data()
-			} else {
-				console.log('No such document!')
-			}
-		})
-		.catch(error => {
-			console.error('Error getting document:', error)
-		})
+	const res = getDoc(docRef).then((doc) => {
+		if (doc.exists) {
+			console.log("Document data:", doc.data());
+			return doc.data()
+		} else {
+			// doc.data() will be undefined in this case
+			console.log("No such document!");
+		}
+	}).catch((error) => {
+		console.log("Error getting document:", error);
+	});
+
+	return res
 }
 
-export async function fetchDocs ({ collection_name, conditions = '', orderBy = null, limit = null }) {
+export async function fetchDocs({ collection_name, conditions = '', orderBy = null, limit = null }) {
 	const collectionRef = collection(db, collection_name)
 	const conditionsArray = conditions.split(';').filter(condition => condition.trim() !== '')
 
@@ -104,7 +106,7 @@ export async function fetchDocs ({ collection_name, conditions = '', orderBy = n
 
 	const q = query(collectionRef, ...queryConstraints)
 
-	
+
 	const res = await getDocs(q)
 		.then(querySnapshot => {
 			let documents = []
@@ -123,6 +125,6 @@ export async function fetchDocs ({ collection_name, conditions = '', orderBy = n
 		.catch(error => {
 			console.error('Error getting documents:', error)
 		})
-	
+
 	return res
 }
