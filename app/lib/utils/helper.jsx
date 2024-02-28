@@ -17,3 +17,17 @@ export const fetchSavedShapes = async ({data_id="cur", idea_only=false}) => {
     } 
     return shapes
 }
+
+export const getNodes = (shapes, nodes = []) => {
+    shapes.forEach(shape => {
+        if (shape.type === 'node') {
+            nodes.push(shape)
+        } else if (shape.type === 'new_frame') {
+            const children = editor
+                .getSortedChildIdsForParent(shape.id)
+                .map(id => editor.getShape(id))
+                getNodes(children, nodes)
+        }
+    })
+    return nodes
+}

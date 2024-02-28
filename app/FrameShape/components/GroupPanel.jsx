@@ -17,6 +17,7 @@ import AwesomeButtonStyles from 'react-awesome-button/src/styles/styles.scss'
 import LoadingButton from '@mui/lab/LoadingButton'
 import SaveIcon from '@mui/icons-material/Save'
 import { ClickableText } from '../utils'
+import { getNodes } from '@/app/lib/utils/helper'
 
 export const GroupPanel = ({ editor, shape }) => {
 	// Styling for the text to appear clickable
@@ -82,22 +83,7 @@ export const GroupPanel = ({ editor, shape }) => {
 
 		let ideas = []
 
-		const shapes = editor.getSortedChildIdsForParent(shape.id).map(child => editor.getShape(child))
-
-		const getNodes = (shapes, nodes = []) => {
-			shapes.forEach(shape => {
-				if (shape.type === 'node') {
-					nodes.push(shape)
-				} else if (shape.type === 'new_frame') {
-					const children = editor
-						.getSortedChildIdsForParent(shape.id)
-						.map(id => editor.getShape(id))
-					getNodes(children, nodes)
-				}
-			})
-			return nodes
-		}
-
+		// const shapes = editor.getSortedChildIdsForParent(shape.id).map(child => editor.getShape(child))
 
 		ideas = getNodes([shape], ideas).map(idea => {
 			return {
@@ -116,7 +102,7 @@ export const GroupPanel = ({ editor, shape }) => {
 			},
 		])
 
-		groupByTopic({editor, ideas, topics}).then(group_names => {
+		groupByTopic({ editor, ideas, topics }).then(group_names => {
 			if (Object.keys(group_names).length == 0) {
 				return
 			}

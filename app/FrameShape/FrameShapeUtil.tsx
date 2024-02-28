@@ -39,6 +39,7 @@ import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } f
 import '../style.css'
 import { useEffect, useState } from 'react'
 import { RelationPanel } from './components/RelationPanel'
+import { IdeaPanel } from './components/IdeaPanel'
 
 export type FrameShape = TLBaseShape<
 	'new_frame',
@@ -49,27 +50,6 @@ export type FrameShape = TLBaseShape<
 		backgroundColor: string,
 	}
 >
-
-function TabPanel(props) {
-	const { children, value, index, ...other } = props;
-
-	return (
-		<div
-			role="tabpanel"
-			hidden={value !== index}
-			id={`full-width-tabpanel-${index}`}
-			aria-labelledby={`full-width-tab-${index}`}
-			{...other}
-		>
-			{value === index && (
-				<Box sx={{ p: 3 }}>
-					{children}
-					{/* <button onPointerDown={stopEventPropagation} onClick={() => console.log("Requirement")}>Requirement</button> */}
-				</Box>
-			)}
-		</div>
-	);
-}
 
 export function defaultEmptyAs(str: string, dflt: string) {
 	if (str.match(/^\s*$/)) {
@@ -121,12 +101,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		};
 		const { id, type, meta } = shape
 
-		const togglePanel = (tab_value=-1) => {
+		const togglePanel = (tab_value = -1) => {
 			console.log("Toggle Panel")
 			// set isPanelOpen in meta property to sync the open/close state of the panel among all the users
 			editor.updateShapes([{
 				id: id,
-				meta: { ...meta, isPanelOpen: !meta.isPanelOpen, tabValue: tab_value}
+				meta: { ...meta, isPanelOpen: !meta.isPanelOpen, tabValue: tab_value }
 			}])
 
 
@@ -189,6 +169,9 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
 										<img src="review.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton>
+									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(2)} style={{ pointerEvents: "all" }}>
+										<img src="idea.png" alt="Icon" style={{ width: 30, height: 30 }} />
+									</IconButton>
 								</Stack>
 							</div>
 							{/* <MdOutlineKeyboardDoubleArrowRight /> */}
@@ -196,25 +179,6 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 					) : (
 						<div className={`frame-panel ${meta.isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
 							<div style={{ width: "100%", padding: 20 }}>
-								{/* <Tabs
-									onPointerDown={stopEventPropagation}
-									onChange={handleChange}
-									value={tabValue}
-									aria-label="Tabs where selection follows focus"
-									selectionFollowsFocus
-								>
-									<Tab label="Grouping" />
-									<Divider orientation="vertical" flexItem />
-									<Tab label="Suggestion" />
-									<Divider orientation="vertical" flexItem />
-									<Tab label="Item Three" />
-								</Tabs>
-								<TabPanel value={tabValue} index={0}>
-									<GroupPanel editor={editor} shape={shape} />
-								</TabPanel>
-								<TabPanel value={tabValue} index={1}>
-									<RelationPanel editor={editor} shape={shape} />
-								</TabPanel> */}
 								{
 									meta.tabValue == 0 && (
 										<GroupPanel editor={editor} shape={shape} />
@@ -225,7 +189,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 										<RelationPanel editor={editor} shape={shape} />
 									)
 								}
-							</div>    
+								{
+									meta.tabValue == 2 && (
+										<IdeaPanel editor={editor} shape={shape} />
+									)
+								}
+							</div>
 							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={() => togglePanel()} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 								<MdOutlineKeyboardDoubleArrowLeft />
 							</div>
