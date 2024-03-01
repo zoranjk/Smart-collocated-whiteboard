@@ -16,7 +16,9 @@ import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Avatar from '@mui/material/Avatar'
-import { Typography } from '@mui/material'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
 import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
@@ -32,19 +34,67 @@ export const GlobalMenu = ({ editor }) => {
 	const [existingAffinity, setExistingAffinity] = useState([])
 	const [loading, setLoading] = useState(false)
 	const [selectedItem, setSelectedItem] = useState('')
+	const [instruction, setInstruction] = useState('')
 	const dispatch = useDispatch()
 
-	const GroupWithExistingAffinity = (themes) => {
+	const GroupWithExistingAffinity = ({ affinity = [], has_loaded = false }) => {
 		const curPage = editor.getCurrentPage()
 		const ideas = editor.getCurrentPageShapes().filter(shape => shape.type === 'node').map((shape) => { return { text: shape.props.text, id: shape.id } })
-		groupByTopic({editor, ideas, topics: themes}).then(group_names => {
-			if (Object.keys(group_names).length == 0) {
+
+		if (has_loaded == true) {
+			// already grouped
+			console.log('Has loaded: ', has_loaded)
+			if (Object.keys(affinity).length == 0) {
 				return
 			}
 
-			console.log('Groups: ', group_names)
+			for (const [group_name, nodes_info] of Object.entries(affinity.themes)) {
 
-			for (const [group_name, note_ids] of Object.entries(group_names)) {
+				// nodes_info: [{text, pre_topic, color}, {text, pre_topic, color}, {text, pre_topic, color}]
+
+				if (nodes_info.length == 0) {
+					continue
+				}
+
+				const node_text = nodes_info.map(node => node.text)
+
+				const node_ids = editor.getCurrentPageShapes().filter(shape => shape.type === 'node' && node_text.includes(shape.props.text)).map((shape) => {
+					return shape.id
+				})
+
+				console.log("node_text: ", node_text)
+				console.log("nodes_ids: ", node_ids)
+
+				const { frame_id } = groupNotes(
+					editor,
+					node_ids.map(id => editor.getShape(id)),
+					group_name,
+					0,
+					0
+				)
+
+				editor.updateShape({
+					id: frame_id,
+					parentId: curPage.id,
+				})
+			}
+
+			setLayoutForFrame(editor, curPage.id)
+
+			return
+		}
+
+		const themes = Object.keys(affinity.themes)
+
+		setLoading(true)
+		groupByTopic({ editor, ideas, topics: themes }).then(groups => {
+			setLoading(false)
+			console.log('Groups: ', groups)
+			if (Object.keys(groups).length == 0) {
+				return
+			}
+
+			for (const [group_name, note_ids] of Object.entries(groups)) {
 				if (note_ids.length == 0) {
 					continue
 				}
@@ -64,6 +114,7 @@ export const GlobalMenu = ({ editor }) => {
 			}
 
 			setLayoutForFrame(editor, curPage.id)
+			setLoading(false)
 		})
 	}
 
@@ -110,14 +161,19 @@ export const GlobalMenu = ({ editor }) => {
 		})
 	}
 
+	const handleCustomGroupingClicked = e => {
+		setSelectedItem('enter-custom-grouping')
+	}
+
 	const handleGlobalGrouping = e => {
 		console.log('Doing global grouping...')
 		setLoading(true)
-		getAffinityDiagramming(editor).then(res => {
+		getAffinityDiagramming({ editor }).then(res => {
 			console.log('Grouping results: ', res)
 			const { themes, rules_of_thumb, name } = res
-			createAndArrangeAffinityDiagram(themes)
-			writeDoc({ collection_name: 'affinity', data: { principle: rules_of_thumb, themes, name: name } })
+			const data = { principle: rules_of_thumb, themes, name }
+			writeDoc({ collection_name: 'affinity', data: data })
+			handleAffinitySelected({ affinity: data, has_loaded: true })
 			setLoading(false)
 		})
 	}
@@ -157,8 +213,12 @@ export const GlobalMenu = ({ editor }) => {
 
 		console.log('Nodes: ', nodes)
 
-		getAffinityDiagramming(editor, { ideas: nodes }).then(res_list => {
-			createAndArrangeAffinityDiagram(res_list)
+		getAffinityDiagramming({ editor, ideas: nodes }).then(res_list => {
+			const { themes, rules_of_thumb, name } = res
+			const data = { principle: rules_of_thumb, themes, name }
+			writeDoc({ collection_name: 'affinity', data: data })
+			handleAffinitySelected({ affinity: data, has_loaded: true })
+			setLoading(false)
 		})
 	}
 
@@ -166,7 +226,20 @@ export const GlobalMenu = ({ editor }) => {
 		setSelectedItem('use-group')
 	}
 
-	const handleAffinitySelected = (affinity) => {
+	const handleCustomGrouping = e => {
+		setLoading(true)
+		setSelectedItem('')
+		getAffinityDiagramming({ editor, instruction }).then(res => {
+			console.log('Grouping results: ', res)
+			const { themes, rules_of_thumb, name } = res
+			const data = { principle: rules_of_thumb, themes, name }
+			writeDoc({ collection_name: 'affinity', data: data })
+			handleAffinitySelected({ affinity: data, has_loaded: true })
+			setLoading(false)
+		})
+	}
+
+	const handleAffinitySelected = ({ affinity, has_loaded = false }) => {
 		console.log("affinity selected: ", affinity)
 		dispatch(setCurAffinity(affinity))
 		dispatch(setTopZonePurpose('apply-affinity'))
@@ -184,6 +257,7 @@ export const GlobalMenu = ({ editor }) => {
 		}
 		// switch to the affinity page
 		editor.getPages().forEach(page => {
+
 			console.log(page.name, affinity.name)
 			if (page.name === affinity.name) {
 				editor.setCurrentPage(page.id)
@@ -224,7 +298,11 @@ export const GlobalMenu = ({ editor }) => {
 
 					// delete the shapes that are not on the main page
 					editor.deleteShapes(ShapesToDelete.map(shape => shape.id))
-					GroupWithExistingAffinity(editor, affinity.themes)
+
+					setTimeout(() => {
+						GroupWithExistingAffinity({ affinity, has_loaded })
+					}, 500)
+
 				}
 				)
 			}
@@ -328,8 +406,8 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 					<Box
 						onPointerDown={stopEventPropagation}
-						// onTouchStart={handleGroupingWithSelection}
-						// onClick={handleGroupingWithSelection}
+						onClick={handleCustomGroupingClicked}
+						onTouchStart={handleCustomGroupingClicked}
 						className={`menu-item ${value === 0 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${2 * 100}ms`,
@@ -464,8 +542,8 @@ export const GlobalMenu = ({ editor }) => {
 							sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
 							key={index}
 							onPointerDown={stopEventPropagation}
-							onClick={() => handleAffinitySelected(affinity)}
-							onTouchStart={() => handleAffinitySelected(affinity)}
+							onClick={() => handleAffinitySelected({ affinity })}
+							onTouchStart={() => handleAffinitySelected({ affinity })}
 						>
 							<Paper
 								elevation={2}
@@ -487,9 +565,9 @@ export const GlobalMenu = ({ editor }) => {
 										Groups:
 									</Typography>
 									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
-										{affinity.themes.map((theme, index) => (
+										{Object.keys(affinity.themes).map((theme, index) => (
 											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 }}>
-												<Chip size='small' label={theme.theme} />
+												<Chip size='small' label={theme} />
 											</Box>
 										))}
 									</Box>
@@ -503,6 +581,27 @@ export const GlobalMenu = ({ editor }) => {
 							</Paper>
 						</Box>
 					))}
+				{
+					selectedItem == 'enter-custom-grouping' && (
+						<Box sx={{ display: "inline-flex", marginTop: 2 }}>
+							<TextField
+								id='outlined-basic'
+								label='Please enter your prompt'
+								sx={{ width: '80%', marginRight: 1 }}
+								variant='outlined'
+								value={instruction}
+								onChange={(e) => setInstruction(e.target.value)}
+							/>
+							<IconButton
+								onPointerDown={stopEventPropagation}
+								onClick={handleCustomGrouping}
+								onTocuhStart={handleCustomGrouping}
+							>
+								<img src='idea.png' style={{ width: 18, height: 18 }} />
+							</IconButton>
+						</Box>
+					)
+				}
 			</Box>
 		</Box>
 	)

@@ -9,7 +9,13 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you are a very smart and experienced teacher that is able to clue students how to extract common themes from a large number of ideas. You are given a list of ideas and some topics based on students want to group those ideas. Your task is to generate groups based on topics and classify ideas into each created group. Let's assume each idea can only belong to a group. Note that it is possible that some ideas are irrevalent to any topic provided. In this case, just don't classify them. Try your best to generate group names as logical and coherent as possible. Group the ideas as reasonable as possible. The explanation of input JSON format is below. Return the text in the provided JSON format. If you think those ideas can't be grouped into any group, just return an empty object.`
+const systemPrompt = `Imagine you are a very smart and experienced teacher that is able to clue students how to extract common themes from a large number of ideas. 
+You are given a list of ideas and some topics based on students want to group those ideas. 
+Your task is to generate groups based on topics and classify ideas into each created group. 
+Let's assume each idea can only belong to a group. Make sure only use the provided topics, do not invent new topic.
+Note that it is possible that some ideas are irrevalent to any topic provided. In this case, just don't classify them.
+Try your best to generate group names as logical and coherent as possible. Group the ideas as reasonable as possible. 
+The explanation of input JSON format is below. Return the text in the provided JSON format. If you think those ideas can't be grouped into any group, just return an empty object.`
 
 const assistantPrompt = `The input JSON format is a list of ideas that could have some logical relationships among them.
 
@@ -40,6 +46,9 @@ Note you should use node id provided to you in the input JSON object.
 
 // Given topic and a list of ideas, this function will return a list of ideas suit for the topic.
 export async function groupByTopic ({editor, ideas, topics=[]}) {
+
+	console.log("ideas: ", ideas)
+	console.log("topics: ", topics)
 
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildPromptForOpenAi(editor, ideas, topics)

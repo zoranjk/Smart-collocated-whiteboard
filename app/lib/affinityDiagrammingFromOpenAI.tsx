@@ -9,7 +9,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you are a very smart and experienced team leader that is able to identify the common interesting themes behind a group of ideas from different people. Your task is to identify the common underlying themes among ideas, and then group them based on your proposed themes. Plus, please also return the brief rules of thumb you used to create the themes. Please also return the short name of this grouping. Create the principles first, then create themes, then group ideas based on themes. Note that an idea may be already assigned to a topic group ("pre_topic", otherwise it is undefined). In this case, you need to include the group name in the returned JSON as "pre_topic" of the idea. The explanation of input JSON format is below. Do not use the same group topic as the original ones. Be creative and logical. Return the grouping results in the required list format.`
+const systemPrompt = `Imagine you are a very smart and experienced team leader that is able to identify the common interesting themes behind a group of ideas from different people. Your task is to identify the common underlying themes among ideas, and then group them based on your proposed themes. Plus, please also return the brief rules of thumb you used to create the themes, as well as the short name of this grouping. Note that user may provide some instructions as grouping direction, we should follow it if provided. Create the principles first, then create themes, then group ideas based on themes. Note that an idea may be already assigned to a topic group ("pre_topic", otherwise it is undefined). In this case, you need to include the group name in the returned JSON as "pre_topic" of the idea. The explanation of input JSON format is below. Do not use the same group topic as the original ones. Be creative and logical. Return the grouping results in the required list format.`
 const assistantPrompt = `For example, for ideas "Plan a trip to the Miami beach" (under group "trip schedule") and "Book flights from Chicago to Miami" (under group "travel"), the common themes could include "Cost", "Time", "Comfort".
 
 The input JSON format is a list of ideas that you are going to conduct affinity diagramming upon.
@@ -37,14 +37,9 @@ The output list should follow this format:
 	"rules_of_thumb": "brief rules of thumb you used to create the themes",
 	"name": "short name of this grouping",
 	"themes": {
-		"theme": "name of theme 1",
-		"ideas": [{"text": "idea 1 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, {"text": "idea 2 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, ...]
-	},
-	{
-		"theme": "name of theme 2",
-		"ideas": [{"text": "idea 1 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, {"text": "idea 2 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, ...]
-	},
-	...
+		"name of theme 1": [{"text": "idea 1 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, {"text": "idea 2 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, ...],
+		"name of theme 2": [{"text": "idea 1 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, {"text": "idea 2 content", "pre_topic": "prior parent topic", "color": "color of the original note"}, ...],
+		, ...}
 }
 
 Note it is possible that an idea is classified into multiple themes. In this case, you should include the idea in each theme it belongs to.
@@ -52,12 +47,12 @@ Note it is possible that an idea is classified into multiple themes. In this cas
 `
 
 // The ideas and groups are optional. If they are not provided, we will do global affinity diagramming.
-export async function getAffinityDiagramming(editor, ideas = [], groups = []) {
+export async function getAffinityDiagramming({editor, ideas = [], instruction = ""}) {
 
 	// first, we build the prompt that we'll send to openai.
 	console.log("Calling getAffinityDiagramming")
 	// console.log("Ideas: ", ideas)
-	const prompt = await buildPromptForOpenAi(editor, ideas, groups)
+	const prompt = await buildPromptForOpenAi(editor, ideas, instruction)
 
 	// TODO: create effect to show loading edges
 
@@ -101,11 +96,16 @@ export async function getAffinityDiagramming(editor, ideas = [], groups = []) {
 
 
 // groups: group ids
-async function buildPromptForOpenAi(editor, groups) {
+async function buildPromptForOpenAi(editor, ideas, instruction) {
 
 	// If no group provided, get the parent topic, text of each note
-	const ideas = getIdeas(editor)
 
+	let user_ideas = []
+	if (ideas !== undefined && ideas.length != 0) {
+		user_ideas = ideas
+	} else {
+		user_ideas = getIdeas(editor)
+	}
 
 	const userMessages: MessageContent = [
 		{
@@ -115,8 +115,12 @@ async function buildPromptForOpenAi(editor, groups) {
 		{
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
 			type: 'text',
-			text: ideas.length != 0 ? JSON.stringify(ideas) : 'Oh, it looks like there was no idea.',
+			text: user_ideas.length != 0 ? JSON.stringify(user_ideas) : 'Oh, it looks like there was no idea.',
 		},
+		{
+			type: 'text',
+			text: instruction !== '' ? "Following is user instruction for creating groups: " + instruction : 'No instruction is provided, you should generate groups based on your own insight.'
+		}
 	]
 
 	// combine the user prompt with the system prompt

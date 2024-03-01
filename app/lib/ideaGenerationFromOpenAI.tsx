@@ -7,7 +7,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to generate at most 5 high-level ideas by referring to the existing ones and the topics under consideration. Each idea should be concise. Note that there could be no idea existed at the time. Return the idea suggestions in the provided JSON format.`
+const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to generate at most 8 high-level ideas by referring to the existing ones and the topics under consideration. If user provide instruction, please provide ideas relevant to user requirement. Each idea should be concise. Note that there could be no idea existed at the time. Return the idea suggestions in the provided JSON format.`
 
 const assistantPrompt = `
 The returned JSON objects should follow this format:
@@ -24,10 +24,10 @@ The returned JSON objects should follow this format:
 }
 `
 
-export async function generateIdeas ({ existing_ideas, topic="" }) {
+export async function generateIdeas ({ existing_ideas, topic="", instruction="" }) {
 
 	// first, we build the prompt that we'll send to openai.
-	const prompt = await buildSuggestionPromptForOpenAi(existing_ideas, topic)
+	const prompt = await buildSuggestionPromptForOpenAi(existing_ideas, topic, instruction)
 
 	// TODO: create effect to show loading edges
 
@@ -71,12 +71,12 @@ export async function generateIdeas ({ existing_ideas, topic="" }) {
 	}
 }
 
-async function buildSuggestionPromptForOpenAi (existing_ideas, topic): Promise<GPT4Message[]> {
+async function buildSuggestionPromptForOpenAi (existing_ideas, topic, instruction): Promise<GPT4Message[]> {
 
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
 
-    const text = `Existing ideas: ${existing_ideas.map((idea) => idea).join(', ')}; Topic: ${topic}` 
+    const text = `Existing ideas: ${existing_ideas.map((idea) => idea).join(', ')}; Topic: ${topic ? topic : "No topic is provided"}` 
 
 
 	const userMessages: MessageContent = [
@@ -89,6 +89,10 @@ async function buildSuggestionPromptForOpenAi (existing_ideas, topic): Promise<G
 			type: 'text',
 			text: text !== '' ? text : 'Oh, it looks like there was not any note.',
 		},
+        {
+            type: 'text',
+            text:  instruction !== '' ? "Following is user instruction for idea generation instruction: " + instruction : 'No instruction is provided, you should generate ideas based on the existing ideas and the topic.'
+        }
 	]
 
 	// combine the user prompt with the system prompt

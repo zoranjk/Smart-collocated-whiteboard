@@ -36,6 +36,8 @@ export function groupNotes (editor, input_notes, groupName, x, y) {
 		}
 	})
 
+	console.log("animatedShapes: ", animatedShapes)
+
 	//Create frame shape to group the notes
 	const frame_id = createShapeId()
 	editor.createShape({
