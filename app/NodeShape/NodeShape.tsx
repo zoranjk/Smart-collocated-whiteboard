@@ -13,9 +13,19 @@ import {
 	TLOnResizeHandler,
 	Vec,
 	getUserPreferences,
-	resizeBox
+	resizeBox,
 } from '@tldraw/editor'
-import { stopEventPropagation, HTMLContainer, useEditor, createShapeId, T, DefaultHorizontalAlignStyle, DefaultSizeStyle, DefaultFontStyle } from '@tldraw/tldraw'
+import {
+	stopEventPropagation,
+	HTMLContainer,
+	useEditor,
+	createShapeId,
+	T,
+	DefaultHorizontalAlignStyle,
+	DefaultSizeStyle,
+	DefaultFontStyle,
+} from '@tldraw/tldraw'
+import Popover from '@mui/material/Popover'
 import { TextLabel } from '../lib/utils/TextLabel'
 import { FONT_FAMILIES, LABEL_FONT_SIZES, TEXT_PROPS } from '../lib/utils/default-shape-constants'
 import { getFontDefForExport } from '../lib/utils/defaultStyleDefs'
@@ -40,13 +50,14 @@ import { generateComparisonSummary } from '../lib/contentComparison'
 import { SummaryCard } from '../components/SummaryCard'
 import { SearchHistory } from '../components/SearchHistory'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
-import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
+import ScreenRotationIcon from '@mui/icons-material/ScreenRotation'
 import { ComparisonCard } from '../components/ComparisonCard'
 import { useKeyboardStatus } from '../lib/utils/keyboardCompatibility'
 import { getProportionalColor } from '../lib/utils/colorBlender'
 import { NodeShape } from './NodeShapeType'
 import { NodeShapeProps } from './NodeShapeProps'
 import '../style.css'
+import { NodeNestPop } from './NodeNestPop'
 
 const NOTE_SIZE = 220
 const PADDING = 10
@@ -243,7 +254,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 		const handleTips = () => {
 			setLoadingStatus('loading')
-			generateTipsForObject(editor, shape.id).then(tips => {
+			generateTipsForObject(editor, shape.id).then((tips) => {
 				setTips(tips)
 				setLoadingStatus('tip-loaded')
 				// console.log('Tips: ', tips)
@@ -254,7 +265,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			setLoadingStatus('loading')
 			const selectionBounds = editor.getSelectionPageBounds()
 			if (!selectionBounds) throw new Error('No selection bounds')
-			generateSubtasks(editor, shape.id, text).then(subtasks => {
+			generateSubtasks(editor, shape.id, text).then((subtasks) => {
 				for (const [index, subtask] of subtasks.entries()) {
 					const newShapeId = createShapeId()
 					editor.createShape({
@@ -277,11 +288,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 				text: 'Recent interest in design through the artificial intelligence (AI) lens is rapidly increasing. Designers, as a\
 				special user group interacting with AI, have received more attention in the Human-Computer Interaction\
 				community',
-				keywords: [
-					'user group',
-					'artificial intelligence',
-					'Human-Computer Interaction',
-				],
+				keywords: ['user group', 'artificial intelligence', 'Human-Computer Interaction'],
 			}
 			setSummary(summary)
 		}
@@ -292,7 +299,15 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 		return (
 			<HTMLContainer
-				className={isSlide ? 'slide-rotate-ver-right' : isSlide != null ? 'slide-rotate-ver-right-revert' : initSlide ? 'slide-rotate-ver-right-translate' : ''}
+				className={
+					isSlide
+						? 'slide-rotate-ver-right'
+						: isSlide != null
+						? 'slide-rotate-ver-right-revert'
+						: initSlide
+						? 'slide-rotate-ver-right-translate'
+						: ''
+				}
 				id={shape.id}
 				style={{
 					pointerEvents: 'all',
@@ -310,7 +325,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					}}
 				>
 					<div
-						className='node-user-name'
+						className="node-user-name"
 						style={{
 							backgroundColor: color,
 							height: TAG_SIZE,
@@ -322,7 +337,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 						{/* Note Type */}
 					</div>
 					<div
-						className='tl-note__container'
+						className="tl-note__container"
 						style={{
 							color: color,
 							height: this.getHeight(shape) - TAG_SIZE,
@@ -332,7 +347,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							borderColor: isHighlight == true ? 'green' : 'transparent',
 						}}
 					>
-						<div className='tl-note__scrim' />
+						<div className="tl-note__scrim" />
 						<TextLabel
 							id={id}
 							type={type}
@@ -341,7 +356,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							align={align}
 							verticalAlign={verticalAlign}
 							text={text}
-							labelColor='black'
+							labelColor="black"
 							setIsKeyboardOpen={setIsKeyboardOpen}
 							// updateNoteSharedInfo={updateNoteSharedInfo}
 							wrap
@@ -364,7 +379,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					{loadingStatus == 'idle' && (
 						<div>
 							<IconButton
-								size='small'
+								size="small"
 								onPointerDown={stopEventPropagation}
 								onTouchStart={handleTips}
 								onClick={handleTips}
@@ -372,7 +387,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								<DnsIcon />
 							</IconButton>
 							<IconButton
-								size='small'
+								size="small"
 								onPointerDown={stopEventPropagation}
 								onTouchStart={handleSubtasks}
 								onClick={handleSubtasks}
@@ -495,22 +510,36 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					)}
 					{loadingStatus == 'loading' && (
 						<div style={{ display: 'flex', width: '25px', height: '25px' }}>
-							<img src='/loading.png' className='loading-icon' />
+							<img src="/loading.png" className="loading-icon" />
 						</div>
 					)}
-					{loadingStatus == 'tip-loaded' &&
-						tips.length > 0 &&
-						tips.map((tip, index) => (
-							<div key={index}>
-								<TipsCard
-									srcId={id}
-									tarId={tip.dstId}
-									text={tip.explanation}
-									keywords={tip.keywords}
-									editor={editor}
-								/>
-							</div>
-						))}
+					{
+						loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />
+						// (
+						// 	<Popover
+						// 		id={id}
+						// 		open={true}
+						// 		// anchorEl={anchorEl}
+						// 		// anchorOrigin={{
+						// 		// 	vertical: 'bottom',
+						// 		// 	horizontal: 'left',
+						// 		// }}
+						// 	>
+						// 		{tips.length > 0 &&
+						// 			tips.map((tip, index) => (
+						// 				<div key={index}>
+						// 					<TipsCard
+						// 						srcId={id}
+						// 						tarId={tip.dstId}
+						// 						text={tip.explanation}
+						// 						keywords={tip.keywords}
+						// 						editor={editor}
+						// 					/>
+						// 				</div>
+						// 			))}
+						// 	</Popover>
+						// )
+					}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
 							<SummaryCard editor={editor} summary={summary} />
@@ -525,11 +554,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const bounds = this.editor.getShapeGeometry(shape).bounds
 
 		return (
-			<rect
-				rx='7'
-				width={toDomPrecision(bounds.width)}
-				height={toDomPrecision(bounds.height)}
-			/>
+			<rect rx="7" width={toDomPrecision(bounds.width)} height={toDomPrecision(bounds.height)} />
 			// <div></div>
 		)
 	}
@@ -666,7 +691,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		return getGrowY(this.editor, next, prev.props.growY)
 	}
 
-	override onEditEnd: TLOnEditEndHandler<NodeShape> = shape => {
+	override onEditEnd: TLOnEditEndHandler<NodeShape> = (shape) => {
 		const {
 			id,
 			type,
