@@ -14,7 +14,9 @@ import Chip from '@mui/material/Chip'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemIcon from '@mui/material/ListItemIcon'
+import MicIcon from '@mui/icons-material/Mic';
 import ListItemText from '@mui/material/ListItemText'
+import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
@@ -24,9 +26,11 @@ import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
 import { writeDoc, fetchDocs } from '../firebase'
 import { useSelector, useDispatch } from 'react-redux'
-import { setCurAffinity, setTopZonePurpose } from '../redux/reducers/globalReducer'
+import { setCurAffinity, setTopZonePurpose, setShowSpeechOptions } from '../redux/reducers/globalReducer'
 import { saveShapesOnCurPage, fetchSavedShapes } from '../lib/utils/helper'
+import { retrieveInformation } from '../lib/infoRetrievalFromOpenAI'
 import { groupByTopic } from '../lib/groupByTopicFromOpenAI'
+import { AudioRecorder } from './SpeechRecorder'
 import '../style.css'
 
 export const GlobalMenu = ({ editor }) => {
@@ -35,7 +39,11 @@ export const GlobalMenu = ({ editor }) => {
 	const [loading, setLoading] = useState(false)
 	const [selectedItem, setSelectedItem] = useState('')
 	const [instruction, setInstruction] = useState('')
+	const [infoRetrieval, setInfoRetrieval] = useState([])
+	const [groups, setGroups] = useState([])
 	const dispatch = useDispatch()
+	const transcript = useSelector((state) => state.global.transcript)
+	const showSpeechOptions = useSelector((state) => state.global.showSpeechOptions)
 
 	const GroupWithExistingAffinity = ({ affinity = [], has_loaded = false }) => {
 		const curPage = editor.getCurrentPage()
@@ -165,16 +173,40 @@ export const GlobalMenu = ({ editor }) => {
 		setSelectedItem('enter-custom-grouping')
 	}
 
+	const handleRetrievalClicked = id => {
+		// editor.setCamera({x, y,}, {duration: 500})
+		const global_z = editor.getShapePageBounds(id).width / editor.getViewportScreenBounds().width
+		const x = -editor.getShape(id).x + 1250
+		const y = -editor.getShape(id).y + 500
+
+
+		editor.setCamera({ x: x, y: y, global_z }, { duration: 500 })
+	}
+
 	const handleGlobalGrouping = e => {
 		console.log('Doing global grouping...')
 		setLoading(true)
-		getAffinityDiagramming({ editor }).then(res => {
-			console.log('Grouping results: ', res)
-			const { themes, rules_of_thumb, name } = res
-			const data = { principle: rules_of_thumb, themes, name }
-			writeDoc({ collection_name: 'affinity', data: data })
-			handleAffinitySelected({ affinity: data, has_loaded: true })
+		getAffinityDiagramming({ editor }).then(groups => {
+			console.log('Grouping results: ', groups)
+			setGroups(Object.values(groups))
+			setSelectedItem('choose-group')
+			// const { themes, rules_of_thumb, name } = res
+			// const data = { principle: rules_of_thumb, themes, name }
+			// writeDoc({ collection_name: 'affinity', data: data })
+			// handleAffinitySelected({ affinity: data, has_loaded: true })
 			setLoading(false)
+		})
+	}
+
+	const handleRetrieveRelevantIdeasThroughSpeech = e => {
+		console.log('Retrieving relevant ideas through speech...')
+		setLoading(true)
+
+		retrieveInformation({ editor, transcript }).then(res => {
+			console.log('Retrieved ideas: ', res)
+			setLoading(false)
+			setInfoRetrieval(res)
+			setSelectedItem('info-retrieval-group')
 		})
 	}
 
@@ -192,7 +224,7 @@ export const GlobalMenu = ({ editor }) => {
 	const handleGroupingWithSelection = e => {
 		// const shapes = editor.getSelectedShapes().filter(shape => shape.type === 'node')
 		const shapes = editor.getSelectedShapes()
-
+		setLoading(true)
 		// recursively retrieve all the nodes from the selected shapes
 		const getNodes = (shapes, nodes = []) => {
 			shapes.forEach(shape => {
@@ -213,11 +245,9 @@ export const GlobalMenu = ({ editor }) => {
 
 		console.log('Nodes: ', nodes)
 
-		getAffinityDiagramming({ editor, ideas: nodes }).then(res_list => {
-			const { themes, rules_of_thumb, name } = res
-			const data = { principle: rules_of_thumb, themes, name }
-			writeDoc({ collection_name: 'affinity', data: data })
-			handleAffinitySelected({ affinity: data, has_loaded: true })
+		getAffinityDiagramming({ editor, ideas: nodes }).then(groups => {
+			setGroups(Object.values(groups))
+			setSelectedItem('choose-group')
 			setLoading(false)
 		})
 	}
@@ -229,12 +259,12 @@ export const GlobalMenu = ({ editor }) => {
 	const handleCustomGrouping = e => {
 		setLoading(true)
 		setSelectedItem('')
-		getAffinityDiagramming({ editor, instruction }).then(res => {
-			console.log('Grouping results: ', res)
-			const { themes, rules_of_thumb, name } = res
-			const data = { principle: rules_of_thumb, themes, name }
-			writeDoc({ collection_name: 'affinity', data: data })
-			handleAffinitySelected({ affinity: data, has_loaded: true })
+		getAffinityDiagramming({ editor, instruction }).then(groups => {
+			console.log('Grouping results: ', groups)
+			setGroups(Object.values(groups))
+			setSelectedItem('choose-group')
+			// writeDoc({ collection_name: 'affinity', data: data })
+			// handleAffinitySelected({ affinity: data, has_loaded: true })
 			setLoading(false)
 		})
 	}
@@ -262,42 +292,60 @@ export const GlobalMenu = ({ editor }) => {
 			if (page.name === affinity.name) {
 				editor.setCurrentPage(page.id)
 				fetchSavedShapes({ idea_only: true }).then(shapes => {
-					console.log("fetched shapes: ", shapes)
-					// only add those new added shapes to the current affinity page
 					const shapesOnCurPage = editor.getCurrentPageShapes()
-					const newShapes = shapes.filter(shape => !shapesOnCurPage.find(s => s.meta.corMainPageShapeId === shape.id))
-					const existingShapes = shapesOnCurPage.filter(shape => shapes.find(s => shape.meta.corMainPageShapeId === s.id))
-					console.log("existing shapes: ", existingShapes)
-					const ShapesToDelete = shapesOnCurPage.filter(shape => !shapes.find(s => shape.meta.corMainPageShapeId === s.id))
-					console.log("delated shapes: ", ShapesToDelete)
-
-					const newIdeas = newShapes.map(shape => {
+					// replace with the new shapes from the main page
+					editor.deleteShapes(shapesOnCurPage.map(shape => shape.id))
+					shapes.map(shape => {
 						const id = createShapeId()
-						return {
+						editor.createShape({
 							...shape,
 							id: id,
 							parentId: page.id,
-							meta: {
-								corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
-							}
-						}
-					})
-					editor.createShapes(newIdeas)
-
-					// update the text of the existing shapes to the latest text on the main page
-					existingShapes.forEach(shape => {
-						const mainPageShape = shapes.find(s => s.id === shape.meta.corMainPageShapeId)
-						editor.updateShape({
-							...shape,
-							props: {
-								...shape.props,
-								text: mainPageShape.props.text
-							}
+							// meta: {
+							// 	corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
+							// }
 						})
 					})
 
-					// delete the shapes that are not on the main page
-					editor.deleteShapes(ShapesToDelete.map(shape => shape.id))
+					// console.log("fetched shapes: ", shapes)
+					// // only add those new added shapes to the current affinity page
+					// const shapesOnCurPage = editor.getCurrentPageShapes()
+					// const newShapes = shapes.filter(shape => !page.meta.corMainPageShapeId.contains(shape.id))
+					// const ratainedShapes = shapesOnCurPage.filter(shape => shapes.find(s => shape.meta.corMainPageShapeId === s.id))
+					// console.log("existing shapes: ", existingShapes)
+					// console.log("corMainPageShapeId: ", shapesOnCurPage.map(shape => shape.meta.corMainPageShapeId))
+					// const ShapesToDelete = shapesOnCurPage.filter(shape => !shapes.find(s => shape.meta.corMainPageShapeId === s.id))
+					// console.log("delated shapes: ", ShapesToDelete)
+
+					// const newIdeas = newShapes.map(shape => {
+					// 	const id = createShapeId()
+					// 	return {
+					// 		...shape,
+					// 		id: id,
+					// 		parentId: page.id,
+					// 		meta: {
+					// 			corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
+					// 		}
+					// 	}
+					// })
+					// editor.createShapes(newIdeas)
+
+					// // update the text of the existing shapes to the latest text on the main page
+					// ratainedShapes.forEach(shape => {
+					// 	const mainPageShape = shapes.find(s => s.id === shape.meta.corMainPageShapeId)
+					// 	editor.updateShape({
+					// 		...shape,
+					// 		props: {
+					// 			...shape.props,
+					// 			text: mainPageShape.props.text
+					// 		}
+					// 	})
+					// })
+
+					// // delete the shapes that are not on the main page
+					// editor.deleteShapes(ShapesToDelete.map(shape => shape.id))
+
+
 
 					setTimeout(() => {
 						GroupWithExistingAffinity({ affinity, has_loaded })
@@ -318,6 +366,7 @@ export const GlobalMenu = ({ editor }) => {
 					value={value}
 					onChange={(event, newValue) => {
 						setSelectedItem('')
+						setShowSpeechOptions(false)
 						setValue(newValue)
 					}}
 				>
@@ -329,7 +378,7 @@ export const GlobalMenu = ({ editor }) => {
 						label='Library'
 						icon={<img style={{ width: 20, height: 20 }} src='inbox.png' alt='History' />}
 					/>
-					<BottomNavigationAction label='Archive' icon={<ArchiveIcon />} />
+					<BottomNavigationAction label='Speech' icon={<MicIcon />} />
 				</BottomNavigation>
 			</Box>
 			{
@@ -374,8 +423,8 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 					<Box
 						onPointerDown={stopEventPropagation}
-						// onTouchStart={handleGroupingWithSelection}
-						// onClick={handleGroupingWithSelection}
+						onTouchStart={handleGroupingWithSelection}
+						onClick={handleGroupingWithSelection}
 						className={`menu-item ${value === 0 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${1 * 100}ms`,
@@ -436,17 +485,13 @@ export const GlobalMenu = ({ editor }) => {
 							Customized grouping
 						</Typography>
 					</Box>
-				</Box>
-			)}
-			{value === 1 && selectedItem == '' && !loading && (
-				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
 						onTouchStart={loadAffinityGroup}
 						onClick={loadAffinityGroup}
-						className={`menu-item ${value === 1 ? 'active' : ''}`}
+						className={`menu-item ${value === 0 ? 'active' : ''}`}
 						style={{
-							animationDelay: `${0 * 100}ms`,
+							animationDelay: `${3 * 100}ms`,
 							marginTop: 10,
 							width: 'auto',
 							marginLeft: 50,
@@ -468,6 +513,10 @@ export const GlobalMenu = ({ editor }) => {
 							Use existing groups
 						</Typography>
 					</Box>
+				</Box>
+			)}
+			{value === 1 && selectedItem == '' && !loading && (
+				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
 						onTouchStart={handleUseExistingGroup}
@@ -502,8 +551,6 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 					<Box
 						onPointerDown={stopEventPropagation}
-						// onTouchStart={handleGroupingWithSelection}
-						// onClick={handleGroupingWithSelection}
 						className={`menu-item ${value === 1 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${2 * 100}ms`,
@@ -534,6 +581,49 @@ export const GlobalMenu = ({ editor }) => {
 					</Box>
 				</Box>
 			)}
+			{
+				value === 2 && selectedItem == '' && !loading && (
+					<Box>
+						<Box sx={{ display: 'flex', alignItems: "center", justifyContent: "center" }}>
+							<AudioRecorder />
+						</Box>
+						{
+							showSpeechOptions && (
+								<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
+									<Box
+										onPointerDown={stopEventPropagation}
+										onTouchStart={handleRetrieveRelevantIdeasThroughSpeech}
+										onClick={handleRetrieveRelevantIdeasThroughSpeech}
+										className={`menu-item ${value === 2 ? 'active' : ''}`}
+										style={{
+											animationDelay: `${0 * 100}ms`,
+											marginTop: 10,
+											width: 'auto',
+											marginLeft: 50,
+											display: 'inline-flex',
+											border: '1px solid black',
+											borderRadius: '10px',
+											whiteSpace: 'nowrap',
+											padding: '5px 20px',
+											height: 'auto',
+											flexDirection: 'row',
+											justifyContent: 'start',
+											alignItems: 'start',
+											backgroundColor: 'rgba(237,237,233,0.7)',
+											cursor: 'pointer',
+										}}
+									>
+										<img style={{ width: 20, height: 20 }} src='grouping.png' alt='grouping' />
+										<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
+											Get relevant ideas
+										</Typography>
+									</Box>
+								</Box>
+							)
+						}
+					</Box>
+				)
+			}
 			<Box sx={{ overflow: 'auto', maxHeight: '95vh', height: "auto" }}>
 				{selectedItem == 'affinity-group' &&
 					loading == false &&
@@ -552,6 +642,7 @@ export const GlobalMenu = ({ editor }) => {
 									padding: 1,
 									borderRadius: '5px',
 									marginRight: '0px',
+									marginBottom: '20px',
 									cursor: 'pointer',
 								}}
 							>
@@ -599,6 +690,111 @@ export const GlobalMenu = ({ editor }) => {
 							>
 								<img src='idea.png' style={{ width: 18, height: 18 }} />
 							</IconButton>
+						</Box>
+					)
+				}
+				{
+					selectedItem == 'choose-group' && loading == false && groups.map((group) => (
+						<Box>
+							<Paper
+								elevation={2}
+								sx={{
+									width: '220px',
+									padding: 1,
+									borderRadius: '5px',
+									marginRight: '0px',
+									marginBottom: '20px',
+									cursor: 'pointer',
+								}}
+								onClick={() => {
+									writeDoc({ collection_name: 'affinity', data: group })
+									handleAffinitySelected({ affinity: group })
+								}}
+							>
+								<Box
+									sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
+								>
+									<Typography
+										sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+										variant='body2'
+									>
+										Groups:
+									</Typography>
+									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+										{Object.keys(group.themes).map((theme, index) => (
+											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 }}>
+												<Chip size='small' label={theme} />
+											</Box>
+										))}
+									</Box>
+								</Box>
+								<Box sx={{ marginTop: 2 }}>
+									<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
+										Rationale:
+									</Typography>
+									<Typography variant='body2'>{group.principle}</Typography>
+								</Box>
+							</Paper>
+						</Box>
+					))
+				}
+				{
+					selectedItem == 'info-retrieval-group' && loading == false && (
+						<Box>
+							{
+								infoRetrieval.length > 0 ? infoRetrieval.map((info, index) => {
+									return (
+										<Paper
+											elevation={2}
+											sx={{
+												width: '220px',
+												padding: 1,
+												borderRadius: '5px',
+												marginRight: '0px',
+												marginBottom: '20px',
+												cursor: 'pointer',
+											}}
+											// move camera to the selected shape
+											onClick={() => handleRetrievalClicked(info.id)}
+											onTouchStart={() => handleRetrievalClicked(info.id)}
+										>
+											<Box
+												sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
+											>
+												<Typography
+													sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+													variant='body2'
+												>
+													{info.text}
+												</Typography>
+											</Box>
+											<Box sx={{ marginTop: 2 }}>
+												<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
+													Related discussion:
+												</Typography>
+												<Typography variant='body2'>"{info.segment}"</Typography>
+											</Box>
+										</Paper>
+									)
+								}) : (
+									<Paper
+										elevation={2}
+										sx={{
+											width: '220px',
+											padding: 1,
+											borderRadius: '5px',
+											marginRight: '0px',
+											marginBottom: '20px',
+											cursor: 'pointer',
+										}}
+									>
+										<Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+											<Typography variant='body2'>No relevant ideas found</Typography>
+										</Box>
+									</Paper>
+
+								)
+							}
 						</Box>
 					)
 				}

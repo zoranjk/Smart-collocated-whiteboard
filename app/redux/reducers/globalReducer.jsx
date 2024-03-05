@@ -4,6 +4,8 @@ const initialState = {
 	curAffinity: null,
 	topZonePurpose: '',
 	isGroupingFinished: true,
+	transcript: '',
+	showSpeechOptions: false,
 }
 
 const userSlice = createSlice({
@@ -19,9 +21,15 @@ const userSlice = createSlice({
 		setIsGroupingFinished: (state, action) => {
 			state.isGroupingFinished = action.payload
 		},
+		setTranscript: (state, action) => {
+			state.transcript = action.payload
+		},
+		setShowSpeechOptions: (state, action) => {
+			state.showSpeechOptions = action.payload
+		},
 	},
 })
 
-export const { setCurAffinity, setTopZonePurpose, setIsGroupingFinished } = userSlice.actions
+export const { setCurAffinity, setTopZonePurpose, setIsGroupingFinished, setTranscript, setShowSpeechOptions } = userSlice.actions
 
 export default userSlice.reducer
