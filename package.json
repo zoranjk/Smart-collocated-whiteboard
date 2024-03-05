@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"HOST=0.0.0.0 PORT=5800 npx y-websocket\" --kill-others",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
