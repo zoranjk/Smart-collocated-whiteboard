@@ -184,7 +184,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [editHistory, setEditHistory] = useState([])
 		const [loadingStatus, setLoadingStatus] = useState('idle')
 		const [tips, setTips] = useState([])
-		// const [selectedHistory, setSelectedHistory] = useState(null)
+		const [selectedHistory, setSelectedHistory] = useState(null)
 		const [curOpenHistory, setCurOpenHistory] = useState(null)
 		const [summary, setSummary] = useState({})
 		const [searchHistories, setSearchHistories] = useState([])
