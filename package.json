@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": " concurrently \"next dev\" \"PORT=5800 node ./node_modules/y-websocket/bin/server.js\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

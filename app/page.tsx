@@ -74,7 +74,7 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
 	},
 }
 
-const WS_ADDRESS = "104.154.83.173"
+const WS_ADDRESS = "localhost"
 const WS_PORT = "5800"
 
 const HOST_URL =
@@ -206,7 +206,7 @@ export default function App() {
 					}
 
 				}}
-				// store={store}
+				store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
