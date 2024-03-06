@@ -22,15 +22,15 @@ export const TextLabel = React.memo(function TextLabel<
 	id,
 	type,
 	text,
-	size='s',
+	size = 's',
 	labelColor,
-	font='sans',
-	align='start',
-	verticalAlign='middle',
+	font = 'sans',
+	align = 'start',
+	verticalAlign = 'middle',
 	wrap,
 	bounds,
 	setIsKeyboardOpen,
-	updateNoteSharedInfo=()=>{}
+	updateNoteSharedInfo = () => { }
 }: {
 	id: T['id']
 	type: T['type']
@@ -70,10 +70,9 @@ export const TextLabel = React.memo(function TextLabel<
 	}
 
 	useEffect(() => {
-		if (!isEditing) {
-			console.log("isEditing: ", isEditing)
+		if (isEditing) {
 			updateNoteSharedInfo()
-			setIsKeyboardOpen(false)
+			// setIsKeyboardOpen(false)
 		}
 	}, [isEditing])
 

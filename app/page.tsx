@@ -174,6 +174,21 @@ export default function App() {
 		shapeUtils: customShapeUtils
 	})
 
+	function generateRandomHexColor() {
+		return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+	}
+
+	function generateRandomUsername() {
+		const adjectives = ['Cool', 'Mighty', 'Happy', 'Fast', 'Smart'];
+		const nouns = ['Dragon', 'Panda', 'Tiger', 'Eagle', 'Lion'];
+		const randomNumber = Math.floor(Math.random() * 100);
+	
+		const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+		const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+	
+		return `${randomAdjective}${randomNoun}${randomNumber}`;
+	}
+
 	return (
 		<div className='editor'>
 			<Tldraw
@@ -191,6 +206,11 @@ export default function App() {
 					editor.on('event', event => {
 						setEditor(editor)
 						handleEvent(event, editor)
+					})
+
+					editor.user.updateUserPreferences({
+						color: generateRandomHexColor(),
+						name: generateRandomUsername()
 					})
 
 					editor.getInitialMetaForShape = (shape) => {

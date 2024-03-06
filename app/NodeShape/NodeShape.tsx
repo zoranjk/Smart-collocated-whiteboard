@@ -131,8 +131,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	// override hideSelectionBoundsFg = () => true
 
 	override getDefaultProps(): NodeShape {
+
+		const userPreference = getUserPreferences()
+
 		return {
-			color: '#ffb703',
+			// color: '#ffb703',
+			color: userPreference.color,
 			size: 'l',
 			text: '',
 			w: NOTE_SIZE,
@@ -144,7 +148,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			isHighlight: false,
 			initSlide: false,
 			lastUserName: "",
-			lastUserColor: "",
 		}
 	}
 
@@ -167,7 +170,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide },
+			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide, lastUserColor },
 		} = shape
 
 		const editor = useEditor()
@@ -187,7 +190,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [searchHistories, setSearchHistories] = useState([])
 		const [isSlide, setIsSlide] = useState(null)
 		const userPreference = getUserPreferences()
-		const userColor = editor.user.color
 
 		useEffect(() => {
 			if (!editor.getSelectedShapeIds().includes(id)) {
@@ -206,16 +208,15 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 		const updateNoteSharedInfo = () => {
 
-			console.log("current user: ", editor.user.name)
+			console.log("current user: ", editor.user)
 
 			editor.updateShapes([
 				{
 					id,
 					type,
 					props: {
-						lastUserName: editor.user.name,
-						color: editor.user.color,
-						lastUserColor: editor.user.color,
+						lastUserName: userPreference.name,
+						color: userPreference.color,
 					},
 				},
 			])
@@ -272,10 +273,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					isSlide
 						? 'slide-rotate-ver-right'
 						: isSlide != null
-						? 'slide-rotate-ver-right-revert'
-						: initSlide
-						? 'slide-rotate-ver-right-translate'
-						: ''
+							? 'slide-rotate-ver-right-revert'
+							: initSlide
+								? 'slide-rotate-ver-right-translate'
+								: ''
 				}
 				id={shape.id}
 				style={{
@@ -313,7 +314,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							backgroundColor: color,
 							borderRadius: 0,
 							borderWidth: 2,
-							borderColor: isHighlight == true ? 'green' : 'transparent',
+							borderColor: 'transparent',
+							// borderColor: isHighlight == true ? 'green' : 'transparent',
 						}}
 					>
 						<div className="tl-note__scrim" />
@@ -392,40 +394,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							>
 								<DeleteForeverIcon />
 							</IconButton>
-							{/* <IconButton
-								onPointerDown={stopEventPropagation}
-								onClick={() => {
-									if (isSlide == null || isSlide == false) {
-										setIsSlide(true)
-										const maxRepeats = 2;
-										var repeatCount = 0;
-										const interval = setInterval(() => {
-											if (repeatCount < maxRepeats) {
-												editor.createShape({
-													id: createShapeId(),
-													type: 'node',
-													x: 200*(repeatCount + 1),
-													y: 0,
-													parentId: id,
-													props: {
-														text: text,
-														initSlide: true,
-														index: repeatCount + 1,
-													},
-												})
-												repeatCount++;
-											} else {
-												// Clear interval once maxRepeats is reached
-												clearInterval(interval);
-											}
-										}, 500)
-									} else if (isSlide == true) {
-									setIsSlide(false)
-									}
-								}}
-							>
-								<ScreenRotationIcon />
-							</IconButton> */}
 						</div>
 					)}
 					{loadingStatus == 'search-bar' && (
@@ -458,23 +426,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									))}
 								</div>
 							</div>
-							{/* {selectedHistory != null && (
-								<div>
-									<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
-										{selectedHistory.result.map((suggestion, index) => (
-											<Grid item xs={4} key={index}>
-												<RefinmentCard
-													index={index}
-													srcId={id}
-													setLoadingStatus={setLoadingStatus}
-													suggestion={suggestion.text}
-													editor={editor}
-												/>
-											</Grid>
-										))}
-									</Grid>
-								</div>
-							)} */}
 						</div>
 					)}
 					{loadingStatus == 'loading' && (
@@ -484,30 +435,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					)}
 					{
 						loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />
-						// (
-						// 	<Popover
-						// 		id={id}
-						// 		open={true}
-						// 		// anchorEl={anchorEl}
-						// 		// anchorOrigin={{
-						// 		// 	vertical: 'bottom',
-						// 		// 	horizontal: 'left',
-						// 		// }}
-						// 	>
-						// 		{tips.length > 0 &&
-						// 			tips.map((tip, index) => (
-						// 				<div key={index}>
-						// 					<TipsCard
-						// 						srcId={id}
-						// 						tarId={tip.dstId}
-						// 						text={tip.explanation}
-						// 						keywords={tip.keywords}
-						// 						editor={editor}
-						// 					/>
-						// 				</div>
-						// 			))}
-						// 	</Popover>
-						// )
 					}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
@@ -527,82 +454,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			// <div></div>
 		)
 	}
-
-	// override onResize: TLOnResizeHandler<NodeShape> = (
-	// 	shape,
-	// 	{ handle, newPoint, scaleX, scaleY, initialShape }
-	// ) => {
-	// 	// use the w/h from props here instead of the initialBounds here,
-	// 	// since cloud shapes calculated bounds can differ from the props w/h.
-	// 	let w = initialShape.props.w * scaleX
-	// 	let h = (initialShape.props.h + initialShape.props.growY) * scaleY
-	// 	let overShrinkX = 0
-	// 	let overShrinkY = 0
-
-	// 	if (shape.props.text.trim()) {
-	// 		let newW = Math.max(Math.abs(w), MIN_SIZE_WITH_LABEL)
-	// 		let newH = Math.max(Math.abs(h), MIN_SIZE_WITH_LABEL)
-
-	// 		if (newW < MIN_SIZE_WITH_LABEL && newH === MIN_SIZE_WITH_LABEL) {
-	// 			newW = MIN_SIZE_WITH_LABEL
-	// 		}
-
-	// 		if (newW === MIN_SIZE_WITH_LABEL && newH < MIN_SIZE_WITH_LABEL) {
-	// 			newH = MIN_SIZE_WITH_LABEL
-	// 		}
-
-	// 		const labelSize = getLabelSize(this.editor, {
-	// 			...shape,
-	// 			props: {
-	// 				...shape.props,
-	// 				w: newW,
-	// 				h: newH,
-	// 			},
-	// 		})
-
-	// 		const nextW = Math.max(Math.abs(w), labelSize.w) * Math.sign(w)
-	// 		const nextH = Math.max(Math.abs(h), labelSize.h) * Math.sign(h)
-	// 		overShrinkX = Math.abs(nextW) - Math.abs(w)
-	// 		overShrinkY = Math.abs(nextH) - Math.abs(h)
-
-	// 		w = nextW
-	// 		h = nextH
-	// 	}
-
-	// 	const offset = new Vec(0, 0)
-
-	// 	// x offsets
-
-	// 	if (scaleX < 0) {
-	// 		offset.x += w
-	// 	}
-
-	// 	if (handle === 'left' || handle === 'top_left' || handle === 'bottom_left') {
-	// 		offset.x += scaleX < 0 ? overShrinkX : -overShrinkX
-	// 	}
-
-	// 	// y offsets
-
-	// 	if (scaleY < 0) {
-	// 		offset.y += h
-	// 	}
-
-	// 	if (handle === 'top' || handle === 'top_left' || handle === 'top_right') {
-	// 		offset.y += scaleY < 0 ? overShrinkY : -overShrinkY
-	// 	}
-
-	// 	const { x, y } = offset.rot(shape.rotation).add(newPoint)
-
-	// 	return {
-	// 		x,
-	// 		y,
-	// 		props: {
-	// 			w: Math.max(Math.abs(w), 1),
-	// 			h: Math.max(Math.abs(h), 1),
-	// 			growY: 0,
-	// 		},
-	// 	}
-	// }
 
 	override toSvg(shape: NodeShape, ctx: SvgExportContext) {
 		ctx.addExportDef(getFontDefForExport(shape.props.font))
