@@ -181,7 +181,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [editHistory, setEditHistory] = useState([])
 		const [loadingStatus, setLoadingStatus] = useState('idle')
 		const [tips, setTips] = useState([])
-		// const [selectedHistory, setSelectedHistory] = useState(null)
+		const [selectedHistory, setSelectedHistory] = useState(null)
 		const [curOpenHistory, setCurOpenHistory] = useState(null)
 		const [summary, setSummary] = useState({})
 		const [searchHistories, setSearchHistories] = useState([])
@@ -397,14 +397,14 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								onClick={() => {
 									if (isSlide == null || isSlide == false) {
 										setIsSlide(true)
-										const maxRepeats = 2;
-										var repeatCount = 0;
+										const maxRepeats = 2
+										var repeatCount = 0
 										const interval = setInterval(() => {
 											if (repeatCount < maxRepeats) {
 												editor.createShape({
 													id: createShapeId(),
 													type: 'node',
-													x: 200*(repeatCount + 1),
+													x: 200 * (repeatCount + 1),
 													y: 0,
 													parentId: id,
 													props: {
@@ -413,14 +413,14 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 														index: repeatCount + 1,
 													},
 												})
-												repeatCount++;
+												repeatCount++
 											} else {
 												// Clear interval once maxRepeats is reached
-												clearInterval(interval);
+												clearInterval(interval)
 											}
 										}, 500)
 									} else if (isSlide == true) {
-									setIsSlide(false)
+										setIsSlide(false)
 									}
 								}}
 							>
@@ -458,7 +458,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									))}
 								</div>
 							</div>
-							{/* {selectedHistory != null && (
+							{selectedHistory != null && (
 								<div>
 									<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
 										{selectedHistory.result.map((suggestion, index) => (
@@ -474,7 +474,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 										))}
 									</Grid>
 								</div>
-							)} */}
+							)}
 						</div>
 					)}
 					{loadingStatus == 'loading' && (
