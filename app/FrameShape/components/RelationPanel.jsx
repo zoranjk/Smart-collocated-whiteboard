@@ -16,7 +16,7 @@ import { Button, Stack, Chip, Avatar, Skeleton, Box } from '@mui/material'
 import { ClickableText } from '../utils'
 import { callFrameRelationAPI } from '../utils'
 
-export function LoadingAnimations () {
+export function LoadingAnimations() {
 	return (
 		<Box sx={{ width: '80%' }}>
 			<Skeleton />
@@ -77,14 +77,25 @@ export const RelationPanel = ({ editor, shape }) => {
 			<div style={{ marginBottom: 30 }}>
 				<Stack direction='row' spacing={1}>
 					<Chip
-						icon={<img src='alert.png' style={{ height: "50%" }} />}
-						label='Warning'
+						label='Collaboration Point'
 						onClick={() => handleDepChipClick('dep')}
 						onTouchStart={() => handleDepChipClick('dep')}
 						onPointerDown={stopEventPropagation}
 					/>
 					<Chip
-						label='Prerequisite'
+						label='Warning'
+						onClick={() => handleDepChipClick('pre')}
+						onTouchStart={() => handleDepChipClick('pre')}
+						onPointerDown={stopEventPropagation}
+					/>
+					<Chip
+						label='Internal Dependency'
+						onClick={() => handleDepChipClick('pre')}
+						onTouchStart={() => handleDepChipClick('pre')}
+						onPointerDown={stopEventPropagation}
+					/>
+					<Chip
+						label='External Dependency'
 						onClick={() => handleDepChipClick('pre')}
 						onTouchStart={() => handleDepChipClick('pre')}
 						onPointerDown={stopEventPropagation}
@@ -117,30 +128,9 @@ export const RelationPanel = ({ editor, shape }) => {
 					)}
 				</div>
 			</div>
-			{/* <div style={{ marginBottom: 30 }}>
-				<ClickableText
-					onPointerDown={stopEventPropagation}
-					onClick={handleAISuggestion}
-					style={{ marginRight: 20 }}
-				>
-					See what AI suggests...
-				</ClickableText>
+			<div>
+				
 			</div>
-			{shape.meta.relationLoadingStatus == 'loading' ? (
-				<LoadingAnimations />
-			) : (
-				shape.meta.betweenFrameRelations != null &&
-				shape.meta.relationLoadingStatus == 'loaded' && (
-					<List sx={{ width: '100%', maxWidth: '100%', bgcolor: 'background.paper' }}>
-						{shape.meta.betweenFrameRelations.map((group, index) => {
-							return (
-								<div>
-								</div>
-							)
-						})}
-					</List>
-				)
-			)} */}
 		</div>
 	)
 }
