@@ -38,7 +38,7 @@ import { GroupPanel } from './components/GroupPanel'
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
-import { RelationPanel } from './components/RelationPanel'
+import { DiscussionPanel } from './components/DiscussionPanel'
 import { IdeaPanel } from './components/IdeaPanel'
 
 export type FrameShape = TLBaseShape<
@@ -186,7 +186,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 								}
 								{
 									meta.tabValue == 1 && (
-										<RelationPanel editor={editor} shape={shape} />
+										<DiscussionPanel editor={editor} shape={shape} />
 									)
 								}
 								{

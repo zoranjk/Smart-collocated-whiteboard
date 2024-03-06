@@ -15,5 +15,7 @@ export type NodeShape = TLBaseShape<
 		isPressed: boolean
 		isHighlight: boolean
 		initSlide: boolean
+		lastUserName: string
+		lastUserColor: string
 	}
 >

@@ -12,9 +12,10 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Paper from '@mui/material/Paper'
 import { stopEventPropagation } from '@tldraw/tldraw'
-import { Button, Stack, Chip, Avatar, Skeleton, Box } from '@mui/material'
+import { Button, Stack, Chip, Avatar, Skeleton, Box, Grid } from '@mui/material'
 import { ClickableText } from '../utils'
 import { callFrameRelationAPI } from '../utils'
+import { ColSuggestion } from './Suggestion'
 
 export function LoadingAnimations() {
 	return (
@@ -26,7 +27,7 @@ export function LoadingAnimations() {
 	)
 }
 
-export const RelationPanel = ({ editor, shape }) => {
+export const DiscussionPanel = ({ editor, shape }) => {
 	const [selectedDependencies, setSelectedDependencies] = useState([])
 	const arrows = editor.getCurrentPageShapes().filter(shape => shape.type === 'arrow')
 
@@ -45,32 +46,10 @@ export const RelationPanel = ({ editor, shape }) => {
 		})
 	}
 
-	const handleDepChipClick = dep => {
-		if (selectedDependencies.includes(dep)) {
-			setSelectedDependencies(selectedDependencies.filter(item => item !== dep))
-		} else {
-			setSelectedDependencies([...selectedDependencies, dep])
-		}
-
-		let depRelations = []
-		let preRelations = []
-
-		arrows.map(arrow => {
-			if (arrow.props.end.boundShapeId == shape.id) {
-				preRelations.push(arrow)
-			} else if (arrow.props.start.boundShapeId == shape.id) {
-				depRelations.push(arrow)
-			}
-		})
-
-		console.log('depRelations: ', depRelations)
-		console.log('preRelations: ', preRelations)
-		// update arrow relations
-		editor.updateShape({
-			id: shape.id,
-			meta: { ...shape.meta, depRelations: depRelations, preRelations: preRelations },
-		})
+	const handleColSuggestionGeneration = async () => {
+		
 	}
+
 
 	return (
 		<div>
@@ -101,35 +80,13 @@ export const RelationPanel = ({ editor, shape }) => {
 						onPointerDown={stopEventPropagation}
 					/>
 				</Stack>
-				<div>
-					{selectedDependencies.includes('dep') && (
-						<div>
-							{shape.meta.depRelations.map((relation, index) => {
-								return (
-									<Paper elevation={1} sx={{ backgroundColor: "rgba(252, 191, 73)" }}>
-
-									</Paper>
-								)
-							})}
-						</div>
-					)}
-					{selectedDependencies.includes('pre') && (
-						<div>
-							{shape.meta.preRelations.map((relation, index) => {
-								return (
-									<Chip
-										key={index}
-										label={relation.props.text}
-										onPointerDown={stopEventPropagation}
-									/>
-								)
-							})}
-						</div>
-					)}
-				</div>
 			</div>
 			<div>
-				
+				<Grid container>
+					<Grid item xs={6}>
+						<ColSuggestion editor={editor} data={{ collaborators: [{ name: "user 1", color: "#f4a261" }, { name: "user 2", color: "#48cae4" }], suggestion: "Work on this part dudes!" }} />
+					</Grid>
+				</Grid>
 			</div>
 		</div>
 	)
