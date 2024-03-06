@@ -31,9 +31,9 @@ export function RefinmentCard ({ srcId, suggestion, editor, setLoadingStatus, in
 		>
 			<CardContent>
 				<Typography variant='body2'>{suggestion}</Typography>
-				<IconButton aria-label='share' onClick={handleClick}>
+				{/* <IconButton aria-label='share' onClick={handleClick}>
 					<MobileScreenShareIcon />
-				</IconButton>
+				</IconButton> */}
 			</CardContent>
 		</Card>
 	)

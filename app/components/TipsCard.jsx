@@ -38,12 +38,12 @@ export function TipsCard({ srcId, tarId, text, keywords, editor  }) {
     <Card sx={{ minWidth: 275 }} onPointerDown={stopEventPropagation} onClick={handleClick}>
       <CardContent>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-          Note: {tarId}
+          {/* Note: {tarId} */}
         </Typography>
         <HighlightText editor={editor} text={text} keywords={keywords} />
-        <IconButton aria-label="share" onClick={handleShapeAlignEvent}>
+        {/* <IconButton aria-label="share" onClick={handleShapeAlignEvent}>
           <MobileScreenShareIcon />
-        </IconButton>
+        </IconButton> */}
       </CardContent>
       {/* <CardActions>
         <Button size="small">Learn More</Button>
