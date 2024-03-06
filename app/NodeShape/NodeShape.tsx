@@ -143,6 +143,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			growY: 0,
 			isHighlight: false,
 			initSlide: false,
+			lastUserName: "",
+			lastUserColor: "",
 		}
 	}
 
@@ -203,50 +205,17 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}, [editor.getSelectedShapeIds()])
 
 		const updateNoteSharedInfo = () => {
-			// var historyCopy = [...history]
-			// if (history.length > 0) {
-			// 	// console.log("Edit history is not empty")
-			// 	const lastEdit = history[history.length - 1]
-			// 	if (text === lastEdit.text) {
-			// 		return
-			// 	}
-			// 	else {
-			// 		// update edit history and increase user click count
-			// 		editor.updateShapes([
-			// 			{
-			// 				id,
-			// 				type,
-			// 				meta: {
-			// 					history: [...history, { text: shape.props.text, color: userColor }],
-			// 				},
-			// 			},
-			// 		])
-			// 		historyCopy = [...history, { text: shape.props.text, color: userColor }]
 
-			// 	}
-			// } else {
-			// 	// console.log("Edit history is empty")
-			// 	editor.updateShapes([
-			// 		{
-			// 			id,
-			// 			type,
-			// 			// ISSUE: text is not up-to-date, it uses the last text
-			// 			meta: {
-			// 				history: [{ text: shape.props.text, color: userColor }],
-			// 			},
-			// 		},
-			// 	])
-			// 	historyCopy = [{ text: shape.props.text, color: userColor }]
-			// }
+			console.log("current user: ", editor.user.name)
 
-			// const newColor = getProportionalColor(historyCopy)
-			// console.log("newColor: ", newColor)
 			editor.updateShapes([
 				{
 					id,
 					type,
 					props: {
-						color: userColor,
+						lastUserName: editor.user.name,
+						color: editor.user.color,
+						lastUserColor: editor.user.color,
 					},
 				},
 			])
@@ -358,7 +327,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							text={text}
 							labelColor="black"
 							setIsKeyboardOpen={setIsKeyboardOpen}
-							// updateNoteSharedInfo={updateNoteSharedInfo}
+							updateNoteSharedInfo={updateNoteSharedInfo}
 							wrap
 						/>
 					</div>
