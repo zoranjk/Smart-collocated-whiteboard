@@ -128,30 +128,9 @@ export const RelationPanel = ({ editor, shape }) => {
 					)}
 				</div>
 			</div>
-			{/* <div style={{ marginBottom: 30 }}>
-				<ClickableText
-					onPointerDown={stopEventPropagation}
-					onClick={handleAISuggestion}
-					style={{ marginRight: 20 }}
-				>
-					See what AI suggests...
-				</ClickableText>
+			<div>
+				
 			</div>
-			{shape.meta.relationLoadingStatus == 'loading' ? (
-				<LoadingAnimations />
-			) : (
-				shape.meta.betweenFrameRelations != null &&
-				shape.meta.relationLoadingStatus == 'loaded' && (
-					<List sx={{ width: '100%', maxWidth: '100%', bgcolor: 'background.paper' }}>
-						{shape.meta.betweenFrameRelations.map((group, index) => {
-							return (
-								<div>
-								</div>
-							)
-						})}
-					</List>
-				)
-			)} */}
 		</div>
 	)
 }
