@@ -31,3 +31,64 @@ export const getNodes = (shapes, nodes = []) => {
     })
     return nodes
 }
+
+export async function createArrowBetweenShapes (
+	editor,
+	relationship
+) {
+	console.log('relationship: ', relationship)
+
+	relationship.forEach((rel) => {
+		const srcId = rel.srcId
+		const dstId = rel.dstId
+		const srcShape = editor.getShape(srcId)
+		const dstShape = editor.getShape(dstId)
+		const text = rel.relation
+
+		if (!srcShape || !dstShape) {
+			throw new Error('Could not find shape')
+		}
+
+		const srcBounds = editor.getShapePageBounds(srcShape)
+		const dstBounds = editor.getShapePageBounds(dstShape)
+
+		const srcX = srcBounds.x + srcBounds.width / 2
+		const srcY = srcBounds.y + srcBounds.height / 2
+		const dstX = dstBounds.x + dstBounds.width / 2
+		const dstY = dstBounds.y + dstBounds.height / 2
+
+		const normalizedSrcAnchor = {
+			x: 0,
+			y: 0.5,
+		}
+
+		const normalizedDstAnchor = {
+			x: 0,
+			y: 0.5,
+		}
+
+		const newShapeId = createShapeId()
+		editor.createShape({
+			id: newShapeId,
+			type: 'arrow',
+			props: {
+				start: {
+					type: 'binding',
+					boundShapeId: srcId,
+					normalizedAnchor: normalizedSrcAnchor, 
+					isExact: false,
+				},
+				end: {
+					type: 'binding',
+					boundShapeId: dstId,
+					normalizedAnchor: normalizedDstAnchor,
+					isExact: false,
+				},
+				arrowheadStart: 'none',
+				arrowheadEnd: 'arrow',
+				text: text,
+				font: 'draw',
+			},
+		})
+	})
+}

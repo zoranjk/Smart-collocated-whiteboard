@@ -14,6 +14,7 @@ import { OverlayKeyboard } from './components/OverlayKeyboard'
 import { NodeShapeUtil } from './NodeShape/NodeShape'
 import { NodeShapeTool } from './NodeShape/NodeShapeTool'
 import FontDownloadIcon from '@mui/icons-material/FontDownload'
+import { createArrowBetweenShapes } from './lib/utils/helper'
 import { uiOverrides } from './ui-overrides'
 import { QuilEditorShapeUtil } from './QuilEditorShape/QuilEditorShape'
 import UndoIcon from '@mui/icons-material/Undo';
@@ -42,6 +43,7 @@ import { useYjsStore } from './useYjsStore'
 import { SearchShapeUtil } from './SearchShape/SearchShape'
 import { SearchTool } from './SearchShape/SearchShapeTool'
 import { GlobalMenu } from './components/GlobalMenu'
+import { getRelationHints } from './lib/ideaRelationFromOpenAI'
 import { Provider } from 'react-redux'
 import { createWrapper } from 'next-redux-wrapper'
 import { useSelector } from 'react-redux'
@@ -91,6 +93,26 @@ const FeatureMenu = track(() => {
 		</div>
 	)
 })
+
+const UpdateRelationHints = (editor) => {
+
+	const idea_nodes = editor.getCurrentPageShapes().filter((shape) => shape.type === "node")
+	const ideas = idea_nodes.map((node) => {
+		return {
+			id: node.id,
+			text: node.props.text
+		}
+	})
+
+	const input = { "ideas": ideas }
+	getRelationHints(input).then((relations) => {
+		console.log("Relations: ", relations)
+		// set confidence threshold to 0.6
+		const threshold = 0.6
+		const filteredRelations = relations.filter((relation) => relation.confidence > threshold)
+		createArrowBetweenShapes(filteredRelations)
+	})
+}
 
 const TopZoneComponent = track(() => {
 	const dispatch = useDispatch()
@@ -144,7 +166,7 @@ export default function App() {
 	const [showTopZone, setShowTopZone] = useState(false)
 	const [topZoneContent, setTopZoneContent] = useState(null)
 	const [editor, setEditor] = useState(null)
-	const roomId = "test_room"
+	const roomId = "test"
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
 	// 	setUiEvents(events => [`${name} ${JSON.stringify(data)}`, ...events])
@@ -181,6 +203,7 @@ export default function App() {
 	function generateRandomUsername() {
 		const adjectives = ['Cool', 'Mighty', 'Happy', 'Fast', 'Smart'];
 		const nouns = ['Dragon', 'Panda', 'Tiger', 'Eagle', 'Lion'];
+
 		const randomNumber = Math.floor(Math.random() * 100);
 	
 		const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -225,8 +248,15 @@ export default function App() {
 						}
 					}
 
+					function callRelationHints() {
+						UpdateRelationHints(editor)
+					}
+					
+					// Call myFunction every 15 seconds
+					setInterval(callRelationHints, 15000);
+
 				}}
-				store={store}
+				// store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
@@ -235,8 +265,3 @@ export default function App() {
 		</div>
 	)
 }
-
-// const makeStore = () => store
-// const wrapper = createWrapper(makeStore)
-
-// export default wrapper.withRedux(App)
