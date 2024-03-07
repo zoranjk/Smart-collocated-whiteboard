@@ -106,11 +106,16 @@ const UpdateRelationHints = (editor) => {
 
 	const input = { "ideas": ideas }
 	getRelationHints(input).then((relations) => {
-		console.log("Relations: ", relations)
-		// set confidence threshold to 0.6
-		const threshold = 0.6
+		// set confidence threshold to 0.7
+		const threshold = 0.7
 		const filteredRelations = relations.filter((relation) => relation.confidence > threshold)
-		createArrowBetweenShapes(filteredRelations)
+		console.log("Filtered relations: ", relations)
+		if (filteredRelations.length > 0) {
+			const rel_ids = createArrowBetweenShapes({editor, relationship: filteredRelations})
+			console.log("rel ids: ", rel_ids)
+			editor.setHintingShapes(rel_ids)
+		}
+
 	})
 }
 
@@ -205,10 +210,10 @@ export default function App() {
 		const nouns = ['Dragon', 'Panda', 'Tiger', 'Eagle', 'Lion'];
 
 		const randomNumber = Math.floor(Math.random() * 100);
-	
+
 		const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
 		const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-	
+
 		return `${randomAdjective}${randomNoun}${randomNumber}`;
 	}
 
@@ -251,7 +256,7 @@ export default function App() {
 					function callRelationHints() {
 						UpdateRelationHints(editor)
 					}
-					
+
 					// Call myFunction every 15 seconds
 					setInterval(callRelationHints, 15000);
 
