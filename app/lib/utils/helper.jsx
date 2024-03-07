@@ -1,42 +1,45 @@
 import { writeDoc, fetchDoc } from '../../firebase'
+import { createShapeId } from '@tldraw/tldraw'
 
 // Save data on the current page to Firebase, the default data_id is 'cur' for the latest global data
-export const saveShapesOnCurPage = (editor, data_id="cur") => {
-    const page = editor.getCurrentPageShapes()
-    const shapes = JSON.stringify(page)
-    writeDoc({ collection_name: 'data', id: data_id, data: {shapes: shapes} })
+export const saveShapesOnCurPage = (editor, data_id = "cur") => {
+	const page = editor.getCurrentPageShapes()
+	const shapes = JSON.stringify(page)
+	writeDoc({ collection_name: 'data', id: data_id, data: { shapes: shapes } })
 }
 
 // Fetch the global data from Firebase, the default data_id is 'cur' for the latest global data, set idea_only is true if you only want to fetch the idea nodes
-export const fetchSavedShapes = async ({data_id="cur", idea_only=false}) => {
-    let data = await fetchDoc({ collection: 'data', id: data_id })
-    let shapes = JSON.parse(data.shapes)
-    if (idea_only) {
-        shapes = shapes.filter(shape => shape.type === 'node')
-        return shapes
-    } 
-    return shapes
+export const fetchSavedShapes = async ({ data_id = "cur", idea_only = false }) => {
+	let data = await fetchDoc({ collection: 'data', id: data_id })
+	let shapes = JSON.parse(data.shapes)
+	if (idea_only) {
+		shapes = shapes.filter(shape => shape.type === 'node')
+		return shapes
+	}
+	return shapes
 }
 
 export const getNodes = (shapes, nodes = []) => {
-    shapes.forEach(shape => {
-        if (shape.type === 'node') {
-            nodes.push(shape)
-        } else if (shape.type === 'new_frame') {
-            const children = editor
-                .getSortedChildIdsForParent(shape.id)
-                .map(id => editor.getShape(id))
-                getNodes(children, nodes)
-        }
-    })
-    return nodes
+	shapes.forEach(shape => {
+		if (shape.type === 'node') {
+			nodes.push(shape)
+		} else if (shape.type === 'new_frame') {
+			const children = editor
+				.getSortedChildIdsForParent(shape.id)
+				.map(id => editor.getShape(id))
+			getNodes(children, nodes)
+		}
+	})
+	return nodes
 }
 
-export async function createArrowBetweenShapes (
+export function createArrowBetweenShapes({
 	editor,
-	relationship
-) {
+	relationship,
+}) {
 	console.log('relationship: ', relationship)
+
+	let ids = []
 
 	relationship.forEach((rel) => {
 		const srcId = rel.srcId
@@ -46,7 +49,7 @@ export async function createArrowBetweenShapes (
 		const text = rel.relation
 
 		if (!srcShape || !dstShape) {
-			throw new Error('Could not find shape')
+			return
 		}
 
 		const srcBounds = editor.getShapePageBounds(srcShape)
@@ -67,7 +70,27 @@ export async function createArrowBetweenShapes (
 			y: 0.5,
 		}
 
+		// // If an arrow already exists between nodes, update it
+		const existingArrow = editor.getShapes().find(
+			(s) =>
+				s.type === 'arrow' &&
+				s.props.start.boundShapeId === srcId &&
+				s.props.end.boundShapeId === dstId
+		)
+
+		if (existingArrow) {
+			editor.updateShape({
+				id: existingArrow.id,
+				props: {
+					text: text,
+				},
+			})
+			return
+		}
+
 		const newShapeId = createShapeId()
+		console.log("new arrow id: ", newShapeId)
+		ids.push(newShapeId)
 		editor.createShape({
 			id: newShapeId,
 			type: 'arrow',
@@ -75,13 +98,15 @@ export async function createArrowBetweenShapes (
 				start: {
 					type: 'binding',
 					boundShapeId: srcId,
-					normalizedAnchor: normalizedSrcAnchor, 
+					normalizedAnchor: normalizedSrcAnchor,
+					isPrecise: false,
 					isExact: false,
 				},
 				end: {
 					type: 'binding',
 					boundShapeId: dstId,
 					normalizedAnchor: normalizedDstAnchor,
+					isPrecise: false,
 					isExact: false,
 				},
 				arrowheadStart: 'none',
@@ -91,4 +116,6 @@ export async function createArrowBetweenShapes (
 			},
 		})
 	})
+
+	return ids
 }

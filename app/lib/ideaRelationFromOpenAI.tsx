@@ -9,7 +9,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `You are a very smart and experienced group work facilitator that is able to the relations between ideas on a shared whiteboard so as to stimulate team's mutual awareness and discussion. Your job is to identify the relations among team members. Please use the provided relation types. Plus, output the confidence score of prediction of each relation as well. Return the relations in the provided JSON format.`
+const systemPrompt = `You are a very smart and experienced group work facilitator that is able to the relations between ideas on a shared whiteboard so as to stimulate team's mutual awareness and discussion. Your job is to identify the relations among team members. Please use the provided relation types. Plus, output the confidence score of prediction of each relation as well. Each pair of ideas can only have single relation type, do not repeatedly generate relations for a same pair. Return the relations in the provided JSON format.`
 
 const assistantPrompt = `
 The relation list is as follow:
