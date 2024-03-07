@@ -39,6 +39,7 @@ export async function makeRealText(editor: Editor) {
 		// so our api key is hidden.
 		const openAiResponse = await fetchFromOpenAi(apiKeyFromDangerousApiKeyInput, {
 			model: 'gpt-4-vision-preview',
+			// model: process.env.MODEL_VERSION,
 			max_tokens: 4096,
 			temperature: 0,
 			messages: prompt,

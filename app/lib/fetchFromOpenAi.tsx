@@ -90,7 +90,7 @@ export type GPT4Message = {
 }
 
 export type GPT4CompletionRequest = {
-	model: 'gpt-4-vision-preview' | 'gpt-4-1106-preview' | 'gpt-4'
+	model: string | undefined
 	messages: GPT4Message[]
 	response_format?: object | undefined
 	functions?: unknown[] | undefined

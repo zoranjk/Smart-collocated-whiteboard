@@ -132,11 +132,12 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 	override getDefaultProps(): NodeShape {
 
-		const userPreference = getUserPreferences()
+		const userColor = getUserPreferences().color
+
+		console.log("user: ", getUserPreferences())
 
 		return {
-			// color: '#ffb703',
-			color: userPreference.color,
+			color: userColor != undefined ? userColor : '#ffb703',
 			size: 'l',
 			text: '',
 			w: NOTE_SIZE,

@@ -8,10 +8,10 @@ import {
     fetchFromOpenAi,
 } from './fetchFromOpenAi'
 
-// the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you are a very smart and careful agent that can help teams remember their generated content related to the current discussion. Your task is to identify the notes on whiteboard relevant to the ongoing disucsison. You are given a list of note contents and transcript of discussion. Return the relevant notes. For each note, also highlight the short segment of discussion relevant to the note. Return the results in the required list format.`
+// This file is responsible for extracting key information from team conversation using OpenAI's model.
+const systemPrompt = `Imagine you are a very smart and careful team facilitator that can help teams to extract key information in their disucssion. Your task is to identify those key information from a conversation transcript. You are given a list of idea note contents and transcript of discussion. Please return the list of key information, each item should be a short summary of unique key inforamtion that you think is relevant to the provided ideas. For each note, also highlight which existing note it may relate to. Return the results in the required JSON format.`
 const assistantPrompt = `
-The input JSON format is a list of notes that you are going to conduct information retrieval upon:
+The input JSON format is a list of notes and transcript of discussion:
 {
     "notes": [
         {
@@ -32,9 +32,8 @@ The output JSON objects of ideas follow this format:
 {
     "notes": [
         {
-            "id": "1",
-            "text": "text of the idea",
-			"segment": "Relevant segment of discussion"
+            "text": "short phrase of the key information from transcript",
+			related_notes: ["note_id_1", "note_id_2", ...]
 		},
 		{
 			...
@@ -47,10 +46,10 @@ The output JSON objects of ideas follow this format:
 `
 
 // The ideas and groups are optional. If they are not provided, we will do global affinity diagramming.
-export async function retrieveInformation({ editor, transcript = "" }) {
+export async function extractInformation({ editor, transcript = "" }) {
 
     // first, we build the prompt that we'll send to openai.
-    console.log("Calling getAffinityDiagramming")
+    console.log("Calling extractInformation")
     // console.log("Ideas: ", ideas)
     const prompt = await buildPromptForOpenAi(editor, transcript)
 

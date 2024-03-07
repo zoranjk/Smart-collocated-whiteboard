@@ -94,7 +94,7 @@ const FeatureMenu = track(() => {
 	)
 })
 
-const UpdateRelationHints = (editor) => {
+const UpdateRelationHints = (editor, isRelHintActive) => {
 
 	const idea_nodes = editor.getCurrentPageShapes().filter((shape) => shape.type === "node")
 	const ideas = idea_nodes.map((node) => {
@@ -106,12 +106,16 @@ const UpdateRelationHints = (editor) => {
 
 	const input = { "ideas": ideas }
 	getRelationHints(input).then((relations) => {
+		// avoid the case when the user has disabled the relation hint but api already being called
+		if (!isRelHintActive) {
+			return
+		}
 		// set confidence threshold to 0.7
 		const threshold = 0.7
 		const filteredRelations = relations.filter((relation) => relation.confidence > threshold)
 		console.log("Filtered relations: ", relations)
 		if (filteredRelations.length > 0) {
-			const rel_ids = createArrowBetweenShapes({editor, relationship: filteredRelations})
+			const rel_ids = createArrowBetweenShapes({ editor, relationship: filteredRelations })
 			console.log("rel ids: ", rel_ids)
 			editor.setHintingShapes(rel_ids)
 		}
@@ -171,6 +175,7 @@ export default function App() {
 	const [showTopZone, setShowTopZone] = useState(false)
 	const [topZoneContent, setTopZoneContent] = useState(null)
 	const [editor, setEditor] = useState(null)
+	const isRelHintActive = useSelector((state) => state.global.isRelHintActive)
 	const roomId = "test"
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
@@ -217,6 +222,15 @@ export default function App() {
 		return `${randomAdjective}${randomNoun}${randomNumber}`;
 	}
 
+	useEffect(() => {
+		function callRelationHints() {
+			UpdateRelationHints(editor, isRelHintActive)
+		}
+		if (isRelHintActive) {
+			setInterval(callRelationHints, 10000);
+		}
+	}, [isRelHintActive])
+
 	return (
 		<div className='editor'>
 			<Tldraw
@@ -231,14 +245,15 @@ export default function App() {
 				// onUiEvent={handleUiEvent}
 				components={components}
 				onMount={editor => {
-					editor.on('event', event => {
-						setEditor(editor)
-						handleEvent(event, editor)
-					})
 
 					editor.user.updateUserPreferences({
 						color: generateRandomHexColor(),
 						name: generateRandomUsername()
+					})
+
+					editor.on('event', event => {
+						setEditor(editor)
+						handleEvent(event, editor)
 					})
 
 					editor.getInitialMetaForShape = (shape) => {
@@ -253,12 +268,8 @@ export default function App() {
 						}
 					}
 
-					function callRelationHints() {
-						UpdateRelationHints(editor)
-					}
-
 					// Call myFunction every 15 seconds
-					setInterval(callRelationHints, 15000);
+					// setInterval(callRelationHints, 15000);
 
 				}}
 				// store={store}

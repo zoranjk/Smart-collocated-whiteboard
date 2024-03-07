@@ -7,6 +7,7 @@ import {
 	MessageContent,
 	fetchFromOpenAi,
 } from './fetchFromOpenAi'
+import { env } from 'process'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
 const systemPrompt = `Imagine you are a very smart and experienced team leader that is able to identify the common interesting themes behind a group of ideas from different people. Your task is to identify the common underlying themes among ideas, and then group them based on your proposed themes. You need to propose differents ways of grouping these items from diverse thinking perspectives. Plus, please also explain the brief rules of thumb of each way of grouping, as well as the short name of this grouping. Note that user may provide some instructions as grouping direction, we should follow it if provided. Be creative and logical. Think different ways of grouping first, then create the rules of thumb for each group, then create themes, then group ideas based on themes within each group. Note that an idea may be already assigned to a topic group ("pre_topic", otherwise it is undefined). In this case, you need to include the old group name in the returned JSON as "pre_topic" of the idea. The explanation of input JSON format is below. Do not use the same group topic as the original ones. Be creative and logical. Return the grouping results in the required list format.`
@@ -77,6 +78,9 @@ export async function getAffinityDiagramming({editor, ideas = [], instruction = 
 
 		// make a request to openai. `fetchFromOpenAi` is a next.js server action,
 		// so our api key is hidden.
+
+		console.log("model: ", env)
+
 		const openAiResponse = await fetchFromOpenAi(apiKeyFromDangerousApiKeyInput, {
 			model: 'gpt-4-1106-preview',
 			response_format: { type: 'json_object' },

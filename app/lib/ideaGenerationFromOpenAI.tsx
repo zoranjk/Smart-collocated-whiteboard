@@ -43,6 +43,7 @@ export async function generateIdeas ({ existing_ideas, topic="", instruction="" 
 		// so our api key is hidden.
 		const openAiResponse = await fetchFromOpenAi(apiKeyFromDangerousApiKeyInput, {
 			model: 'gpt-4-1106-preview',
+			// model: process.env.MODEL_VERSION,
 			response_format: { type: 'json_object' },
 			max_tokens: 4096,
 			temperature: 0,

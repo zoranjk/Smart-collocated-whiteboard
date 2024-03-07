@@ -71,7 +71,7 @@ export function createArrowBetweenShapes({
 		}
 
 		// // If an arrow already exists between nodes, update it
-		const existingArrow = editor.getShapes().find(
+		const existingArrow = editor.getCurrentPageShapes().find(
 			(s) =>
 				s.type === 'arrow' &&
 				s.props.start.boundShapeId === srcId &&
@@ -86,6 +86,18 @@ export function createArrowBetweenShapes({
 				},
 			})
 			return
+		}
+
+		// If the reverse arrow already exists, delete it
+		const existingReverseArrow = editor.getCurrentPageShapes().find(
+			(s) =>
+				s.type === 'arrow' &&
+				s.props.start.boundShapeId === dstId &&
+				s.props.end.boundShapeId === srcId
+		)
+
+		if (existingReverseArrow) {
+			editor.deleteShape(existingReverseArrow.id)
 		}
 
 		const newShapeId = createShapeId()

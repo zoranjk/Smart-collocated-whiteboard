@@ -21,15 +21,18 @@ import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
+import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 import { getAffinityDiagramming } from '../lib/affinityDiagrammingFromOpenAI'
+import { extractInformation } from '../lib/extractKeyInfoFromOpenAI'
 import { writeDoc, fetchDocs } from '../firebase'
 import { useSelector, useDispatch } from 'react-redux'
-import { setCurAffinity, setTopZonePurpose, setShowSpeechOptions } from '../redux/reducers/globalReducer'
+import { setCurAffinity, setTopZonePurpose, setShowSpeechOptions, setIsRelHintActive } from '../redux/reducers/globalReducer'
 import { saveShapesOnCurPage, fetchSavedShapes } from '../lib/utils/helper'
 import { retrieveInformation } from '../lib/infoRetrievalFromOpenAI'
 import { groupByTopic } from '../lib/groupByTopicFromOpenAI'
+import { CustomSwitch } from './UtilComponent'
 import { AudioRecorder } from './SpeechRecorder'
 import '../style.css'
 
@@ -40,10 +43,13 @@ export const GlobalMenu = ({ editor }) => {
 	const [selectedItem, setSelectedItem] = useState('')
 	const [instruction, setInstruction] = useState('')
 	const [infoRetrieval, setInfoRetrieval] = useState([])
+	const [extractedInfo, setExtractedInfo] = useState([])
 	const [groups, setGroups] = useState([])
 	const dispatch = useDispatch()
+	const isRelHintActive = useSelector((state) => state.global.isRelHintActive)
 	const transcript = useSelector((state) => state.global.transcript)
 	const showSpeechOptions = useSelector((state) => state.global.showSpeechOptions)
+	// const [toggleRelationHint, setToggleRelationHint] = useState(false)
 
 	const GroupWithExistingAffinity = ({ affinity = [], has_loaded = false }) => {
 		const curPage = editor.getCurrentPage()
@@ -183,6 +189,12 @@ export const GlobalMenu = ({ editor }) => {
 		editor.setCamera({ x: x, y: y, global_z }, { duration: 500 })
 	}
 
+	const handleToggleRelationHint = e => {
+		dispatch(setIsRelHintActive(!isRelHintActive))
+	}
+
+
+
 	const handleGlobalGrouping = e => {
 		console.log('Doing global grouping...')
 		setLoading(true)
@@ -207,6 +219,18 @@ export const GlobalMenu = ({ editor }) => {
 			setLoading(false)
 			setInfoRetrieval(res)
 			setSelectedItem('info-retrieval-group')
+		})
+	}
+
+	const handleExtractInfoThroughSpeech = e => {
+		console.log('Extracting information through speech...')
+		setLoading(true)
+
+		extractInformation({ editor, transcript }).then(res => {
+			console.log('Extracted info: ', res)
+			setLoading(false)
+			setExtractedInfo(res)
+			setSelectedItem('extract-keyword-group')
 		})
 	}
 
@@ -307,46 +331,6 @@ export const GlobalMenu = ({ editor }) => {
 						})
 					})
 
-					// console.log("fetched shapes: ", shapes)
-					// // only add those new added shapes to the current affinity page
-					// const shapesOnCurPage = editor.getCurrentPageShapes()
-					// const newShapes = shapes.filter(shape => !page.meta.corMainPageShapeId.contains(shape.id))
-					// const ratainedShapes = shapesOnCurPage.filter(shape => shapes.find(s => shape.meta.corMainPageShapeId === s.id))
-					// console.log("existing shapes: ", existingShapes)
-					// console.log("corMainPageShapeId: ", shapesOnCurPage.map(shape => shape.meta.corMainPageShapeId))
-					// const ShapesToDelete = shapesOnCurPage.filter(shape => !shapes.find(s => shape.meta.corMainPageShapeId === s.id))
-					// console.log("delated shapes: ", ShapesToDelete)
-
-					// const newIdeas = newShapes.map(shape => {
-					// 	const id = createShapeId()
-					// 	return {
-					// 		...shape,
-					// 		id: id,
-					// 		parentId: page.id,
-					// 		meta: {
-					// 			corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
-					// 		}
-					// 	}
-					// })
-					// editor.createShapes(newIdeas)
-
-					// // update the text of the existing shapes to the latest text on the main page
-					// ratainedShapes.forEach(shape => {
-					// 	const mainPageShape = shapes.find(s => s.id === shape.meta.corMainPageShapeId)
-					// 	editor.updateShape({
-					// 		...shape,
-					// 		props: {
-					// 			...shape.props,
-					// 			text: mainPageShape.props.text
-					// 		}
-					// 	})
-					// })
-
-					// // delete the shapes that are not on the main page
-					// editor.deleteShapes(ShapesToDelete.map(shape => shape.id))
-
-
-
 					setTimeout(() => {
 						GroupWithExistingAffinity({ affinity, has_loaded })
 					}, 500)
@@ -355,6 +339,11 @@ export const GlobalMenu = ({ editor }) => {
 				)
 			}
 		})
+	}
+
+	const handleRelationHintButtonClicked = e => {
+		console.log('Toggle relation hint...')
+		setSelectedItem('toggle-relation-hint')
 	}
 
 	return (
@@ -375,8 +364,8 @@ export const GlobalMenu = ({ editor }) => {
 						icon={<img style={{ width: 20, height: 20 }} src='affinity.png' alt='Affinity' />}
 					/>
 					<BottomNavigationAction
-						label='Library'
-						icon={<img style={{ width: 20, height: 20 }} src='inbox.png' alt='History' />}
+						label='Preference'
+						icon={<img style={{ width: 20, height: 20 }} src='preferences.png' alt='Preference' />}
 					/>
 					<BottomNavigationAction label='Speech' icon={<MicIcon />} />
 				</BottomNavigation>
@@ -519,8 +508,8 @@ export const GlobalMenu = ({ editor }) => {
 				<Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
 					<Box
 						onPointerDown={stopEventPropagation}
-						onTouchStart={handleUseExistingGroup}
-						onClick={handleUseExistingGroup}
+						onTouchStart={handleRelationHintButtonClicked}
+						onClick={handleRelationHintButtonClicked}
 						className={`menu-item ${value === 1 ? 'active' : ''}`}
 						style={{
 							animationDelay: `${1 * 100}ms`,
@@ -546,7 +535,7 @@ export const GlobalMenu = ({ editor }) => {
 							alt='Selected grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
-							Idea snapshot
+							Toggle relation hint
 						</Typography>
 					</Box>
 					<Box
@@ -576,7 +565,7 @@ export const GlobalMenu = ({ editor }) => {
 							alt='conditional grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
-							Save idea snapshot
+							User preference
 						</Typography>
 					</Box>
 				</Box>
@@ -616,6 +605,34 @@ export const GlobalMenu = ({ editor }) => {
 										<img style={{ width: 20, height: 20 }} src='grouping.png' alt='grouping' />
 										<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
 											Get relevant ideas
+										</Typography>
+									</Box>
+									<Box
+										onPointerDown={stopEventPropagation}
+										onTouchStart={handleExtractInfoThroughSpeech}
+										onClick={handleExtractInfoThroughSpeech}
+										className={`menu-item ${value === 2 ? 'active' : ''}`}
+										style={{
+											animationDelay: `${0 * 100}ms`,
+											marginTop: 10,
+											width: 'auto',
+											marginLeft: 50,
+											display: 'inline-flex',
+											border: '1px solid black',
+											borderRadius: '10px',
+											whiteSpace: 'nowrap',
+											padding: '5px 20px',
+											height: 'auto',
+											flexDirection: 'row',
+											justifyContent: 'start',
+											alignItems: 'start',
+											backgroundColor: 'rgba(237,237,233,0.7)',
+											cursor: 'pointer',
+										}}
+									>
+										<img style={{ width: 20, height: 20 }} src='grouping.png' alt='grouping' />
+										<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
+											Extract key information
 										</Typography>
 									</Box>
 								</Box>
@@ -672,6 +689,19 @@ export const GlobalMenu = ({ editor }) => {
 							</Paper>
 						</Box>
 					))}
+				{
+					selectedItem == 'toggle-relation-hint' && (
+						<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", ml: 2 }}>
+							<FormControlLabel
+								control={<CustomSwitch checked={isRelHintActive}
+									onChange={handleToggleRelationHint} />}
+								label="Relation hint"
+								sx={{ color: "black" }}
+							/>
+
+						</Box>
+					)
+				}
 				{
 					selectedItem == 'enter-custom-grouping' && (
 						<Box sx={{ display: "inline-flex", marginTop: 2 }}>
@@ -754,6 +784,7 @@ export const GlobalMenu = ({ editor }) => {
 												marginBottom: '20px',
 												cursor: 'pointer',
 											}}
+											key={index}
 											// move camera to the selected shape
 											onClick={() => handleRetrievalClicked(info.id)}
 											onTouchStart={() => handleRetrievalClicked(info.id)}
@@ -774,6 +805,78 @@ export const GlobalMenu = ({ editor }) => {
 												</Typography>
 												<Typography variant='body2'>"{info.segment}"</Typography>
 											</Box>
+										</Paper>
+									)
+								}) : (
+									<Paper
+										elevation={2}
+										sx={{
+											width: '220px',
+											padding: 1,
+											borderRadius: '5px',
+											marginRight: '0px',
+											marginBottom: '20px',
+											cursor: 'pointer',
+										}}
+									>
+										<Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+											<Typography variant='body2'>No relevant ideas found</Typography>
+										</Box>
+									</Paper>
+
+								)
+							}
+						</Box>
+					)
+				}
+				{
+					selectedItem == 'extract-keyword-group' && loading == false && (
+						<Box>
+							{
+								extractedInfo.length > 0 ? extractedInfo.map((info, index) => {
+									return (
+										<Paper
+											elevation={2}
+											sx={{
+												width: '220px',
+												padding: 1,
+												borderRadius: '5px',
+												marginRight: '0px',
+												marginBottom: '20px',
+												cursor: 'pointer',
+											}}
+											key={index}
+											// move camera to the selected shape
+											onClick={() => handleRetrievalClicked(info.id)}
+											onTouchStart={() => handleRetrievalClicked(info.id)}
+										>
+											<Box
+												sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
+											>
+												<Typography
+													sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+													variant='body2'
+												>
+													{info.text}
+												</Typography>
+											</Box>
+											{
+												info.related_notes.length > 0 && (
+													<Box sx={{ marginTop: 2 }}>
+														<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
+															Related notes:
+														</Typography>
+														{
+															info.related_notes.map((note_id, index) => {
+																const note_text = editor.getShape(note_id).props.text
+																return (
+																	<Typography variant='body2' key={index}>"{note_text}"</Typography>
+																)
+															})
+														}
+													</Box>
+												)
+											}
 										</Paper>
 									)
 								}) : (
