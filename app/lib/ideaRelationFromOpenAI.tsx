@@ -9,7 +9,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `You are a very smart and experienced group work facilitator that is able to the relations between ideas on a shared whiteboard so as to stimulate team's mutual awareness and discussion. Your job is to identify the relations among team members. Please use the provided relation types. Plus, output the confidence score of prediction of each relation as well. Each pair of ideas can only have single relation type, do not repeatedly generate relations for a same pair. Return the relations in the provided JSON format.`
+const systemPrompt = `You are a very smart and experienced group work facilitator that is able to the relations between ideas on a shared whiteboard so as to stimulate team's mutual awareness and discussion. Your job is to identify the relations among ideas provided by team members. Please use the provided relation types. Plus, output the confidence score of prediction of each relation as well. Each pair of ideas can only have single relation type, do not repeatedly generate relations for a same pair. Return the relations in the provided JSON format.`
 
 const assistantPrompt = `
 The relation list is as follow:
@@ -28,7 +28,7 @@ The relation list is as follow:
     "Antonym": "Indicates that two concepts have opposite meanings.",
     "Derived from": "Indicates that one concept is derived from another, often used for words that have a common root or origin.",
     "Instance of": "Similar to IsA, but typically used for instances of a class or category."
-  }
+}
 
 The input JSON format is as follow:
 
@@ -37,13 +37,16 @@ The input JSON objects of ideas and topics follow this format:
 	"ideas": [
 		{
 			"id": "idea 1 id",
-			"text": "text of the idea 1"
+			"text": "text of the idea 1",
+			"creator": "the creator name of the idea 1"
 		},
 		{
-			"id": "idea 1 id",
-			"text": "text of the idea 1"
+			"id": "idea 2 id",
+			"text": "text of the idea 2",
+			"creator": "the creator name of the idea 2"
 		}
-		,...
+		,
+		...
 	]
 }
 
@@ -71,12 +74,12 @@ Note you should use group name and idea id provided to you in the input JSON obj
 `
 
 // Given frame name and correpsonding ideas, this function will return the relationship between the frames and how to merge two frames
-export async function getRelationHints (ideas) {
+export async function getRelationHints ({ideas, crossUserOnly=false}) {
 
     // console.log('generateFrameRelation input: ', ideas)
 
 	// first, we build the prompt that we'll send to openai.
-	const prompt = await buildPromptForOpenAi(ideas)
+	const prompt = await buildPromptForOpenAi(ideas, crossUserOnly)
 
 	// TODO: create effect to show loading edges
 
@@ -117,7 +120,7 @@ export async function getRelationHints (ideas) {
 	}
 }
 
-async function buildPromptForOpenAi (ideas) {
+async function buildPromptForOpenAi (ideas, crossUserOnly) {
 
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
@@ -130,6 +133,10 @@ async function buildPromptForOpenAi (ideas) {
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
 			type: 'text',
 			text: ideas !== null ? JSON.stringify(ideas) : 'Oh, it looks like there was no input group and idea.',
+		},
+		{
+			type: 'text',
+			text: crossUserOnly ? 'You should only consider relations between ideas from different creators.' : 'You can consider relation between any ideas provided, regardless of the creator.',
 		}
 	]
 

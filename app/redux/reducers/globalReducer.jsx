@@ -7,6 +7,7 @@ const initialState = {
 	transcript: '',
 	showSpeechOptions: false,
 	isRelHintActive: false,
+	isCrossUserRelOnly: false
 }
 
 const userSlice = createSlice({
@@ -31,9 +32,12 @@ const userSlice = createSlice({
 		setIsRelHintActive: (state, action) => {
 			state.isRelHintActive = action.payload
 		},
+		setIsCrossUserRelOnly: (state, action) => {
+			state.isCrossUserRelOnly = action.payload
+		},
 	},
 })
 
-export const { setCurAffinity, setTopZonePurpose, setIsGroupingFinished, setTranscript, setShowSpeechOptions, setIsRelHintActive } = userSlice.actions
+export const { setIsCrossUserRelOnly, setCurAffinity, setTopZonePurpose, setIsGroupingFinished, setTranscript, setShowSpeechOptions, setIsRelHintActive } = userSlice.actions
 
 export default userSlice.reducer

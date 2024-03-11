@@ -94,18 +94,19 @@ const FeatureMenu = track(() => {
 	)
 })
 
-const UpdateRelationHints = (editor, isRelHintActive) => {
+const UpdateRelationHints = (editor, isRelHintActive, isCrossUserRelOnly) => {
 
 	const idea_nodes = editor.getCurrentPageShapes().filter((shape) => shape.type === "node")
 	const ideas = idea_nodes.map((node) => {
 		return {
 			id: node.id,
-			text: node.props.text
+			text: node.props.text,
+			creator: node.props.lastUserName
 		}
 	})
 
 	const input = { "ideas": ideas }
-	getRelationHints(input).then((relations) => {
+	getRelationHints({input, crossUserOnly: isCrossUserRelOnly}).then((relations) => {
 		// avoid the case when the user has disabled the relation hint but api already being called
 		if (!isRelHintActive) {
 			return
@@ -176,6 +177,7 @@ export default function App() {
 	const [topZoneContent, setTopZoneContent] = useState(null)
 	const [editor, setEditor] = useState(null)
 	const isRelHintActive = useSelector((state) => state.global.isRelHintActive)
+	const isCrossUserRelOnly = useSelector((state) => state.global.isCrossUserRelOnly)
 	const roomId = "test"
 	// const handleUiEvent = useCallback<TLUiEventHandler>((name, data) => {
 	// 	console.log('Name: ', name)
@@ -224,7 +226,7 @@ export default function App() {
 
 	useEffect(() => {
 		function callRelationHints() {
-			UpdateRelationHints(editor, isRelHintActive)
+			UpdateRelationHints(editor, isRelHintActive, isCrossUserRelOnly)
 		}
 		if (isRelHintActive) {
 			setInterval(callRelationHints, 10000);
@@ -242,6 +244,7 @@ export default function App() {
 				tools={customTools}
 				overrides={uiOverrides}
 				assetUrls={customAssetUrls}
+				// persistenceKey="test"
 				// onUiEvent={handleUiEvent}
 				components={components}
 				onMount={editor => {

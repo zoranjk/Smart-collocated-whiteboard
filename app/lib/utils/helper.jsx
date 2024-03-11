@@ -131,3 +131,14 @@ export function createArrowBetweenShapes({
 
 	return ids
 }
+
+export const saveSnapshot = (editor, name) => {
+	const snapshot = {"snapshot": editor.store.getSnapshot(), "name": name}
+	console.log("Snapshot: ", snapshot)
+	writeDoc({ collection_name: 'snapshots', data: snapshot })
+}
+
+export const loadSnapshot = async (editor) => {
+	const snapshot = await fetchDocs({ collection_name: 'snapshots' })
+	editor.store.setSnapshot(JSON.parse(snapshot[0]))
+}

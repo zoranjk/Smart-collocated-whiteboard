@@ -171,7 +171,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide, lastUserColor },
+			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide, lastUserName },
 		} = shape
 
 		const editor = useEditor()

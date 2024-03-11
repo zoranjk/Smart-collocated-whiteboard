@@ -35,6 +35,7 @@ import { createTextSvgElementFromSpans } from '../lib/utils/createTextSvgElement
 import { FrameHeading } from './components/FrameHeading'
 import { FrameChip } from './components/FrameChip'
 import { GroupPanel } from './components/GroupPanel'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import '../style.css'
 import { useEffect, useState } from 'react'
@@ -127,6 +128,10 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 			[shape.id]
 		)
 
+		const handleDelete = () => {
+			editor.deleteShapes([shape.id])
+		}
+
 
 		useEffect(() => {
 			if (!editor.getSelectedShapeIds().includes(shape.id)) {
@@ -171,6 +176,9 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 									</IconButton>
 									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(2)} style={{ pointerEvents: "all" }}>
 										<img src="idea.png" alt="Icon" style={{ width: 30, height: 30 }} />
+									</IconButton>
+									<IconButton onPointerDown={stopEventPropagation} onClick={handleDelete} style={{ pointerEvents: "all" }}>
+									<img src="delete.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton>
 								</Stack>
 							</div>
