@@ -176,7 +176,7 @@ export default function App() {
 	const username = searchParams.get('username');
 	const roomId = searchParams.get('roomId');
 
-	const WS_ADDRESS = "localhost"
+	const WS_ADDRESS = "104.154.83.173"
 	const WS_PORT = "5800"
 
 	const HOST_URL =
@@ -270,9 +270,6 @@ export default function App() {
 							return { history: [] }
 						}
 					}
-
-					// Call myFunction every 15 seconds
-					// setInterval(callRelationHints, 15000);
 
 				}}
 				// store={store}
