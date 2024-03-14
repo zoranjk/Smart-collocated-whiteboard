@@ -131,10 +131,9 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	// override hideSelectionBoundsFg = () => true
 
 	override getDefaultProps(): NodeShape {
-
 		const userColor = getUserPreferences().color
 
-		console.log("user: ", getUserPreferences())
+		console.log('user: ', getUserPreferences())
 
 		return {
 			color: userColor != undefined ? userColor : '#ffb703',
@@ -148,7 +147,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			growY: 0,
 			isHighlight: false,
 			initSlide: false,
-			lastUserName: "",
+			lastUserName: '',
 		}
 	}
 
@@ -171,7 +170,17 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide, lastUserColor },
+			props: {
+				color,
+				font,
+				size,
+				align,
+				text,
+				verticalAlign,
+				isHighlight,
+				initSlide,
+				lastUserColor,
+			},
 		} = shape
 
 		const editor = useEditor()
@@ -208,8 +217,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}, [editor.getSelectedShapeIds()])
 
 		const updateNoteSharedInfo = () => {
-
-			console.log("current user: ", editor.user)
+			console.log('current user: ', editor.user)
 
 			editor.updateShapes([
 				{
@@ -274,10 +282,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					isSlide
 						? 'slide-rotate-ver-right'
 						: isSlide != null
-							? 'slide-rotate-ver-right-revert'
-							: initSlide
-								? 'slide-rotate-ver-right-translate'
-								: ''
+						? 'slide-rotate-ver-right-revert'
+						: initSlide
+						? 'slide-rotate-ver-right-translate'
+						: ''
 				}
 				id={shape.id}
 				style={{
@@ -397,6 +405,23 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							</IconButton>
 						</div>
 					)}
+					{/* {loadingStatus == 'loaded' && (
+						<div>
+							<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
+								{subtasks.map((suggestion, index) => (
+									<Grid item xs={4} key={index}>
+										<RefinmentCard
+											index={index}
+											srcId={id}
+											setLoadingStatus={setLoadingStatus}
+											suggestion={suggestion.task}
+											editor={editor}
+										/>
+									</Grid>
+								))}
+							</Grid>
+						</div>
+					)} */}
 					{loadingStatus == 'search-bar' && (
 						<div style={{ display: 'flex', flexDirection: 'row' }}>
 							<div style={{ marginRight: '10px' }}>
@@ -434,9 +459,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							<img src="/loading.png" className="loading-icon" />
 						</div>
 					)}
-					{
-						loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />
-					}
+					{loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
 							<SummaryCard editor={editor} summary={summary} />

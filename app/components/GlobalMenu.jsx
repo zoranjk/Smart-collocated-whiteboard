@@ -661,6 +661,8 @@ export const GlobalMenu = ({ editor }) => {
 									marginRight: '0px',
 									marginBottom: '20px',
 									cursor: 'pointer',
+									background: 'linear-gradient(to right, #8f41e9, #578aef)',
+									color:'#fff'
 								}}
 							>
 								<Box
@@ -735,6 +737,8 @@ export const GlobalMenu = ({ editor }) => {
 									marginRight: '0px',
 									marginBottom: '20px',
 									cursor: 'pointer',
+									background: 'linear-gradient(to right, #8f41e9, #578aef)',
+									color:'#fff'
 								}}
 								onClick={() => {
 									writeDoc({ collection_name: 'affinity', data: group })
@@ -745,15 +749,15 @@ export const GlobalMenu = ({ editor }) => {
 									sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
 								>
 									<Typography
-										sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+										sx={{ fontWeight: 'bold', color: 'white', margin: '2.5px 5px 5px 5px' }}
 										variant='body2'
 									>
 										Groups:
 									</Typography>
 									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 										{Object.keys(group.themes).map((theme, index) => (
-											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 }}>
-												<Chip size='small' label={theme} />
+											<Box key={index} sx={{ marginRight: 1, marginBottom: 1, color: 'white', }}>
+												<Chip size='small' label={theme} color="primary"/>
 											</Box>
 										))}
 									</Box>
@@ -783,6 +787,8 @@ export const GlobalMenu = ({ editor }) => {
 												marginRight: '0px',
 												marginBottom: '20px',
 												cursor: 'pointer',
+												background: 'linear-gradient(to right, #8f41e9, #578aef)',
+												color:'#fff'
 											}}
 											key={index}
 											// move camera to the selected shape
@@ -793,7 +799,7 @@ export const GlobalMenu = ({ editor }) => {
 												sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
 											>
 												<Typography
-													sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+													sx={{ fontWeight: 'bold', color: '#fff', margin: '2.5px 5px 5px 5px' }}
 													variant='body2'
 												>
 													{info.text}
@@ -817,6 +823,8 @@ export const GlobalMenu = ({ editor }) => {
 											marginRight: '0px',
 											marginBottom: '20px',
 											cursor: 'pointer',
+											background: 'linear-gradient(to right, #8f41e9, #578aef)',
+											color:'#fff'
 										}}
 									>
 										<Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -844,6 +852,8 @@ export const GlobalMenu = ({ editor }) => {
 												marginRight: '0px',
 												marginBottom: '20px',
 												cursor: 'pointer',
+												background: 'linear-gradient(to right, #8f41e9, #578aef)',
+												color:'#fff'
 											}}
 											key={index}
 											// move camera to the selected shape
@@ -854,7 +864,7 @@ export const GlobalMenu = ({ editor }) => {
 												sx={{ display: 'flex', flexDirection: 'column', width: '100%', flexWrap: 'wrap' }}
 											>
 												<Typography
-													sx={{ fontWeight: 'bold', color: 'black', margin: '2.5px 5px 5px 5px' }}
+													sx={{ fontWeight: 'bold', color: '#fff', margin: '2.5px 5px 5px 5px' }}
 													variant='body2'
 												>
 													{info.text}
@@ -889,6 +899,8 @@ export const GlobalMenu = ({ editor }) => {
 											marginRight: '0px',
 											marginBottom: '20px',
 											cursor: 'pointer',
+											background: 'linear-gradient(to right, #8f41e9, #578aef)',
+											color:'#fff'
 										}}
 									>
 										<Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
