@@ -131,10 +131,9 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 	// override hideSelectionBoundsFg = () => true
 
 	override getDefaultProps(): NodeShape {
-
 		const userColor = getUserPreferences().color
 
-		console.log("user: ", getUserPreferences())
+		console.log('user: ', getUserPreferences())
 
 		return {
 			color: userColor != undefined ? userColor : '#ffb703',
@@ -148,7 +147,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			growY: 0,
 			isHighlight: false,
 			initSlide: false,
-			lastUserName: "",
+			lastUserName: '',
 		}
 	}
 
@@ -171,7 +170,17 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			type,
 			x,
 			y,
-			props: { color, font, size, align, text, verticalAlign, isHighlight, initSlide, lastUserName },
+			props: {
+				color,
+				font,
+				size,
+				align,
+				text,
+				verticalAlign,
+				isHighlight,
+				initSlide,
+				lastUserName,
+			},
 		} = shape
 
 		const editor = useEditor()
@@ -208,8 +217,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}, [editor.getSelectedShapeIds()])
 
 		const updateNoteSharedInfo = () => {
-
-			console.log("current user: ", editor.user)
+			console.log('current user: ', editor.user)
 
 			editor.updateShapes([
 				{
@@ -274,10 +282,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					isSlide
 						? 'slide-rotate-ver-right'
 						: isSlide != null
-							? 'slide-rotate-ver-right-revert'
-							: initSlide
-								? 'slide-rotate-ver-right-translate'
-								: ''
+						? 'slide-rotate-ver-right-revert'
+						: initSlide
+						? 'slide-rotate-ver-right-translate'
+						: ''
 				}
 				id={shape.id}
 				style={{
@@ -434,9 +442,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							<img src="/loading.png" className="loading-icon" />
 						</div>
 					)}
-					{
-						loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />
-					}
+					{loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
 							<SummaryCard editor={editor} summary={summary} />
