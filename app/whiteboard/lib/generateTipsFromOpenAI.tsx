@@ -2,33 +2,21 @@ import { Editor, TLShapeId, createShapeId } from '@tldraw/tldraw'
 import { GPT4Message, MessageContent, fetchFromOpenAi } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming sessions. During these sessions, every team member adds their notes to a whiteboard, each note touching on different facets a main subject or subtasks of a main goal. Your task involves analyzing a note that's currently being developed (source note), along with other existing notes (target notes). Your objective is to provide insights to a group of collaborators, inspiring them how they may collaborate between the source and target notes. At the same time, also identify the keywords (key phrases) in your answer that you think can be further explored. Highlight keyword as much as possible. Return the response in the provided JSON format.`
+const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming sessions. During these sessions, every team member adds their notes to a whiteboard, each note touching on different facets a main subject or subtasks of a main goal. Your task involves analyzing a note that's currently being developed (source note). Your objective is to generate three notes that have a (selectWard) relationship with the source note. Return the response in the provided JSON format.`
+// const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming sessions. During these sessions, every team member adds their notes to a whiteboard, each note touching on different facets a main subject or subtasks of a main goal. Your task involves analyzing a note that's currently being developed (source note), along with other existing notes (target notes). Your objective is to provide insights to a group of collaborators, inspiring them how they may collaborate between the source and target notes. At the same time, also identify the keywords (key phrases) in your answer that you think can be further explored. Highlight keyword as much as possible. Return the response in the provided JSON format.`
 
 const assistantPrompt = `
 The input JSON objects follow this format:
 {
-	"src_note": { "id": "src_id", "text": "content of the source note"},
-	"target_notes": [
-		{
-			"id": "1",
-			"text": "text of the note"
-		},
-		{
-			...
-		}
-	]
-	]
+	"source_note": "content of the source note",
+	"selectWord":"selectWord of the source note"
 }
 
 The returned JSON objects should follow this format:
 {
     "tips": [
         {
-            "dstId": "target note id",
-            "explanation": "text describing the details of this tip",
-						"keywords": ["keyword 1", "keyword 2", ...],
-						"relation": "relation type",
-						"target_note": "text of the target note"
+            "note": "word that have a (selectWord) relationship with the source note",
         },
         {
             ...
@@ -38,26 +26,29 @@ The returned JSON objects should follow this format:
 
 Example of return JSON object:
 {
+	"source_note": "book",
+	"selectWord":"at location"
+}
+
+Example of return JSON object:
+{
 	"tips": [
 		{
-			"dstId": "target note id",
-			"explanation": "Both note discuss the recent interest in design through the artificial intelligence (AI) lens is rapidly increasing. Designers, as a\
-			special user group interacting with AI, have received more attention in the Human-Computer Interaction\
-			community",
-			"keywords": ["user group", "aritical intelligence", "human-computer interaction"],
-			"relation": "part of",
-			"target_note": "text of the target note"
+			"note": "bookstore",
+		},
+		{
+			"note": "library",
+		},
+		{
+			"note": "classroom",
 		}
 	]
 }
-
-Note you should use the target id provided to you in the input JSON object. Please always generate relation between source note and each of target note.
-
 `
 
-export async function generateTipsForObject(editor: Editor, srcId: string) {
+export async function generateTipsForObject(editor: Editor, srcId: string, text: String) {
 	// first, we build the prompt that we'll send to openai.
-	const prompt = await buildPromptForOpenAi(editor, srcId)
+	const prompt = await buildPromptForOpenAi(editor, srcId, text)
 
 	// TODO: create effect to show loading edges
 
@@ -101,9 +92,13 @@ export async function generateTipsForObject(editor: Editor, srcId: string) {
 	}
 }
 
-async function buildPromptForOpenAi(editor: Editor, srcId: string): Promise<GPT4Message[]> {
+async function buildPromptForOpenAi(
+	editor: Editor,
+	srcId: string,
+	text: string
+): Promise<GPT4Message[]> {
 	// get all text within the current selection
-	const jsonInput = getShapesText(editor, srcId)
+	const jsonInput = getShapesText(editor, srcId, text)
 
 	console.log('shape text json: ', jsonInput)
 
@@ -112,7 +107,7 @@ async function buildPromptForOpenAi(editor: Editor, srcId: string): Promise<GPT4
 	const userMessages: MessageContent = [
 		{
 			type: 'text',
-			text: 'Here are several quick thinking notes, they are presented in a JSON format where text means the note content and id means the note id. Please generate tips for the creator of the source note about what things they can discuss with each target note creator, and generate which relation type between these two items is, relation type must be one of physically_related_to / functionally_related_to / spatially_related _to / conceptually_related_ to . Return the JSON objects that shows pair relationships. The input JSON format is as described in the assistant prompt. Below is the input JSON:',
+			text: 'Here is the source note and the selected word. Please  generate three notes that have a (selectWord) relationship with the source note. The input JSON format is as described in the assistant prompt. Below is the input JSON:',
 		},
 		{
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
@@ -129,22 +124,23 @@ async function buildPromptForOpenAi(editor: Editor, srcId: string): Promise<GPT4
 	]
 }
 
-function getShapesText(editor: Editor, srcId: string) {
+function getShapesText(editor: Editor, srcId: string, text: string) {
 	const allShapes = editor.getCurrentPageShapes()
 
-	const json = Array.from(allShapes)
-		.map((shape) => {
-			if (shape.type === 'node' && shape.id !== srcId) {
-				// @ts-expect-error
-				return { text: shape.props.text, id: shape.id }
-			}
-			return { text: null, id: null }
-		})
-		.filter((v) => v.text !== null && v.text !== '')
+	// const json = Array.from(allShapes)
+	// 	.map((shape) => {
+	// 		if (shape.type === 'node' && shape.id !== srcId) {
+	// 			// @ts-expect-error
+	// 			return { text: shape.props.text, id: shape.id }
+	// 		}
+	// 		return { text: null, id: null }
+	// 	})
+	// 	.filter((v) => v.text !== null && v.text !== '')
 
 	const res = {
-		source_note: { id: srcId, text: editor.getShape(srcId).props.text },
-		target_notes: json,
+		source_note: editor.getShape(srcId).props.text,
+		selectWord: text,
+		// target_notes: json,
 	}
 
 	return JSON.stringify(res)
