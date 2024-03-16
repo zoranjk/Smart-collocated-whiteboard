@@ -58,13 +58,30 @@ import { NodeShape } from './NodeShapeType'
 import { NodeShapeProps } from './NodeShapeProps'
 import '../style.css'
 import { NodeNestPop } from './NodeNestPop'
-
+import { Card, Button } from '@mui/material'
+import { createArrowBetweenShapes } from '@/app/whiteboard/lib/utils/helper'
 const NOTE_SIZE = 220
 const PADDING = 10
 const TAG_SIZE = 20
 
 const LABEL_PADDING = 16
 const MIN_SIZE_WITH_LABEL = 17 * 3
+
+const relationTypes = [
+	'is a',
+	'has a',
+	'part of',
+	'desires',
+	'used for',
+	'causes',
+	'capaable of',
+	'has property',
+	'at location',
+	'synonym',
+	'antonym',
+	'instance of',
+	'derived from',
+]
 
 // TEMP: user
 const users = [
@@ -232,11 +249,44 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}
 
 		const handleTips = () => {
+			setLoadingStatus('tip-loaded')
+		}
+
+		function hexTorgba(hex: string, a: number) {
+			if (hex.split('(')[0] == 'rgba') return hex
+			let rgba = 'rgba('
+			hex = hex.replace('#', '')
+			for (let i = 0; i < hex.length; i += 2) {
+				rgba += parseInt(hex.slice(i, i + 2), 16) + ','
+			}
+			rgba += a + ')'
+			return rgba
+		}
+
+		const handleType = (event: any, text: String) => {
 			setLoadingStatus('loading')
-			generateTipsForObject(editor, shape.id).then((tips) => {
-				setTips(tips)
-				setLoadingStatus('tip-loaded')
-				// console.log('Tips: ', tips)
+			let nowShape = editor.getShape(shape.id)
+			generateTipsForObject(editor, shape.id, text).then((tips) => {
+				setLoadingStatus('loaded')
+				let relationship = []
+				if (tips.length != 0) {
+					tips.forEach((note: any, index: number) => {
+						const shapeId = createShapeId()
+						editor.createShape({
+							id: shapeId,
+							type: 'node',
+							x: nowShape.x + 800 + (index == 1 ? 1 : 0) * 400,
+							y: nowShape.y + (index == 2 ? 1 : 0) * 300,
+							props: { text: note.note, color: hexTorgba(nowShape.props.color, 0.5) },
+						})
+						relationship.push({
+							srcId: shape.id,
+							dstId: shapeId,
+							relation: text,
+						})
+					})
+					createArrowBetweenShapes({ editor, relationship })
+				}
 			})
 		}
 
@@ -442,7 +492,45 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							<img src="/loading.png" className="loading-icon" />
 						</div>
 					)}
-					{loadingStatus == 'tip-loaded' && <NodeNestPop tips={tips} editor={editor} />}
+					{
+						loadingStatus == 'tip-loaded' && (
+							<Card
+								style={{
+									width: '440px',
+									padding: '10px',
+									display: 'flex',
+									flexWrap: 'wrap',
+									gap: '20px',
+								}}
+							>
+								<div
+									style={{ width: '100%', textAlign: 'center', height: '20px', fontSize: '20px' }}
+								>
+									Relation Types
+								</div>
+
+								{relationTypes.map((idea, index) => (
+									<Button
+										onPointerDown={stopEventPropagation}
+										style={{ display: 'block', marginBottom: '5px', width: '200px' }}
+										key={index}
+										onMouseDown={(e) => {
+											// e.stopPropagation()
+											// handleType(idea)
+										}}
+										onClick={(e) => {
+											e.stopPropagation()
+											handleType(e, idea)
+										}}
+										variant="outlined"
+									>
+										{idea}
+									</Button>
+								))}
+							</Card>
+						)
+						// <NodeNestPop tips={tips} editor={editor} />
+					}
 					{loadingStatus == 'summary-loaded' && (
 						<div>
 							<SummaryCard editor={editor} summary={summary} />

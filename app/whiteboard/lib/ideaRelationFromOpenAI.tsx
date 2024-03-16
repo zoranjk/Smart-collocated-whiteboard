@@ -23,7 +23,6 @@ The relation list is as follow:
     "Desires": "Indicates a desire or need associated with a concept.",
     "Causes": "Describes an event or action that leads to a particular result.",
     "Has property": "Indicates a characteristic or property of a concept.",
-    "Related to": "A general relationship indicating that two concepts are related in some way.",
     "Synonym": "Indicates that two concepts have the same or very similar meanings.",
     "Antonym": "Indicates that two concepts have opposite meanings.",
     "Derived from": "Indicates that one concept is derived from another, often used for words that have a common root or origin.",
