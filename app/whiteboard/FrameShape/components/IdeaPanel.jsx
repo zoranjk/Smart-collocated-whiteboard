@@ -107,7 +107,8 @@ export const IdeaPanel = ({ editor, shape }) => {
                                 {shape.meta.frameIdeas.map((idea, index) => {
                                     return (
                                         <Grid item xs={3}>
-                                            <Paper onPointerDown={stopEventPropagation} onClick={() => addIdeaToGroup(idea)} onTouchStart={() => addIdeaToGroup(idea)} sx={{ minHeight: "200px", padding: 1 }}>
+                                            <Paper onPointerDown={stopEventPropagation} onClick={() => addIdeaToGroup(idea)} onTouchStart={() => addIdeaToGroup(idea)} sx={{ minHeight: "200px", padding: 1, background: 'linear-gradient(to right, #8f41e9, #578aef)',
+											color:'#fff' }}>
                                                 <Box key={index} sx={{ pointerEvents: 'all', cursor: "pointer" }}>
                                                     <Typography sx={{
                                                         // whiteSpace: "nowrap", /* Prevent text from wrapping to the next line */

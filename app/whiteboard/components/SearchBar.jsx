@@ -94,7 +94,7 @@ export function SearchBar ({ searchHistories, setSearchHistories, width = 300 })
 					</IconButton>
 				</Search>
 			</Box>
-			{isKeyboardOpen && (
+			{/* {isKeyboardOpen && (
 				<div
 					style={{
 						position: 'absolute',
@@ -110,7 +110,7 @@ export function SearchBar ({ searchHistories, setSearchHistories, width = 300 })
 						onBlur={() => setIsKeyboardOpen(false)}
 					/>
 				</div>
-			)}
+			)} */}
 		</div>
 	)
 }

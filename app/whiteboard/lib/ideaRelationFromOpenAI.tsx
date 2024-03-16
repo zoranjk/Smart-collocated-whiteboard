@@ -23,7 +23,6 @@ The relation list is as follow:
     "Desires": "Indicates a desire or need associated with a concept.",
     "Causes": "Describes an event or action that leads to a particular result.",
     "Has property": "Indicates a characteristic or property of a concept.",
-    "Related to": "A general relationship indicating that two concepts are related in some way.",
     "Synonym": "Indicates that two concepts have the same or very similar meanings.",
     "Antonym": "Indicates that two concepts have opposite meanings.",
     "Derived from": "Indicates that one concept is derived from another, often used for words that have a common root or origin.",
@@ -74,9 +73,8 @@ Note you should use group name and idea id provided to you in the input JSON obj
 `
 
 // Given frame name and correpsonding ideas, this function will return the relationship between the frames and how to merge two frames
-export async function getRelationHints ({ideas, crossUserOnly=false}) {
-
-    // console.log('generateFrameRelation input: ', ideas)
+export async function getRelationHints({ ideas, crossUserOnly = false }) {
+	// console.log('generateFrameRelation input: ', ideas)
 
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildPromptForOpenAi(ideas, crossUserOnly)
@@ -108,7 +106,7 @@ export async function getRelationHints ({ideas, crossUserOnly=false}) {
 
 		const response = openAiResponse.choices[0].message.content
 		const parsed_res = JSON.parse(response)
-        return parsed_res.relations
+		return parsed_res.relations
 		// populate the response shape with the html we got back from openai.
 		// TODO: populate the edges between selected shapes
 	} catch (e) {
@@ -119,8 +117,7 @@ export async function getRelationHints ({ideas, crossUserOnly=false}) {
 	}
 }
 
-async function buildPromptForOpenAi (ideas, crossUserOnly) {
-
+async function buildPromptForOpenAi(ideas, crossUserOnly) {
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
 	const userMessages: MessageContent = [
@@ -131,12 +128,17 @@ async function buildPromptForOpenAi (ideas, crossUserOnly) {
 		{
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
 			type: 'text',
-			text: ideas !== null ? JSON.stringify(ideas) : 'Oh, it looks like there was no input group and idea.',
+			text:
+				ideas !== null
+					? JSON.stringify(ideas)
+					: 'Oh, it looks like there was no input group and idea.',
 		},
 		{
 			type: 'text',
-			text: crossUserOnly ? 'You should only consider relations between ideas from different creators.' : 'You can consider relation between any ideas provided, regardless of the creator.',
-		}
+			text: crossUserOnly
+				? 'You should only consider relations between ideas from different creators.'
+				: 'You can consider relation between any ideas provided, regardless of the creator.',
+		},
 	]
 
 	// combine the user prompt with the system prompt
