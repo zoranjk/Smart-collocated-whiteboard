@@ -358,14 +358,14 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							>
 								<DnsIcon />
 							</IconButton>
-							<IconButton
+							{/* <IconButton
 								size="small"
 								onPointerDown={stopEventPropagation}
 								onTouchStart={handleSubtasks}
 								onClick={handleSubtasks}
 							>
 								<SafetyDividerIcon />
-							</IconButton>
+							</IconButton> */}
 							<IconButton
 								onPointerDown={stopEventPropagation}
 								onTouchStart={() => {
@@ -377,13 +377,13 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							>
 								<TipsAndUpdatesIcon />
 							</IconButton>
-							<IconButton
+							{/* <IconButton
 								onPointerDown={stopEventPropagation}
 								onTouchStart={handleCompare}
 								onClick={handleCompare}
 							>
 								<CompareArrowsIcon />
-							</IconButton>
+							</IconButton> */}
 							<IconButton
 								onPointerDown={stopEventPropagation}
 								onTouchStart={() => {
