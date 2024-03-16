@@ -1,5 +1,3 @@
-'use server'
-
 import { Editor, TLShapeId, createShapeId } from '@tldraw/tldraw'
 import {
 	GPT4CompletionResponse,

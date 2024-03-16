@@ -294,7 +294,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			setLoadingStatus('loading')
 			const selectionBounds = editor.getSelectionPageBounds()
 			if (!selectionBounds) throw new Error('No selection bounds')
-			generateSubtasks(editor, shape.id, text).then((subtasks) => {
+			generateSubtasks(editor, text).then((subtasks) => {
 				for (const [index, subtask] of subtasks.entries()) {
 					const newShapeId = createShapeId()
 					editor.createShape({

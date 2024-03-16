@@ -7,7 +7,7 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. During the session, team members has a brief idea or goal, your task is to help the team members to detail the given high level idea or goal into specific subtask or steps so that team members can perform them in parallel. Return the response in the provided JSON format.`
+const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. During the session, team members has a brief idea or goal, your task is to help the team members to detail the given high level idea or goal into specific subtasks or steps so that team members can perform them in parallel. The description of each task/step should be brief. Return the response in the provided JSON format.`
 
 const assistantPrompt = `
 The returned JSON objects should follow this format:
@@ -23,7 +23,7 @@ The returned JSON objects should follow this format:
 }
 `
 
-export async function generateSubtasks (editor: Editor, srcId: string, text: string) {
+export async function generateSubtasks (editor: Editor, text: string) {
 	// we can't make anything real if there's nothing selected
 	const selectedShapes = editor.getSelectedShapes()
 	if (selectedShapes.length === 0) {
@@ -31,7 +31,7 @@ export async function generateSubtasks (editor: Editor, srcId: string, text: str
 	}
 
 	// first, we build the prompt that we'll send to openai.
-	const prompt = await buildPromptForOpenAi(editor, srcId, text)
+	const prompt = await buildPromptForOpenAi(editor, text)
 
     console.log("Call generateSubtasks")
 
@@ -78,7 +78,7 @@ export async function generateSubtasks (editor: Editor, srcId: string, text: str
 	}
 }
 
-async function buildPromptForOpenAi (editor: Editor, srcId: string, text: string): Promise<GPT4Message[]> {
+async function buildPromptForOpenAi (editor: Editor, text: string): Promise<GPT4Message[]> {
 
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
