@@ -59,7 +59,7 @@ import { NodeShapeProps } from './NodeShapeProps'
 import '../style.css'
 import { NodeNestPop } from './NodeNestPop'
 import { Card, Button } from '@mui/material'
-
+import { createArrowBetweenShapes } from '@/app/whiteboard/lib/utils/helper'
 const NOTE_SIZE = 220
 const PADDING = 10
 const TAG_SIZE = 20
@@ -250,14 +250,9 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 
 		const handleTips = () => {
 			setLoadingStatus('tip-loaded')
-			// generateTipsForObject(editor, shape.id).then((tips) => {
-			// 	setTips(tips)
-			// 	setLoadingStatus('tip-loaded')
-			// 	// console.log('Tips: ', tips)
-			// })
 		}
 
-		function hexTorgba(hex, a) {
+		function hexTorgba(hex: string, a: number) {
 			if (hex.split('(')[0] == 'rgba') return hex
 			let rgba = 'rgba('
 			hex = hex.replace('#', '')
@@ -269,16 +264,13 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}
 
 		const handleType = (event: any, text: String) => {
-			// setLoadingStatus('tip-loaded')
-			// console.log(event,text);
-			// console.log("onDrag", event);
-			// console.log("Current point:", editor.inputs.currentPagePoint);
 			setLoadingStatus('loading')
 			let nowShape = editor.getShape(shape.id)
 			generateTipsForObject(editor, shape.id, text).then((tips) => {
-				setLoadingStatus('tip-loaded')
+				setLoadingStatus('loaded')
+				let relationship = []
 				if (tips.length != 0) {
-					tips.forEach((note: any, index) => {
+					tips.forEach((note: any, index: number) => {
 						const shapeId = createShapeId()
 						editor.createShape({
 							id: shapeId,
@@ -287,11 +279,14 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							y: nowShape.y + (index == 2 ? 1 : 0) * 300,
 							props: { text: note.note, color: hexTorgba(nowShape.props.color, 0.5) },
 						})
+						relationship.push({
+							srcId: shape.id,
+							dstId: shapeId,
+							relation: text,
+						})
 					})
+					createArrowBetweenShapes({ editor, relationship })
 				}
-				// setTips(tips)
-				// setLoadingStatus('tip-loaded')
-				// console.log('Tips: ', tips)
 			})
 		}
 
