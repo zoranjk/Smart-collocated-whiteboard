@@ -168,16 +168,16 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 						<div className="frame-handler" style={{ paddingTop: 30, display: "flex", justifyContent: "center", cursor: 'pointer', alignItems: "begin", marginLeft: shape.props.w, height: shape.props.h + 3, width: 70 }}>
 							<div>
 								<Stack>
-									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(0)} style={{ pointerEvents: "all" }}>
+									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(0)} onTouchStart={() => togglePanel(0)} style={{ pointerEvents: "all" }}>
 										<img src="two_group.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton>
-									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
+									{/* <IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} onTouchStart={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
 										<img src="review.png" alt="Icon" style={{ width: 30, height: 30 }} />
-									</IconButton>
-									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(2)} style={{ pointerEvents: "all" }}>
+									</IconButton> */}
+									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(2)} onTouchStart={() => togglePanel(2)} style={{ pointerEvents: "all" }}>
 										<img src="idea.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton>
-									<IconButton onPointerDown={stopEventPropagation} onClick={handleDelete} style={{ pointerEvents: "all" }}>
+									<IconButton onPointerDown={stopEventPropagation} onClick={handleDelete} onTouchStart={handleDelete} style={{ pointerEvents: "all" }}>
 									<img src="delete.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton>
 								</Stack>
@@ -203,7 +203,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 									)
 								}
 							</div>
-							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={() => togglePanel()} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={() => togglePanel()} onTouchStart={() => togglePanel()} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 								<MdOutlineKeyboardDoubleArrowLeft />
 							</div>
 						</div>

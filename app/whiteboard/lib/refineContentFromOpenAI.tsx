@@ -9,6 +9,8 @@ import {
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
 const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to inspire people how to refine their brainstorming content. Make sure your suggestions are understandable, insightful. Return the response in the provided JSON format.`
 
+const systemPromptForImprovement = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to improve the content based on the given suggestion. Make sure your improvement is understandable, insightful. The revision should be as short as possible. Return the response in the provided JSON format.`
+
 const assistantPrompt = `
 The returned JSON objects should follow this format:
 {
@@ -31,7 +33,8 @@ The returned JSON objects should follow this format:
 }
 `
 
-export async function generateRefinementSuggestion(text: string) {
+export async function generateRefinementSuggestion (text: string) {
+
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildSuggestionPromptForOpenAi(text)
 
@@ -49,7 +52,6 @@ export async function generateRefinementSuggestion(text: string) {
 		// so our api key is hidden.
 		const openAiResponse = await fetchFromOpenAi(apiKeyFromDangerousApiKeyInput, {
 			model: 'gpt-4-1106-preview',
-			// model: process.env.MODEL_VERSION,
 			response_format: { type: 'json_object' },
 			max_tokens: 4096,
 			temperature: 0,
@@ -62,6 +64,7 @@ export async function generateRefinementSuggestion(text: string) {
 
 		const response = openAiResponse.choices[0].message.content
 
+		
 		const parsed_res = JSON.parse(response)
 		console.log('openAiResponse: ', parsed_res)
 
@@ -77,7 +80,8 @@ export async function generateRefinementSuggestion(text: string) {
 	}
 }
 
-export async function improveContent(content: string, suggestion: string) {
+export async function improveContent (content: string, suggestion: string) {
+
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildImprovementPromptForOpenAi(content, suggestion)
 
@@ -107,6 +111,7 @@ export async function improveContent(content: string, suggestion: string) {
 
 		const response = openAiResponse.choices[0].message.content
 
+		
 		const parsed_res = JSON.parse(response)
 		console.log('openAiResponse: ', parsed_res)
 
@@ -122,7 +127,8 @@ export async function improveContent(content: string, suggestion: string) {
 	}
 }
 
-async function buildSuggestionPromptForOpenAi(text: string): Promise<GPT4Message[]> {
+async function buildSuggestionPromptForOpenAi (text: string): Promise<GPT4Message[]> {
+
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
 	const userMessages: MessageContent = [
@@ -145,10 +151,8 @@ async function buildSuggestionPromptForOpenAi(text: string): Promise<GPT4Message
 	]
 }
 
-async function buildImprovementPromptForOpenAi(
-	suggestion: string,
-	text: string
-): Promise<GPT4Message[]> {
+async function buildImprovementPromptForOpenAi (suggestion: string, text: string): Promise<GPT4Message[]> {
+
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
 	const userMessages: MessageContent = [
@@ -159,19 +163,19 @@ async function buildImprovementPromptForOpenAi(
 		{
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
 			type: 'text',
-			text: text !== '' ? 'Content: ' + text : 'Oh, it looks like there was not any note.',
+			text: text !== '' ? "Content: " + text : 'Oh, it looks like there was not any note.',
 		},
 		{
 			// send the text of all selected shapes, so that GPT can use it as a reference (if anything is hard to see)
 			type: 'text',
-			text: text !== '' ? 'Suggestion: ' + suggestion : 'Oh, it looks like there was not any note.',
+			text: text !== '' ? "Suggestion: " + suggestion : 'Oh, it looks like there was not any note.',
 		},
 	]
 
 	// combine the user prompt with the system prompt
 	return [
-		{ role: 'system', content: systemPrompt },
+		{ role: 'system', content: systemPromptForImprovement },
 		{ role: 'user', content: userMessages },
-		{ role: 'assistant', content: assistantPrompt },
+		{ role: 'assistant', content: assistantPromptForImprovement },
 	]
 }

@@ -610,10 +610,6 @@ export class CustomArrowShapeUtil extends ShapeUtil<CustomArrowShapeType> {
 			}
 		)
 
-		useEffect(() => {
-			console.log("arrow created")
-		}, [])
-
 		const labelPosition = getArrowLabelPosition(this.editor, shape)
 
 		const maskStartArrowhead = !(

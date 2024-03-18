@@ -15,6 +15,8 @@ import { groupNotes, setLayoutForFrame } from '../../lib/utils/groupUtil'
 import { AwesomeButton, AwesomeButtonProgress } from 'react-awesome-button'
 import AwesomeButtonStyles from 'react-awesome-button/src/styles/styles.scss'
 import LoadingButton from '@mui/lab/LoadingButton'
+import CancelIcon from '@mui/icons-material/Cancel';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import SaveIcon from '@mui/icons-material/Save'
 import { ClickableText } from '../utils'
 import { getNodes } from '@/app/whiteboard/lib/utils/helper'
@@ -46,7 +48,7 @@ export const GroupPanel = ({ editor, shape }) => {
 		setLabel(event.target.value)
 	}
 
-	const handleBlur = () => {
+	const handleEditEnd = () => {
 		if (label === '') {
 			return
 		} else {
@@ -62,7 +64,6 @@ export const GroupPanel = ({ editor, shape }) => {
 			setLabel('')
 		}
 		setIsEditing(false)
-		// Optionally, trigger an update to the parent component or server here
 	}
 
 	const handleEdit = () => {
@@ -71,12 +72,25 @@ export const GroupPanel = ({ editor, shape }) => {
 
 	const handleKeyDown = event => {
 		if (event.key === 'Enter') {
+			if (label === '') {
+				return
+			} else {
+				editor.updateShapes([
+					{
+						id: shape.id,
+						meta: {
+							...shape.meta,
+							requirements: [...shape.meta.requirements, label],
+						},
+					},
+				])
+				setLabel('')
+			}
 			setIsEditing(false)
-			// Optionally, trigger an update to the parent component or server here
 		}
 	}
 
-	const handleGroupByTopic = topics => {
+	const handleGroupByTopic = e => {
 		// get content of all notes belong to the group
 
 		setGroupingStatus('loading')
@@ -102,8 +116,18 @@ export const GroupPanel = ({ editor, shape }) => {
 			},
 		])
 
-		groupByTopic({ editor, ideas, topics }).then(group_names => {
+		groupByTopic({ editor, ideas, topics: shape.meta.requirements }).then(group_names => {
 			if (Object.keys(group_names).length == 0) {
+				editor.updateShapes([
+					{
+						id: shape.id,
+						meta: {
+							...shape.meta,
+							loadingStatus: 'idle',
+						},
+					},
+				])
+				setGroupingStatus('idle')
 				return
 			}
 
@@ -202,17 +226,16 @@ export const GroupPanel = ({ editor, shape }) => {
 			<div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 				{shape.meta.requirements.map((req, index) => (
 					<Chip
-						onClick={() => {
-							handleGroupByTopic(req)
-						}}
-						onTouchStart={() => {
-							handleGroupByTopic(req)
-						}}
 						onPointerDown={stopEventPropagation}
 						key={index}
 						label={req}
 						sx={{ mr: 2, mb: 2, height: '35px' }}
 						onDelete={() => handleDelete(req)}
+						deleteIcon={
+							<IconButton onTouchStart={() => handleDelete(req)} size="small">
+								<HighlightOffIcon />
+							</IconButton>
+						}
 					/>
 				))}
 				<div style={{ height: '35px' }}>
@@ -243,12 +266,12 @@ export const GroupPanel = ({ editor, shape }) => {
 							fullWidth
 							value={label}
 							onChange={handleChange}
-							onBlur={handleBlur}
+							onBlur={handleEditEnd}
 							onKeyDown={handleKeyDown}
 							variant='outlined'
 						/>
 					) : (
-						<IconButton sx={{ ml: -1 }} onPointerDown={stopEventPropagation} onClick={handleEdit}>
+						<IconButton sx={{ ml: -1, mt: -0.3 }} onPointerDown={stopEventPropagation} onClick={handleEdit} onTouchStart={handleEdit}>
 							<ControlPointIcon />
 						</IconButton>
 					)}
@@ -272,6 +295,7 @@ export const GroupPanel = ({ editor, shape }) => {
 				<ClickableText
 					onPointerDown={stopEventPropagation}
 					onClick={handleAISuggestion}
+					onTouchStart={handleAISuggestion}
 					style={{ marginRight: 20 }}
 				>
 					See what AI suggests...

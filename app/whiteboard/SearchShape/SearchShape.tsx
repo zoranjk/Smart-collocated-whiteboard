@@ -17,7 +17,7 @@ import { styled, alpha } from '@mui/material/styles'
 import { resizeBox } from '@tldraw/editor'
 import { Avatar, Stack } from '@mui/material'
 import { SearchBar } from '../components/SearchBar'
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { FONT_FAMILIES, LABEL_FONT_SIZES, TEXT_PROPS } from '../lib/utils/default-shape-constants'
 import { IconButton, Box } from '@mui/material'
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates'
@@ -91,6 +91,15 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 			setCreatePreference(!createPreference)
 		}
 
+		const textFieldRef = useRef(null);
+
+		const handleTouch = () => {
+			console.log("handleTouched")
+			if (textFieldRef.current) {
+				textFieldRef.current.focus();
+			}
+		};
+
 		const handleSearch = () => {
 			editor.updateShape({
 				id: shape.id,
@@ -153,15 +162,13 @@ export class SearchShapeUtil extends BaseBoxShapeUtil<SearchShape> {
 				<Box sx={{ flexGrow: 1, width: 400, height: 50, pointerEvents: 'all' }}>
 					<Search>
 						<StyledInputBase
-							onFocus={() => setIsKeyboardOpen(true)}
+							inputRef={textFieldRef}
+							onTouchStart={handleTouch}
 							placeholder='Please enter your task or goal'
 							inputProps={{ 'aria-label': 'search' }}
 							value={text}
 							onChange={e => editor.updateShape({ id, props: { text: e.target.value } })}
 						/>
-						{/* <IconButton onPointerDown={e => e.stopPropagation()} onTouchStart={handleSearch} onClick={handleSearch}>
-							<TipsAndUpdatesIcon />
-						</IconButton> */}
 						{
 							!shape.meta.isLoading ? (
 								<IconButton onPointerDown={stopEventPropagation} onTouchStart={handleSearch} onClick={handleSearch}>

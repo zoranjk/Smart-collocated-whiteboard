@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { styled, alpha } from '@mui/material/styles'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
@@ -43,7 +43,7 @@ export const StyledInputBase = styled(InputBase)(({ theme }) => ({
 	},
 }))
 
-export function SearchBar ({ searchHistories, setSearchHistories, width = 300 }) {
+export function SearchBar({ searchHistories, setSearchHistories, setLoadingStatus, width = 300 }) {
 	const [input, setInput] = useState('')
 	const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
 
@@ -64,6 +64,15 @@ export function SearchBar ({ searchHistories, setSearchHistories, width = 300 })
 		setInput(text)
 	}
 
+	const textFieldRef = useRef(null);
+
+	const handleTouch = () => {
+		console.log("handleTouched")
+		if (textFieldRef.current) {
+			textFieldRef.current.focus();
+		}
+	};
+
 	const handleSearch = () => {
 		const text = input
 		setIsKeyboardOpen(false)
@@ -83,7 +92,9 @@ export function SearchBar ({ searchHistories, setSearchHistories, width = 300 })
 			<Box sx={{ flexGrow: 1, width: width, height: 50, mb: 3 }}>
 				<Search>
 					<StyledInputBase
-						onFocus={() => setIsKeyboardOpen(true)}
+						inputRef={textFieldRef}
+						onTouchStart={handleTouch}
+						onFocus={() => setLoadingStatus('search-bar')}
 						placeholder='What AI should do…'
 						inputProps={{ 'aria-label': 'search' }}
 						value={input}

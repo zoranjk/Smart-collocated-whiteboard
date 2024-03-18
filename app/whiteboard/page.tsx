@@ -179,6 +179,9 @@ export default function App() {
 	const WS_ADDRESS = "104.154.83.173"
 	const WS_PORT = "5800"
 
+	// const WS_ADDRESS = "0.0.0.0"
+	// const WS_PORT = "5800"
+
 	const HOST_URL =
 		process.env.NODE_ENV === 'development'
 			? `ws://${WS_ADDRESS}:${WS_PORT}`
@@ -208,8 +211,20 @@ export default function App() {
 		shapeUtils: customShapeUtils
 	})
 
-	function generateRandomHexColor() {
-		return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+	function randromSelectColor() {
+
+		const candidates = [
+			"#b5e48c",
+			"#ffd6ff",
+			"#ffb703",
+			"#fefae0",
+			"#ffc8dd",
+			"#ced4da"
+		]
+
+		const randomIndex = Math.floor(Math.random() * candidates.length);
+
+		return candidates[randomIndex];
 	}
 
 	function generateRandomUsername() {
@@ -250,7 +265,7 @@ export default function App() {
 				onMount={editor => {
 
 					editor.user.updateUserPreferences({
-						color: generateRandomHexColor(),
+						color: randromSelectColor(),
 						name: username
 					})
 
@@ -272,7 +287,7 @@ export default function App() {
 					}
 
 				}}
-				// store={store}
+				store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>

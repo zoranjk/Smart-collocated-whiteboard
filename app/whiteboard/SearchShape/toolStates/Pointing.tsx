@@ -51,7 +51,7 @@ export class Pointing extends StateNode {
 				shape: this.shape,
 				isCreating: true,
 				editAfterComplete: true,
-				onInteractionEnd: 'node',
+				onInteractionEnd: 'point',
 			})
 		}
 	}
@@ -126,7 +126,7 @@ export class Pointing extends StateNode {
 		this.editor.updateShapes([
 			{
 				id,
-				type: 'node',
+				type: 'search',
 				x: shape.x - bounds.width / 2,
 				y: shape.y - bounds.height / 2,
 			},

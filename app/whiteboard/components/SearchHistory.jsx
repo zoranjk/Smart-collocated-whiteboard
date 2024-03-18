@@ -59,6 +59,7 @@ export function SearchHistory ({
 				{data.status == 'done' && (
 					<div
 						onClick={toggle}
+						onTouchStart={toggle}
 						style={{
 							border: 'none',
 							background: 'none',
@@ -71,7 +72,7 @@ export function SearchHistory ({
 						<img src='/right.png' className={`history-arrow-button ${isOpen ? 'open' : isOpen != null ? 'close': ''}`} />
 					</div>
 				)}
-				<div onClick={handleClose}>
+				<div onClick={handleClose} onTouchStart={handleClose}>
 					<img src='/close.png' className='close-icon' />
 				</div>
 			</div>

@@ -81,6 +81,9 @@ export async function groupByTopic ({editor, ideas, topics=[]}) {
 		const response = openAiResponse.choices[0].message.content
 
 		const parsed_res = JSON.parse(response)
+
+		console.log("Groups returned from OpenAI: ", response)
+
         return parsed_res
 		// populate the response shape with the html we got back from openai.
 		// TODO: populate the edges between selected shapes

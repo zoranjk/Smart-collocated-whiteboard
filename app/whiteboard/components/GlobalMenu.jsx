@@ -831,8 +831,8 @@ export const GlobalMenu = ({ editor }) => {
 				)}
 				{selectedItem == 'choose-group' &&
 					loading == false &&
-					groups.map(group => (
-						<Box>
+					groups.map((group, index) => (
+						<Box key={index}>
 							<Paper
 								elevation={2}
 								sx={{
@@ -961,7 +961,7 @@ export const GlobalMenu = ({ editor }) => {
 											<Typography sx={{ fontWeight: 'bold' }} variant='body2'>
 												Related discussion:
 											</Typography>
-											<Typography variant='body2'>"{info.segment}"</Typography>
+											<Typography variant='body2'>&quot;{info.segment}&quot;</Typography>
 										</Box>
 									</Paper>
 								)
@@ -1033,7 +1033,7 @@ export const GlobalMenu = ({ editor }) => {
 													const note_text = editor.getShape(note_id).props.text
 													return (
 														<Typography variant='body2' key={index}>
-															"{note_text}"
+															&quot;{note_text}&quot;
 														</Typography>
 													)
 												})}

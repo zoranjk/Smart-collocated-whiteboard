@@ -216,6 +216,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		const [summary, setSummary] = useState({})
 		const [searchHistories, setSearchHistories] = useState([])
 		const [isSlide, setIsSlide] = useState(null)
+		const [isSelected, setIsSelected] = useState(false)
 		const userPreference = getUserPreferences()
 
 		useEffect(() => {
@@ -248,6 +249,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			])
 		}
 
+		useEffect(() => {
+			console.log("loadingStatus: ", loadingStatus)  
+		}, [loadingStatus])
+
 		const handleTips = () => {
 			setLoadingStatus('tip-loaded')
 		}
@@ -262,6 +267,14 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			rgba += a + ')'
 			return rgba
 		}
+
+		useEffect(() => {
+			if ( editor.getSelectedShapeIds().includes(id) && !isSelected) {
+				setIsSelected(true)
+			} else if (!editor.getSelectedShapeIds().includes(id) && isSelected) {
+				setIsSelected(false)
+			}
+		}, [editor.getSelectedShapeIds()])
 
 		const handleType = (event: any, text: String) => {
 			setLoadingStatus('loading')
@@ -332,10 +345,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					isSlide
 						? 'slide-rotate-ver-right'
 						: isSlide != null
-						? 'slide-rotate-ver-right-revert'
-						: initSlide
-						? 'slide-rotate-ver-right-translate'
-						: ''
+							? 'slide-rotate-ver-right-revert'
+							: initSlide
+								? 'slide-rotate-ver-right-translate'
+								: ''
 				}
 				id={shape.id}
 				style={{
@@ -414,7 +427,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								onTouchStart={handleTips}
 								onClick={handleTips}
 							>
-								<DnsIcon />
+								<img src='arrow.png' style={{ width: "25px", height: "25px" }} />
 							</IconButton>
 							{/* <IconButton
 								size="small"
@@ -433,7 +446,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									setLoadingStatus('search-bar')
 								}}
 							>
-								<TipsAndUpdatesIcon />
+								<img src='idea.png' style={{ width: "25px", height: "25px" }} />
 							</IconButton>
 							{/* <IconButton
 								onPointerDown={stopEventPropagation}
@@ -451,7 +464,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									editor.deleteShape(id)
 								}}
 							>
-								<DeleteForeverIcon />
+								<img src='delete.png' style={{ width: "25px", height: "25px" }} />
 							</IconButton>
 						</div>
 					)}
@@ -461,6 +474,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								<SearchBar
 									setSearchHistories={setSearchHistories}
 									searchHistories={searchHistories}
+									setLoadingStatus={setLoadingStatus}
 								/>
 								<div
 									style={{
@@ -485,6 +499,23 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									))}
 								</div>
 							</div>
+							{selectedHistory != null && selectedHistory.result != undefined && (
+								<div>
+									<Grid container rowSpacing={2} columnSpacing={2} sx={{ width: 800 }}>
+										{selectedHistory.result.map((suggestion, index) => (
+											<Grid item xs={4} key={index}>
+												<RefinmentCard
+													index={index}
+													srcId={id}
+													setLoadingStatus={setLoadingStatus}
+													suggestion={suggestion.text}
+													editor={editor}
+												/>
+											</Grid>
+										))}
+									</Grid>
+								</div>
+							)}
 						</div>
 					)}
 					{loadingStatus == 'loading' && (
@@ -519,6 +550,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 											// handleType(idea)
 										}}
 										onClick={(e) => {
+											e.stopPropagation()
+											handleType(e, idea)
+										}}
+										onTouchStart={(e) => {
 											e.stopPropagation()
 											handleType(e, idea)
 										}}

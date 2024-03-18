@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import Divider from '@mui/material/Divider'
@@ -35,6 +35,14 @@ export const IdeaPanel = ({ editor, shape }) => {
     // const [tabValue, setTabValue] = useState(-1)
     const [instruction, setInstruction] = useState('')
 
+    const textFieldRef = useRef(null);
+
+    const handleTouch = () => {
+        if (textFieldRef.current) {
+            textFieldRef.current.focus();
+        }
+    };
+
     const addIdeaToGroup = (idea) => {
         editor.createShape({
             id: createShapeId(),
@@ -48,7 +56,7 @@ export const IdeaPanel = ({ editor, shape }) => {
         })
     }
 
-    const handleIdeaGeneration = async ({with_instruction=true}) => {
+    const handleIdeaGeneration = async ({ with_instruction = true }) => {
         // if (tabValue == 0) {
         //     return
         // }
@@ -82,13 +90,13 @@ export const IdeaPanel = ({ editor, shape }) => {
         <Box>
             <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <Stack direction='row' spacing={1}>
-                    <TextField id="outlined-basic" value={instruction} onChange={(e) => setInstruction(e.target.value)} label="Please enter your prompt" sx={{ width: "90%", marginRight: 10 }} variant="outlined" />
+                    <TextField id="outlined-basic" value={instruction} inputRef={textFieldRef} onTouchStart={handleTouch} onChange={(e) => setInstruction(e.target.value)} label="Please enter your prompt" sx={{ width: "90%", marginRight: 10 }} variant="outlined" />
                     <IconButton onPointerDown={stopEventPropagation} onClick={handleIdeaGeneration} onTouchStart={handleIdeaGeneration} ><img src="idea.png" style={{ width: 25, height: 25 }} /></IconButton>
                 </Stack>
                 <ClickableText
                     onPointerDown={stopEventPropagation}
-                    onClick={() => handleIdeaGeneration({with_instruction: false})}
-                    onTouchStart={() => handleIdeaGeneration({with_instruction: false})}
+                    onClick={() => handleIdeaGeneration({ with_instruction: false })}
+                    onTouchStart={() => handleIdeaGeneration({ with_instruction: false })}
                     style={{ marginTop: 15 }}
                 >
                     Just generate free ideas...
@@ -107,8 +115,10 @@ export const IdeaPanel = ({ editor, shape }) => {
                                 {shape.meta.frameIdeas.map((idea, index) => {
                                     return (
                                         <Grid item xs={3}>
-                                            <Paper onPointerDown={stopEventPropagation} onClick={() => addIdeaToGroup(idea)} onTouchStart={() => addIdeaToGroup(idea)} sx={{ minHeight: "200px", padding: 1, background: 'linear-gradient(to right, #8f41e9, #578aef)',
-											color:'#fff' }}>
+                                            <Paper onPointerDown={stopEventPropagation} onClick={() => addIdeaToGroup(idea)} onTouchStart={() => addIdeaToGroup(idea)} sx={{
+                                                minHeight: "200px", padding: 1, background: 'linear-gradient(to right, #8f41e9, #578aef)',
+                                                color: '#fff'
+                                            }}>
                                                 <Box key={index} sx={{ pointerEvents: 'all', cursor: "pointer" }}>
                                                     <Typography sx={{
                                                         // whiteSpace: "nowrap", /* Prevent text from wrapping to the next line */
