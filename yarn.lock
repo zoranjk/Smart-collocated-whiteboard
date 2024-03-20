@@ -826,10 +826,15 @@
   dependencies:
     glob "7.1.7"
 
-"@next/swc-win32-x64-msvc@14.0.3":
+"@next/swc-linux-x64-gnu@14.0.3":
   version "14.0.3"
-  resolved "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.0.3.tgz"
-  integrity sha512-ERhKPSJ1vQrPiwrs15Pjz/rvDHZmkmvbf/BjPN/UCOI++ODftT0GtasDPi0j+y6PPJi5HsXw+dpRaXUaw4vjuQ==
+  resolved "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-14.0.3.tgz"
+  integrity sha512-VM1aE1tJKLBwMGtyBR21yy+STfl0MapMQnNrXkxeyLs0GFv/kZqXS5Jw/TQ3TSUnbv0QPDf/X8sDXuMtSgG6eg==
+
+"@next/swc-linux-x64-musl@14.0.3":
+  version "14.0.3"
+  resolved "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-14.0.3.tgz"
+  integrity sha512-64EnmKy18MYFL5CzLaSuUn561hbO1Gk16jM/KHznYP3iCIfF9e3yULtHaMy0D8zbHfxset9LTOv6cuYKJgcOxg==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -4625,10 +4630,9 @@ y-utility@^0.1.3:
   dependencies:
     lib0 "^0.2.43"
 
-y-websocket@^1.5.3:
-  version "1.5.3"
-  resolved "https://registry.npmjs.org/y-websocket/-/y-websocket-1.5.3.tgz"
-  integrity sha512-wVpKunsDUnVApOymp/ZtaXVyb1Q3csxGdono8Lx6E5k11OfupKUJZV86Eb16mpdUTkEdi7I7L1LVBlZlwd92bA==
+"y-websocket@github:rozek/y-websocket":
+  version "1.5.4"
+  resolved "git+ssh://git@github.com/rozek/y-websocket.git#15cb082953a6de05fa42377980b1d78cb7e8a866"
   dependencies:
     lib0 "^0.2.52"
     lodash.debounce "^4.0.8"

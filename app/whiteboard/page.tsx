@@ -176,7 +176,7 @@ export default function App() {
 	const username = searchParams.get('username');
 	const roomId = searchParams.get('roomId');
 
-	const WS_ADDRESS = "104.154.83.173"
+	const WS_ADDRESS = "smartwhiteboard.xyz"
 	const WS_PORT = "5800"
 
 	// const WS_ADDRESS = "0.0.0.0"
@@ -184,7 +184,7 @@ export default function App() {
 
 	const HOST_URL =
 		process.env.NODE_ENV === 'development'
-			? `ws://${WS_ADDRESS}:${WS_PORT}`
+			? `wss://${WS_ADDRESS}:${WS_PORT}`
 			: 'wss://demos.yjs.dev'
 
 	const handleEvent = useCallback((data: TLEventInfo, editor: any) => {

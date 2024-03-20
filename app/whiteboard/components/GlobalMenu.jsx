@@ -52,6 +52,8 @@ export const GlobalMenu = ({ editor }) => {
 	const [extractedInfo, setExtractedInfo] = useState([])
 	const [groups, setGroups] = useState([])
 	const [snapName, setSnapName] = useState('')
+	const [isSelectedGroup, setIsSelectedGroup] = useState()
+	const [selectedGroupNodes, setSelectedGroupNodes] = useState()
 	const dispatch = useDispatch()
 	const isRelHintActive = useSelector(state => state.global.isRelHintActive)
 	const transcript = useSelector(state => state.global.transcript)
@@ -211,14 +213,11 @@ export const GlobalMenu = ({ editor }) => {
 	const handleGlobalGrouping = e => {
 		console.log('Doing global grouping...')
 		setLoading(true)
+		setIsSelectedGroup(false)
 		getAffinityDiagramming({ editor }).then(groups => {
 			console.log('Grouping results: ', groups)
 			setGroups(Object.values(groups))
 			setSelectedItem('choose-group')
-			// const { themes, rules_of_thumb, name } = res
-			// const data = { principle: rules_of_thumb, themes, name }
-			// writeDoc({ collection_name: 'affinity', data: data })
-			// handleAffinitySelected({ affinity: data, has_loaded: true })
 			setLoading(false)
 		})
 	}
@@ -286,14 +285,18 @@ export const GlobalMenu = ({ editor }) => {
 
 		console.log('Nodes: ', nodes)
 
+		setSelectedGroupNodes(nodes)
+
 		getAffinityDiagramming({ editor, ideas: nodes }).then(groups => {
 			setGroups(Object.values(groups))
 			setSelectedItem('choose-group')
+			setIsSelectedGroup(true)
 			setLoading(false)
 		})
 	}
 
 	const handleUseExistingGroup = e => {
+		setIsSelectedGroup(false)
 		setSelectedItem('use-group')
 	}
 
@@ -307,7 +310,7 @@ export const GlobalMenu = ({ editor }) => {
 	const handleSaveSnapshotClicked = e => {
 		console.log('Saving snapshot...')
 		setSelectedItem('enter-snapshot-name')
-	
+
 	}
 
 	const handleCustomGrouping = e => {
@@ -348,17 +351,27 @@ export const GlobalMenu = ({ editor }) => {
 					const shapesOnCurPage = editor.getCurrentPageShapes()
 					// replace with the new shapes from the main page
 					editor.deleteShapes(shapesOnCurPage.map(shape => shape.id))
-					shapes.map(shape => {
-						const id = createShapeId()
-						editor.createShape({
-							...shape,
-							id: id,
-							parentId: page.id,
-							// meta: {
-							// 	corMainPageShapeId: shape.id // corMainPageShapeId is the id of the corresponding shape on the main page
-							// }
+
+					if (isSelectedGroup) {
+						let selected_shapes = selectedGroupNodes
+						selected_shapes.map(shape => {
+							const id = createShapeId()
+							editor.createShape({
+								...shape,
+								id: id,
+								parentId: page.id,
+							})
 						})
-					})
+					} else {
+						shapes.map(shape => {
+							const id = createShapeId()
+							editor.createShape({
+								...shape,
+								id: id,
+								parentId: page.id,
+							})
+						})
+					}
 
 					setTimeout(() => {
 						GroupWithExistingAffinity({ affinity, has_loaded })
@@ -376,7 +389,7 @@ export const GlobalMenu = ({ editor }) => {
 			setSelectedItem('snapshot-list')
 			setLoading(false)
 		})
-	
+
 	}
 
 	const handleRelationHintButtonClicked = e => {
@@ -734,7 +747,7 @@ export const GlobalMenu = ({ editor }) => {
 									marginBottom: '20px',
 									cursor: 'pointer',
 									background: 'linear-gradient(to right, #8f41e9, #578aef)',
-									color:'#fff'
+									color: '#fff'
 								}}
 							>
 								<Box
@@ -748,8 +761,8 @@ export const GlobalMenu = ({ editor }) => {
 									</Typography>
 									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 										{Object.keys(affinity.themes).map((theme, index) => (
-											<Box key={index} sx={{ marginRight: 1, marginBottom: 1, color: 'white'}}>
-												<Chip size='small' label={theme} color="primary"/>
+											<Box key={index} sx={{ marginRight: 1, marginBottom: 1, color: 'white' }}>
+												<Chip size='small' label={theme} color="primary" />
 											</Box>
 										))}
 									</Box>
@@ -843,7 +856,7 @@ export const GlobalMenu = ({ editor }) => {
 									marginBottom: '20px',
 									cursor: 'pointer',
 									background: 'linear-gradient(to right, #8f41e9, #578aef)',
-									color:'#fff'
+									color: '#fff'
 								}}
 								onClick={() => {
 									writeDoc({ collection_name: 'affinity', data: group })
@@ -861,8 +874,8 @@ export const GlobalMenu = ({ editor }) => {
 									</Typography>
 									<Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 										{Object.keys(group.themes).map((theme, index) => (
-											<Box key={index} sx={{ marginRight: 1, marginBottom: 1 ,color: 'white'}}>
-												<Chip size='small' label={theme} color="primary"/>
+											<Box key={index} sx={{ marginRight: 1, marginBottom: 1, color: 'white' }}>
+												<Chip size='small' label={theme} color="primary" />
 											</Box>
 										))}
 									</Box>
@@ -890,7 +903,7 @@ export const GlobalMenu = ({ editor }) => {
 										marginBottom: '20px',
 										cursor: 'pointer',
 										background: 'linear-gradient(to right, #8f41e9, #578aef)',
-										color:'#fff'
+										color: '#fff'
 									}}
 									key={index}
 									// move camera to the selected shape
@@ -916,7 +929,7 @@ export const GlobalMenu = ({ editor }) => {
 									</Box>
 								</Paper>
 							)
-						
+
 						})
 					)
 				}
@@ -935,7 +948,7 @@ export const GlobalMenu = ({ editor }) => {
 											marginBottom: '20px',
 											cursor: 'pointer',
 											background: 'linear-gradient(to right, #8f41e9, #578aef)',
-											color:'#fff'
+											color: '#fff'
 										}}
 										key={index}
 										// move camera to the selected shape
@@ -977,7 +990,7 @@ export const GlobalMenu = ({ editor }) => {
 									marginBottom: '20px',
 									cursor: 'pointer',
 									background: 'linear-gradient(to right, #8f41e9, #578aef)',
-									color:'#fff'
+									color: '#fff'
 								}}
 							>
 								<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1002,7 +1015,7 @@ export const GlobalMenu = ({ editor }) => {
 											marginBottom: '20px',
 											cursor: 'pointer',
 											background: 'linear-gradient(to right, #8f41e9, #578aef)',
-											color:'#fff'
+											color: '#fff'
 										}}
 										key={index}
 										// move camera to the selected shape
@@ -1053,7 +1066,7 @@ export const GlobalMenu = ({ editor }) => {
 									marginBottom: '20px',
 									cursor: 'pointer',
 									background: 'linear-gradient(to right, #8f41e9, #578aef)',
-									color:'#fff'
+									color: '#fff'
 								}}
 							>
 								<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
