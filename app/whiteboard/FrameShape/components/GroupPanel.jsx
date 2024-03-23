@@ -221,7 +221,7 @@ export const GroupPanel = ({ editor, shape }) => {
 	}
 
 	return (
-		<div>
+		<div style={{ paddingLeft: '10%' }}>
 			<h2> Dimension(s) used for grouping </h2>
 			<div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
 				{shape.meta.requirements.map((req, index) => (

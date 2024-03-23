@@ -36,19 +36,19 @@ import { FrameHeading } from './components/FrameHeading'
 import { FrameChip } from './components/FrameChip'
 import { GroupPanel } from './components/GroupPanel'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
-import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from 'react-icons/md'
 import '../style.css'
 import { useEffect, useState } from 'react'
 import { DiscussionPanel } from './components/DiscussionPanel'
 import { IdeaPanel } from './components/IdeaPanel'
-
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 export type FrameShape = TLBaseShape<
 	'new_frame',
 	{
-		w: number,
-		h: number,
-		name: string,
-		backgroundColor: string,
+		w: number
+		h: number
+		name: string
+		backgroundColor: string
 	}
 >
 
@@ -72,7 +72,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 	override canEdit = () => true
 
 	override getDefaultProps(): FrameShape {
-		return { w: 80 * 2, h: 50 * 2, name: '', backgroundColor: "#f0f0f0" }
+		return { w: 80 * 2, h: 50 * 2, name: '', backgroundColor: '#f0f0f0' }
 	}
 
 	override getGeometry(shape: FrameShape): Geometry2d {
@@ -91,26 +91,25 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		const [isSelected, setIsSelected] = useState(false)
 		const children = editor.getSortedChildIdsForParent(shape.id)
 		// const [isPanelOpen, setIsPanelOpen] = useState(false)
-		const [tabValue, setTabValue] = useState(0);
+		const [tabValue, setTabValue] = useState(0)
 		const handleChange = (event, newValue) => {
-			setTabValue(newValue);
+			setTabValue(newValue)
 
 			// tabValue == 1 means the relation analysis tab is selected
 			if (newValue === 1) {
-
 			}
-		};
+		}
 		const { id, type, meta } = shape
 
 		const togglePanel = (tab_value = -1) => {
-			console.log("Toggle Panel")
+			console.log('Toggle Panel')
 			// set isPanelOpen in meta property to sync the open/close state of the panel among all the users
-			editor.updateShapes([{
-				id: id,
-				meta: { ...meta, isPanelOpen: !meta.isPanelOpen, tabValue: tab_value }
-			}])
-
-
+			editor.updateShapes([
+				{
+					id: id,
+					meta: { ...meta, isPanelOpen: !meta.isPanelOpen, tabValue: tab_value },
+				},
+			])
 		}
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -132,6 +131,18 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 			editor.deleteShapes([shape.id])
 		}
 
+		const getChildShape = (parentId: String) => {
+			let arr = editor.getSortedChildIdsForParent(shape.id)
+			if (arr.length) {
+				let arr2: any = []
+				arr.forEach((ele) => {
+					arr2.push(editor.getShape(ele))
+				})
+				return arr2
+			} else {
+				return []
+			}
+		}
 
 		useEffect(() => {
 			if (!editor.getSelectedShapeIds().includes(shape.id)) {
@@ -144,10 +155,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		return (
 			<div>
 				<HTMLContainer style={{ pointerEvents: 'all' }}>
-					<SVGContainer className='bulletin' style={{ backgroundColor: shape.props.backgroundColor }} >
-					</SVGContainer>
+					<SVGContainer
+						className="bulletin"
+						style={{ backgroundColor: shape.props.backgroundColor }}
+					></SVGContainer>
 					{isCreating ? null : (
-						<div className='frame-heading'>
+						<div className="frame-heading">
 							<FrameHeading
 								id={shape.id}
 								name={shape.props.name}
@@ -163,54 +176,107 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 						</Stack>
 					</div> */}
 				</HTMLContainer>
-				{
-					!meta.isPanelOpen ? (
-						<div className="frame-handler" style={{ paddingTop: 30, display: "flex", justifyContent: "center", cursor: 'pointer', alignItems: "begin", marginLeft: shape.props.w, height: shape.props.h + 3, width: 70 }}>
-							<div>
-								<Stack>
-									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(0)} onTouchStart={() => togglePanel(0)} style={{ pointerEvents: "all" }}>
-										<img src="two_group.png" alt="Icon" style={{ width: 30, height: 30 }} />
-									</IconButton>
-									{/* <IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} onTouchStart={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
+				{!meta.isPanelOpen ? (
+					<div
+						className="frame-handler"
+						style={{
+							paddingTop: 30,
+							display: 'flex',
+							justifyContent: 'center',
+							cursor: 'pointer',
+							alignItems: 'begin',
+							marginLeft: shape.props.w,
+							height: shape.props.h + 3,
+							width: 70,
+						}}
+					>
+						<div>
+							<Stack>
+								<IconButton
+									onPointerDown={stopEventPropagation}
+									onClick={() => togglePanel(0)}
+									onTouchStart={() => togglePanel(0)}
+									style={{ pointerEvents: 'all' }}
+								>
+									<img src="two_group.png" alt="Icon" style={{ width: 30, height: 30 }} />
+								</IconButton>
+								{/* <IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(1)} onTouchStart={() => togglePanel(1)} style={{ pointerEvents: "all" }}>
 										<img src="review.png" alt="Icon" style={{ width: 30, height: 30 }} />
 									</IconButton> */}
-									<IconButton onPointerDown={stopEventPropagation} onClick={() => togglePanel(2)} onTouchStart={() => togglePanel(2)} style={{ pointerEvents: "all" }}>
-										<img src="idea.png" alt="Icon" style={{ width: 30, height: 30 }} />
-									</IconButton>
-									<IconButton onPointerDown={stopEventPropagation} onClick={handleDelete} onTouchStart={handleDelete} style={{ pointerEvents: "all" }}>
+								<IconButton
+									onPointerDown={stopEventPropagation}
+									onClick={() => togglePanel(2)}
+									onTouchStart={() => togglePanel(2)}
+									style={{ pointerEvents: 'all' }}
+								>
+									<img src="idea.png" alt="Icon" style={{ width: 30, height: 30 }} />
+								</IconButton>
+								<IconButton
+									onPointerDown={stopEventPropagation}
+									onClick={handleDelete}
+									onTouchStart={handleDelete}
+									style={{ pointerEvents: 'all' }}
+								>
 									<img src="delete.png" alt="Icon" style={{ width: 30, height: 30 }} />
+								</IconButton>
+								{shape.meta.formResult && (
+									<IconButton
+										onPointerDown={stopEventPropagation}
+										style={{ pointerEvents: 'all' }}
+										onClick={() => {
+											let nowShape = editor.getShape(shape.id)
+											let childShapes = getChildShape(shape.id)
+											editor.createShape(nowShape?.meta.expandShape)
+											editor.updateShapes([
+												{
+													id: nowShape?.meta.expandShape.id,
+													type: nowShape?.meta.expandShape.type,
+													meta: {
+														hasExpand: true,
+														expandShape: nowShape,
+														childShapes,
+													},
+												},
+											])
+											editor.deleteShape(shape.id)
+										}}
+									>
+										<CloseFullscreenIcon />
 									</IconButton>
-								</Stack>
-							</div>
-							{/* <MdOutlineKeyboardDoubleArrowRight /> */}
+								)}
+							</Stack>
 						</div>
-					) : (
-						<div className={`frame-panel ${meta.isPanelOpen ? 'frame-panel-open' : ''}`} style={{ display: "flex", padding: 0, flexDirection: "row", marginLeft: shape.props.w, height: shape.props.h, width: PANEL_WIDTH }}>
-							<div style={{ width: "100%", padding: 20 }}>
-								{
-									meta.tabValue == 0 && (
-										<GroupPanel editor={editor} shape={shape} />
-									)
-								}
-								{
-									meta.tabValue == 1 && (
-										<DiscussionPanel editor={editor} shape={shape} />
-									)
-								}
-								{
-									meta.tabValue == 2 && (
-										<IdeaPanel editor={editor} shape={shape} />
-									)
-								}
-							</div>
-							<div className="frame-handler" onPointerDown={stopEventPropagation} onClick={() => togglePanel()} onTouchStart={() => togglePanel()} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-								<MdOutlineKeyboardDoubleArrowLeft />
-							</div>
+						{/* <MdOutlineKeyboardDoubleArrowRight /> */}
+					</div>
+				) : (
+					<div
+						className={`frame-panel ${meta.isPanelOpen ? 'frame-panel-open' : ''}`}
+						style={{
+							display: 'flex',
+							padding: 0,
+							flexDirection: 'row',
+							marginLeft: shape.props.w,
+							height: shape.props.h,
+							width: PANEL_WIDTH,
+						}}
+					>
+						<div style={{ width: '100%', padding: 20 }}>
+							{meta.tabValue == 0 && <GroupPanel editor={editor} shape={shape} />}
+							{meta.tabValue == 1 && <DiscussionPanel editor={editor} shape={shape} />}
+							{meta.tabValue == 2 && <IdeaPanel editor={editor} shape={shape} />}
 						</div>
-					)
-				}
+						<div
+							className="frame-handler"
+							onPointerDown={stopEventPropagation}
+							onClick={() => togglePanel()}
+							onTouchStart={() => togglePanel()}
+							style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+						>
+							<MdOutlineKeyboardDoubleArrowLeft />
+						</div>
+					</div>
+				)}
 			</div>
-
 		)
 	}
 
@@ -335,9 +401,9 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 	}
 
 	override onDragShapesOver = (frame: FrameShape, shapes: TLShape[]): { shouldHint: boolean } => {
-		if (!shapes.every(child => child.parentId === frame.id)) {
+		if (!shapes.every((child) => child.parentId === frame.id)) {
 			this.editor.reparentShapes(
-				shapes.map(shape => shape.id),
+				shapes.map((shape) => shape.id),
 				frame.id
 			)
 			return { shouldHint: true }
@@ -359,7 +425,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		}
 	}
 
-	override onResizeEnd: TLOnResizeEndHandler<FrameShape> = shape => {
+	override onResizeEnd: TLOnResizeEndHandler<FrameShape> = (shape) => {
 		const bounds = this.editor.getShapePageBounds(shape)!
 		const children = this.editor.getSortedChildIdsForParent(shape.id)
 
@@ -380,5 +446,4 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 	override onResize: TLOnResizeHandler<any> = (shape, info) => {
 		return resizeBox(shape, info)
 	}
-
 }

@@ -1,11 +1,24 @@
 'use client'
 
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env.local' })
 import dynamic from 'next/dynamic'
 // import '@tldraw/tldraw/tldraw.css'
-import "./index.css";
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, collection, addDoc, getDoc, onSnapshot, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import './index.css'
+import { initializeApp } from 'firebase/app'
+import {
+	getFirestore,
+	doc,
+	setDoc,
+	collection,
+	addDoc,
+	getDoc,
+	onSnapshot,
+	query,
+	where,
+	getDocs,
+	orderBy,
+	limit,
+} from 'firebase/firestore'
 import { MakeRealButton } from './components/MakeRealButton'
 import { TldrawLogo } from './components/TldrawLogo'
 import { ResponseShapeUtil } from './ResponseShape/ResponseShape'
@@ -17,7 +30,7 @@ import FontDownloadIcon from '@mui/icons-material/FontDownload'
 import { createArrowBetweenShapes } from './lib/utils/helper'
 import { uiOverrides } from './ui-overrides'
 import { QuilEditorShapeUtil } from './QuilEditorShape/QuilEditorShape'
-import UndoIcon from '@mui/icons-material/Undo';
+import UndoIcon from '@mui/icons-material/Undo'
 import Box from '@mui/material/Box'
 import {
 	TLUiAssetUrlOverrides,
@@ -49,10 +62,10 @@ import { createWrapper } from 'next-redux-wrapper'
 import { useSelector } from 'react-redux'
 import ReduxStore from './redux/store' // Import your store
 import { useDispatch } from 'react-redux'
-import { setTopZonePurpose } from './redux/reducers/globalReducer';
-import { useSearchParams  } from 'next/navigation';
-import { CustomArrowShapeUtil } from './ArrowShape/CustomArrowShapeUtil';
-import { CustomArrowShapeTool } from './ArrowShape/CustomArrowShapeTool';
+import { setTopZonePurpose } from './redux/reducers/globalReducer'
+import { useSearchParams } from 'next/navigation'
+import { CustomArrowShapeUtil } from './ArrowShape/CustomArrowShapeUtil'
+import { CustomArrowShapeTool } from './ArrowShape/CustomArrowShapeTool'
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -67,7 +80,7 @@ const customShapeUtils = [
 	SearchShapeUtil,
 	FrameShapeUtil,
 	ResultShapeUtil,
-	CustomArrowShapeUtil
+	CustomArrowShapeUtil,
 ]
 const customTools = [NodeShapeTool, FrameShapeTool, SearchTool, CustomArrowShapeTool]
 
@@ -76,7 +89,7 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
 		node: '/note-sticky-solid.svg',
 		new_frame: '/frame.png',
 		search: '/subtask.png',
-		new_arrow: '/up-right.png'
+		new_arrow: '/up-right.png',
 	},
 }
 
@@ -91,13 +104,12 @@ const FeatureMenu = track(() => {
 })
 
 const UpdateRelationHints = (editor, isRelHintActive, isCrossUserRelOnly) => {
-
-	const idea_nodes = editor.getCurrentPageShapes().filter((shape) => shape.type === "node")
+	const idea_nodes = editor.getCurrentPageShapes().filter((shape) => shape.type === 'node')
 	const ideas = idea_nodes.map((node) => {
 		return {
 			id: node.id,
 			text: node.props.text,
-			creator: node.props.lastUserName
+			creator: node.props.lastUserName,
 		}
 	})
 
@@ -113,7 +125,6 @@ const UpdateRelationHints = (editor, isRelHintActive, isCrossUserRelOnly) => {
 			const rel_ids = createArrowBetweenShapes({ editor, relationship: filteredRelations })
 			editor.setHintingShapes(rel_ids)
 		}
-
 	})
 }
 
@@ -125,34 +136,45 @@ const TopZoneComponent = track(() => {
 	const curPage = editor.getCurrentPage()
 
 	useEffect(() => {
-		if (curPage.id === "page:page") {
+		if (curPage.id === 'page:page') {
 			dispatch(setTopZonePurpose(''))
 		}
 	}, [curPage])
 
 	const handleReturnButton = () => {
-		editor.setCurrentPage("page:page")
+		editor.setCurrentPage('page:page')
 	}
 
 	return (
 		<Box sx={{ marginTop: 2 }}>
-			{
-				topZonePurpose === "apply-affinity" && (
-					<Box>
-						<Paper elevation={1} sx={{ padding: 2, pointerEvents: "all", maxWidth: "500px", display: "inline-flex", alignItems: "center" }}>
-							<Typography variant="body1" fontWeight={600} component="div" sx={{ marginRight: 2 }}>
-								Group
-							</Typography>
-							<Typography variant="body2" component="div" sx={{ marginRight: 2 }}>
-								{curAffinity.principle}
-							</Typography>
-							<IconButton onPointerDown={stopEventPropagation} onClick={handleReturnButton} onTouchStart={handleReturnButton}>
-								<img src="undo.png" style={{ width: 20, height: 20 }} />
-							</IconButton>
-						</Paper>
-					</Box>
-				)
-			}
+			{topZonePurpose === 'apply-affinity' && (
+				<Box>
+					<Paper
+						elevation={1}
+						sx={{
+							padding: 2,
+							pointerEvents: 'all',
+							maxWidth: '500px',
+							display: 'inline-flex',
+							alignItems: 'center',
+						}}
+					>
+						<Typography variant="body1" fontWeight={600} component="div" sx={{ marginRight: 2 }}>
+							Group
+						</Typography>
+						<Typography variant="body2" component="div" sx={{ marginRight: 2 }}>
+							{curAffinity.principle}
+						</Typography>
+						<IconButton
+							onPointerDown={stopEventPropagation}
+							onClick={handleReturnButton}
+							onTouchStart={handleReturnButton}
+						>
+							<img src="undo.png" style={{ width: 20, height: 20 }} />
+						</IconButton>
+					</Paper>
+				</Box>
+			)}
 		</Box>
 	)
 })
@@ -160,7 +182,7 @@ const TopZoneComponent = track(() => {
 const components: TLComponents = {
 	StylePanel: null,
 	SharePanel: FeatureMenu,
-	TopPanel: TopZoneComponent
+	TopPanel: TopZoneComponent,
 }
 
 export default function App() {
@@ -172,12 +194,12 @@ export default function App() {
 	const isRelHintActive = useSelector((state) => state.global.isRelHintActive)
 	const isCrossUserRelOnly = useSelector((state) => state.global.isCrossUserRelOnly)
 
-	const searchParams = useSearchParams();
-	const username = searchParams.get('username');
-	const roomId = searchParams.get('roomId');
+	const searchParams = useSearchParams()
+	const username = searchParams.get('username')
+	const roomId = searchParams.get('roomId')
 
-	const WS_ADDRESS = "smartwhiteboard.xyz"
-	const WS_PORT = "5800"
+	const WS_ADDRESS = 'smartwhiteboard.xyz'
+	const WS_PORT = '5800'
 
 	// const WS_ADDRESS = "0.0.0.0"
 	// const WS_PORT = "5800"
@@ -197,46 +219,38 @@ export default function App() {
 	}, [])
 
 	const onDragOver = (event) => {
-		console.log("onDropOver called")
-		event.preventDefault();
-	};
+		console.log('onDropOver called')
+		event.preventDefault()
+	}
 
 	const onDrop = (event) => {
-		console.log("onDrop called")
-	};
+		console.log('onDrop called')
+	}
 
 	const store = useYjsStore({
 		roomId: roomId,
 		hostUrl: HOST_URL,
-		shapeUtils: customShapeUtils
+		shapeUtils: customShapeUtils,
 	})
 
 	function randromSelectColor() {
+		const candidates = ['#b5e48c', '#ffd6ff', '#ffb703', '#fefae0', '#ffc8dd', '#ced4da']
 
-		const candidates = [
-			"#b5e48c",
-			"#ffd6ff",
-			"#ffb703",
-			"#fefae0",
-			"#ffc8dd",
-			"#ced4da"
-		]
+		const randomIndex = Math.floor(Math.random() * candidates.length)
 
-		const randomIndex = Math.floor(Math.random() * candidates.length);
-
-		return candidates[randomIndex];
+		return candidates[randomIndex]
 	}
 
 	function generateRandomUsername() {
-		const adjectives = ['Cool', 'Mighty', 'Happy', 'Fast', 'Smart'];
-		const nouns = ['Dragon', 'Panda', 'Tiger', 'Eagle', 'Lion'];
+		const adjectives = ['Cool', 'Mighty', 'Happy', 'Fast', 'Smart']
+		const nouns = ['Dragon', 'Panda', 'Tiger', 'Eagle', 'Lion']
 
-		const randomNumber = Math.floor(Math.random() * 100);
+		const randomNumber = Math.floor(Math.random() * 100)
 
-		const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-		const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+		const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+		const randomNoun = nouns[Math.floor(Math.random() * nouns.length)]
 
-		return `${randomAdjective}${randomNoun}${randomNumber}`;
+		return `${randomAdjective}${randomNoun}${randomNumber}`
 	}
 
 	useEffect(() => {
@@ -244,12 +258,12 @@ export default function App() {
 			UpdateRelationHints(editor, isRelHintActive, isCrossUserRelOnly)
 		}
 		if (isRelHintActive) {
-			setInterval(callRelationHints, 12000);
+			setInterval(callRelationHints, 12000)
 		}
 	}, [isRelHintActive])
 
 	return (
-		<div className='editor'>
+		<div className="editor">
 			<Tldraw
 				// persistenceKey="make-real"
 				// shareZone={<MakeRealButton />}
@@ -262,21 +276,29 @@ export default function App() {
 				// persistenceKey="test"
 				// onUiEvent={handleUiEvent}
 				components={components}
-				onMount={editor => {
-
+				onMount={(editor) => {
 					editor.user.updateUserPreferences({
 						color: randromSelectColor(),
-						name: username
+						name: username,
 					})
 
-					editor.on('event', event => {
+					editor.on('event', (event) => {
 						setEditor(editor)
 						handleEvent(event, editor)
 					})
 
 					editor.getInitialMetaForShape = (shape) => {
 						if (shape.type === 'new_frame') {
-							return { isPanelOpen: false, requirements: [], ai_dims: [], loadingStatus: "idle", relationLoadingStatus: "idle", betweenFrameRelations: null, depRelations: [], preRelations: [] }
+							return {
+								isPanelOpen: false,
+								requirements: [],
+								ai_dims: [],
+								loadingStatus: 'idle',
+								relationLoadingStatus: 'idle',
+								betweenFrameRelations: null,
+								depRelations: [],
+								preRelations: [],
+							}
 						}
 						if (shape.type === 'search') {
 							return { isLoading: false, preferences: [] }
@@ -285,9 +307,8 @@ export default function App() {
 							return { history: [] }
 						}
 					}
-
 				}}
-				store={store}
+				// store={store}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
 			>
