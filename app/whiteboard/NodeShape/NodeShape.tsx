@@ -250,7 +250,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}
 
 		useEffect(() => {
-			console.log("loadingStatus: ", loadingStatus)  
+			console.log('loadingStatus: ', loadingStatus)
 		}, [loadingStatus])
 
 		const handleTips = () => {
@@ -269,7 +269,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 		}
 
 		useEffect(() => {
-			if ( editor.getSelectedShapeIds().includes(id) && !isSelected) {
+			if (editor.getSelectedShapeIds().includes(id) && !isSelected) {
 				setIsSelected(true)
 			} else if (!editor.getSelectedShapeIds().includes(id) && isSelected) {
 				setIsSelected(false)
@@ -345,10 +345,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					isSlide
 						? 'slide-rotate-ver-right'
 						: isSlide != null
-							? 'slide-rotate-ver-right-revert'
-							: initSlide
-								? 'slide-rotate-ver-right-translate'
-								: ''
+						? 'slide-rotate-ver-right-revert'
+						: initSlide
+						? 'slide-rotate-ver-right-translate'
+						: ''
 				}
 				id={shape.id}
 				style={{
@@ -427,7 +427,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								onTouchStart={handleTips}
 								onClick={handleTips}
 							>
-								<img src='arrow.png' style={{ width: "25px", height: "25px" }} />
+								<img src="arrow.png" style={{ width: '25px', height: '25px' }} />
 							</IconButton>
 							{/* <IconButton
 								size="small"
@@ -446,7 +446,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									setLoadingStatus('search-bar')
 								}}
 							>
-								<img src='idea.png' style={{ width: "25px", height: "25px" }} />
+								<img src="idea.png" style={{ width: '25px', height: '25px' }} />
 							</IconButton>
 							{/* <IconButton
 								onPointerDown={stopEventPropagation}
@@ -464,7 +464,7 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									editor.deleteShape(id)
 								}}
 							>
-								<img src='delete.png' style={{ width: "25px", height: "25px" }} />
+								<img src="delete.png" style={{ width: '25px', height: '25px' }} />
 							</IconButton>
 						</div>
 					)}
@@ -525,15 +525,24 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 					)}
 					{
 						loadingStatus == 'tip-loaded' && (
-							<Card
+							<div
 								style={{
 									width: '440px',
 									padding: '10px',
 									display: 'flex',
 									flexWrap: 'wrap',
 									gap: '20px',
+									background: '#fff',
+									position: 'relative',
+									overflow: 'hidden',
+									border: '5px',
 								}}
+								// className='borderborder'
 							>
+								<div className="border-top"></div>
+								<div className="border-bottom"></div>
+								<div className="border-left"></div>
+								<div className="border-right"></div>
 								<div
 									style={{ width: '100%', textAlign: 'center', height: '20px', fontSize: '20px' }}
 								>
@@ -541,9 +550,20 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								</div>
 
 								{relationTypes.map((idea, index) => (
-									<Button
+									<div
 										onPointerDown={stopEventPropagation}
-										style={{ display: 'block', marginBottom: '5px', width: '200px' }}
+										style={{
+											marginBottom: '5px',
+											width: '200px',
+											padding: '10px',
+											background: 'red',
+											borderRadius: '10px',
+											textAlign: 'center',
+											background:
+												'linear-gradient(135deg, #c7e9fb, #a6defa, #80d4f9, #5bc9f8, #35bef7)',
+											cursor: 'pointer',
+											fontSize: '16px',
+										}}
 										key={index}
 										onMouseDown={(e) => {
 											// e.stopPropagation()
@@ -560,9 +580,9 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 										variant="outlined"
 									>
 										{idea}
-									</Button>
+									</div>
 								))}
-							</Card>
+							</div>
 						)
 						// <NodeNestPop tips={tips} editor={editor} />
 					}
