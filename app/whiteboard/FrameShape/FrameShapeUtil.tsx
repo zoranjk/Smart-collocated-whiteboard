@@ -252,7 +252,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 										console.log('childShapes', childShapes)
 
 										if (nowShape?.meta.expandShape == null) {
-											console.log('创建')
+											console.log('Shape created')
 
 											const newShapeId = createShapeId()
 											editor.createShape({
