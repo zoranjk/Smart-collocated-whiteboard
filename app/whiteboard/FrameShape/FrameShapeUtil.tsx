@@ -23,6 +23,7 @@ import {
 	toDomPrecision,
 	useIsEditing,
 	useValue,
+	createShapeId,
 } from '@tldraw/editor'
 import classNames from 'classnames'
 import Tabs from '@mui/material/Tabs'
@@ -219,13 +220,57 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 								>
 									<img src="delete.png" alt="Icon" style={{ width: 30, height: 30 }} />
 								</IconButton>
-								{shape.meta.formResult && (
-									<IconButton
-										onPointerDown={stopEventPropagation}
-										style={{ pointerEvents: 'all' }}
-										onClick={() => {
-											let nowShape = editor.getShape(shape.id)
-											let childShapes = getChildShape(shape.id)
+								{/* {shape.meta.formResult && <IconButton 
+										onPointerDown={stopEventPropagation} style={{ pointerEvents: "all" }}
+											onClick={()=>{
+												let nowShape = editor.getShape(shape.id)
+												let childShapes = getChildShape(shape.id)
+												editor.createShape(nowShape?.meta.expandShape)
+												editor.updateShapes([
+													{
+														id:nowShape?.meta.expandShape.id,
+														type:nowShape?.meta.expandShape.type,
+														meta:{
+															hasExpand:true,
+															expandShape:nowShape,
+															childShapes
+														}
+													}
+												])
+												editor.deleteShape(shape.id)
+											}} 
+										>
+										<CloseFullscreenIcon />
+									</IconButton>} */}
+								<IconButton
+									onPointerDown={stopEventPropagation}
+									style={{ pointerEvents: 'all' }}
+									onClick={() => {
+										let nowShape = editor.getShape(shape.id)
+										let childShapes = getChildShape(shape.id)
+										console.log('nowShape', nowShape)
+										console.log('childShapes', childShapes)
+
+										if (nowShape?.meta.expandShape == null) {
+											console.log('Shape created')
+
+											const newShapeId = createShapeId()
+											editor.createShape({
+												id: newShapeId,
+												type: 'result',
+												x: nowShape.x + 100,
+												y: nowShape.y + 100,
+												meta: {
+													hasExpand: true,
+													expandShape: nowShape,
+													childShapes,
+												},
+												parentId: nowShape?.parentId ? nowShape?.parentId : 'page:page',
+												props: {
+													text: nowShape.props.name ? nowShape.props.name : 'no name / no text',
+												},
+											})
+										} else {
 											editor.createShape(nowShape?.meta.expandShape)
 											editor.updateShapes([
 												{
@@ -238,12 +283,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 													},
 												},
 											])
-											editor.deleteShape(shape.id)
-										}}
-									>
-										<CloseFullscreenIcon />
-									</IconButton>
-								)}
+										}
+										editor.deleteShape(shape.id)
+									}}
+								>
+									<CloseFullscreenIcon />
+								</IconButton>
 							</Stack>
 						</div>
 						{/* <MdOutlineKeyboardDoubleArrowRight /> */}
