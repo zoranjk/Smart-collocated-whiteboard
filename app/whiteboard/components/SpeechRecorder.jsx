@@ -13,8 +13,8 @@ export function AudioRecorder() {
     const [recording, setRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
     const [timer, setTimer] = useState(null);
-    const [speechText, setSpeachText] = useState('')//最终的text
-    const [audioChunks, setAudioChunks] = useState([])//最终的audioChunks
+    const [speechText, setSpeachText] = useState('')
+    const [audioChunks, setAudioChunks] = useState([])
 
     const dispatch = useDispatch();
 

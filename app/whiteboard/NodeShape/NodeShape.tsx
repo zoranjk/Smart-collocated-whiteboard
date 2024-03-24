@@ -533,16 +533,8 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 									flexWrap: 'wrap',
 									gap: '20px',
 									background: '#fff',
-									position: 'relative',
-									overflow: 'hidden',
-									border: '5px',
 								}}
-								// className='borderborder'
 							>
-								<div className="border-top"></div>
-								<div className="border-bottom"></div>
-								<div className="border-left"></div>
-								<div className="border-right"></div>
 								<div
 									style={{ width: '100%', textAlign: 'center', height: '20px', fontSize: '20px' }}
 								>
@@ -559,10 +551,10 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 											background: 'red',
 											borderRadius: '10px',
 											textAlign: 'center',
-											background:
-												'linear-gradient(135deg, #c7e9fb, #a6defa, #80d4f9, #5bc9f8, #35bef7)',
+											background: '#35bef7',
 											cursor: 'pointer',
 											fontSize: '16px',
+											color: '#fff',
 										}}
 										key={index}
 										onMouseDown={(e) => {
