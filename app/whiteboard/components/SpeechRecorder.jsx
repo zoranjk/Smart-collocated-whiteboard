@@ -64,7 +64,7 @@ export function AudioRecorder() {
                 return nowText
             } catch (e) {
                 console.error(e)
-                throw new Error('Sorry, there was an error fetching from OpenAI')
+                // throw new Error('Sorry, there was an error fetching from OpenAI')
             }
         };
         recorder.start();
@@ -92,7 +92,7 @@ export function AudioRecorder() {
             return data.text
         } catch (e) {
             console.error(e)
-            throw new Error('Sorry, there was an error fetching from OpenAI')
+            // throw new Error('Sorry, there was an error fetching from OpenAI')
         }
     }
 

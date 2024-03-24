@@ -246,6 +246,21 @@ export const GlobalMenu = ({ editor }) => {
 		})
 	}
 
+	const handleCreateNoteFromExtraction = (note) => {
+		const viewport = editor.getViewportScreenCenter()
+		const offsetX = Math.floor(Math.random() * 11);
+		const offsetY = Math.floor(Math.random() * 11);
+		editor.createShape({
+			id: createShapeId(),
+			type: 'node',
+			x: viewport.x + offsetX,
+			y: viewport.y + offsetY,
+			props: {
+				text: note
+			}
+		})
+	}
+
 	const handleCrossUserRelOnly = e => {
 		dispatch(setIsCrossUserRelOnly(!isCrossUserRelOnly))
 	}
@@ -1019,8 +1034,8 @@ export const GlobalMenu = ({ editor }) => {
 										}}
 										key={index}
 										// move camera to the selected shape
-										onClick={() => handleRetrievalClicked(info.id)}
-										onTouchStart={() => handleRetrievalClicked(info.id)}
+										onClick={() => handleCreateNoteFromExtraction(info.text)}
+										onTouchStart={() => handleCreateNoteFromExtraction(info.text)}
 									>
 										<Box
 											sx={{

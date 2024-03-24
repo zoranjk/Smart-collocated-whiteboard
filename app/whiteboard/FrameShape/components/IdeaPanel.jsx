@@ -126,7 +126,7 @@ export const IdeaPanel = ({ editor, shape }) => {
                 {
                     shape.meta.ideaLoadingStatus == 'loaded' && (
                         <Box sx={{
-                            maxHeight: '200px', // Adjust this value based on your needs
+                            maxHeight: '60%', // Adjust this value based on your needs
                             overflowY: 'auto' // This enables vertical scrolling
                         }}>
                             <Grid container spacing={2}>
