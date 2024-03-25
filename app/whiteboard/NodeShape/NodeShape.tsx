@@ -74,7 +74,7 @@ const relationTypes = [
 	'desires',
 	'used for',
 	'causes',
-	'capaable of',
+	'capable of',
 	'has property',
 	'at location',
 	'synonym',
@@ -470,7 +470,6 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 								onPointerDown={stopEventPropagation}
 								onTouchStart={() => {
 									deleteNote()
-
 								}}
 								onClick={() => {
 									deleteNote()
