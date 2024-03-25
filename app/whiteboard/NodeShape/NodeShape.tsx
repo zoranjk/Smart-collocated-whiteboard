@@ -324,6 +324,17 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 			})
 		}
 
+		const deleteNote = () => {
+			// delete all connected arrows
+			const arrows = editor.getCurrentPageShapes().filter((shape) => shape.type == 'new_arrow')
+			arrows.forEach((arrow) => {
+				if (arrow.props.start.boundShapeId == id || arrow.props.end.boundShapeId == id) {
+					editor.deleteShape(arrow.id)
+				}
+			})
+			editor.deleteShape(id)
+		}
+
 		const handleCompare = () => {
 			setLoadingStatus('summary-loaded')
 			const summary = {
@@ -458,10 +469,11 @@ export class NodeShapeUtil extends ShapeUtil<NodeShape> {
 							<IconButton
 								onPointerDown={stopEventPropagation}
 								onTouchStart={() => {
-									editor.deleteShape(id)
+									deleteNote()
+
 								}}
 								onClick={() => {
-									editor.deleteShape(id)
+									deleteNote()
 								}}
 							>
 								<img src="delete.png" style={{ width: '25px', height: '25px' }} />

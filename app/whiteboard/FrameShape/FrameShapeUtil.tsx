@@ -129,7 +129,13 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<FrameShape> {
 		)
 
 		const handleDelete = () => {
-			editor.deleteShapes([shape.id])
+			const arrows = editor.getCurrentPageShapes().filter((shape) => shape.type == 'new_arrow')
+			arrows.forEach((arrow) => {
+				if (arrow.props.start.boundShapeId == id || arrow.props.end.boundShapeId == id) {
+					editor.deleteShape(arrow.id)
+				}
+			})
+			editor.deleteShape(id)
 		}
 
 		const getChildShape = (parentId: String) => {
