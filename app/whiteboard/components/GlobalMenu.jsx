@@ -601,7 +601,7 @@ export const GlobalMenu = ({ editor }) => {
 					>
 						<img
 							style={{ width: 20, height: 20 }}
-							src='selected_grouping.png'
+							src='share.png'
 							alt='Selected grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
@@ -633,7 +633,7 @@ export const GlobalMenu = ({ editor }) => {
 					>
 						<img
 							style={{ width: 20, height: 20 }}
-							src='conditional_cluster.png'
+							src='save.png'
 							alt='conditional grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
@@ -665,7 +665,7 @@ export const GlobalMenu = ({ editor }) => {
 					>
 						<img
 							style={{ width: 20, height: 20 }}
-							src='conditional_cluster.png'
+							src='collection.png'
 							alt='conditional grouping'
 						/>
 						<Typography sx={{ color: 'black', marginLeft: 2 }} variant='body2'>
