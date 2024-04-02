@@ -7,7 +7,8 @@ import {
 } from './fetchFromOpenAi'
 
 // the system prompt explains to gpt-4 what we want it to do and how it should behave.
-const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to generate at most 8 high-level ideas by referring to the existing ones and the topics under consideration. If user provide instruction, please provide ideas relevant to user requirement. Each idea should be concise. Note that there could be no idea existed at the time. Return the idea suggestions in the provided JSON format.`
+// const systemPrompt = `Imagine you're the GPT-4 AI, assigned to support a team in their brainstorming session. Your task is to generate at most 8 high-level ideas by referring to the existing ones and the topics under consideration. If user provide instruction, please provide ideas relevant to user requirement. Each idea should be concise. Note that there could be no idea existed at the time. Return the idea suggestions in the provided JSON format.`
+const systemPrompt = `Imagine you are the GPT-4 AI, integrated into a collaborative digital planning tool being used by a team to organize their spring break trip. Your role is to review the travel ideas and preferences already noted by the team members and generate discussion hints that facilitate a comprehensive and enjoyable planning process. These hints should encourage the team to explore various aspects of their trip, such as destination options, activities, budget considerations, accommodations, and any logistical requirements. Provide up to eight targeted discussion hints based on the topics, preferences, and constraints indicated by the team. Tailor your suggestions to ensure they are relevant and helpful, enhancing the team's ability to make informed decisions and create a memorable spring break experience. If the planning is still in its initial stages with few ideas noted, suggest starting points to guide the brainstorming. Present your suggestions in a JSON format for clear and structured feedback.`
 
 const assistantPrompt = `
 The returned JSON objects should follow this format:
@@ -24,8 +25,7 @@ The returned JSON objects should follow this format:
 }
 `
 
-export async function generateIdeas ({ existing_ideas, topic="", instruction="" }) {
-
+export async function generateIdeas({ existing_ideas, topic = '', instruction = '' }) {
 	// first, we build the prompt that we'll send to openai.
 	const prompt = await buildSuggestionPromptForOpenAi(existing_ideas, topic, instruction)
 
@@ -56,7 +56,6 @@ export async function generateIdeas ({ existing_ideas, topic="", instruction="" 
 
 		const response = openAiResponse.choices[0].message.content
 
-		
 		const parsed_res = JSON.parse(response)
 		console.log('openAiResponse: ', parsed_res)
 
@@ -72,13 +71,17 @@ export async function generateIdeas ({ existing_ideas, topic="", instruction="" 
 	}
 }
 
-async function buildSuggestionPromptForOpenAi (existing_ideas, topic, instruction): Promise<GPT4Message[]> {
-
+async function buildSuggestionPromptForOpenAi(
+	existing_ideas,
+	topic,
+	instruction
+): Promise<GPT4Message[]> {
 	// the user messages describe what the user has done and what they want to do next. they'll get
 	// combined with the system prompt to tell gpt-4 what we'd like it to do.
 
-    const text = `Existing ideas: ${existing_ideas.map((idea) => idea).join(', ')}; Topic: ${topic ? topic : "No topic is provided"}` 
-
+	const text = `Existing ideas: ${existing_ideas.map((idea) => idea).join(', ')}; Topic: ${
+		topic ? topic : 'No topic is provided'
+	}`
 
 	const userMessages: MessageContent = [
 		{
@@ -90,10 +93,13 @@ async function buildSuggestionPromptForOpenAi (existing_ideas, topic, instructio
 			type: 'text',
 			text: text !== '' ? text : 'Oh, it looks like there was not any note.',
 		},
-        {
-            type: 'text',
-            text:  instruction !== '' ? "Following is user instruction for idea generation instruction: " + instruction : 'No instruction is provided, you should generate ideas based on the existing ideas and the topic.'
-        }
+		{
+			type: 'text',
+			text:
+				instruction !== ''
+					? 'Following is user instruction for idea generation instruction: ' + instruction
+					: 'No instruction is provided, you should generate ideas based on the existing ideas and the topic.',
+		},
 	]
 
 	// combine the user prompt with the system prompt
