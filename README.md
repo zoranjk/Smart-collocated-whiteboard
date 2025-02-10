@@ -1,45 +1,60 @@
-# Make Real
+# LADICA
 
-Use this repo as a template to create Make Real style apps like
-[makereal.tldraw.com](https://makereal.tldraw.com). To get started:
+**LADICA** is a large shared display interface built on top of [tldraw](https://tldraw.dev) that leverages cutting-edge AI functionalities to enhance team collaboration. Large shared displays—such as digital whiteboards—are instrumental in supporting collocated team collaborations by facilitating cognitive tasks like brainstorming, organizing ideas, and making comparisons.
 
-1. Use the template and clone your new repo to your computer
-2. Run `npm install` to install dependencies
-3. Get an OpenAI API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys). Make sure
+Recent advancements in Large Language Models (LLMs) have catalyzed AI support for these displays. However, most existing systems either offer limited capabilities or diminish human control, neglecting the potential benefits of natural group dynamics. Our formative study identified several cognitive challenges teams encounter, including:
+
+- **Diverse Ideation:** Generating a wide range of ideas.
+- **Knowledge Sharing:** Effectively distributing information among team members.
+- **Mutual Awareness:** Keeping everyone updated on ongoing thoughts and progress.
+- **Idea Organization:** Structuring and comparing different ideas.
+- **Synchronizing Live Discussions:** Integrating real-time conversations with external workspaces.
+
+In response, **LADICA** helps collaborative teams brainstorm, organize, and analyze ideas through multiple analytical lenses, all while fostering mutual awareness. Additionally, LADICA facilitates the real-time extraction of key information from verbal discussions and identifies relevant entities. A lab study has confirmed its usability and usefulness.
+
+---
+
+## Getting Started
+
+Use this repo as a template to create LADICA style apps. To get started:
+
+1. **Clone the Repository**  
+   Use this repo as a template to create your LADICA project and clone it to your computer:
+   ```bash
+   git clone https://github.com/roryzhengzhang/Smart-collocated-whiteboard
+2. **Install Dependencies**
+   Run the following command to install all required packages:
+   ```bash
+   npm install 
+3. **Get an OpenAI API Key**
+   Get an OpenAI API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys). Make sure
    you are at least a
    [Tier 1](https://platform.openai.com/docs/guides/rate-limits/usage-tiers) API
    user, which means you have access to GPT-4 Vision. You can check your tier on
    the [OpenAI API Limits](https://platform.openai.com/account/limits).
-4. Create a `.env.local` file that contains `OPENAI_API_KEY=your api key here`
-5. Run `npm run dev`
-6. Open [localhost:3000](http://localhost:3000) and make some stuff real!
+4. **Configure Environment Variables**
+   Create a .env.local file in the project root that contains:
+   ```bash
+   OPENAI_API_KEY=your_api_key_here
+5. **Run the Development Server**
+   Start the application by running:
+   ```bash
+   npm run dev
+6. **Access LADICA**
+   Open http://localhost:3000 in your browser and start using LADICA!
 
-## How it works
+## How It Works
 
-Make Real is built with [tldraw](tldraw.dev), a very good React library for
-creating whiteboards and other infinite canvas experiences.
+LADICA integrates AI features into an interactive whiteboard environment, offering:
 
-To use it, first draw a mockup for a piece of UI. When
-you're ready, select the drawing, and press the Make Real button.
-We'll capture an image of your selection, and send it to
-[OpenAI's GPT-4V](https://platform.openai.com/docs/guides/vision) along with
-instructions to turn it into a HTML file.
+- **Brainstorming & Idea Organization:**  
+  Utilize the infinite canvas to sketch, capture, and structure your team’s ideas.
 
-We take the HTML response and add it to a tldraw
-[custom shape](https://tldraw.dev/docs/shapes#Custom-shapes). The custom shape
-shows the response in an iframe so that you can interact with it on the canvas. If you
-want to iterate on the response, annotate the iframe, select it all, and press 'Make Real' again.
+- **AI-Enhanced Analysis:**  
+  Leverage AI to analyze inputs, extract key information from live discussions, and identify relevant entities for deeper insight.
 
-## To make changes
+- **Real-Time Collaboration:**  
+  With synchronized updates, every participant stays informed, promoting mutual awareness and effective teamwork.
 
-To change how Make Real works, start from the [`makeReal()`](./app/makeReal.tsx)
-function. From there, you can change the prompt that gets sent to gpt-4.
+These features collectively help teams overcome challenges such as diverse ideation, inefficient knowledge sharing, and difficulties in synchronizing live discussions with external workflows.
 
-If you'd like Make Real to create something other than HTML, you'll need to
-either update the [`ResponseShape`](./app/ResponseShape/ResponseShape.tsx) to
-display something different, or use one of tldraw's built-in shapes like image
-or text.
-
-## The dangerous API key input method
-
-For prototyping or at least until the vision APIs are able to support higher usage limits, we've also included the `RiskyButCoolAPIKeyInput`, similar to the one found on [makereal.tldraw.com](https://makereal.tldraw.com). Please use this as carefully and ethically as you can, as users should be reluctant to add API keys to public sites.
